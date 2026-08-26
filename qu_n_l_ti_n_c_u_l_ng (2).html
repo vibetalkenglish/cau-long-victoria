@@ -83,63 +83,77 @@
 </head>
 <body class="h-full font-sans text-slate-800 flex flex-col relative pb-20 sm:pb-16 bg-slate-50">
 
-    <!-- HEADER -->
+    <!-- HEADER (DESKTOP & MOBILE APP BAR) -->
     <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
         <div class="max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8">
             <div class="flex justify-between h-14 sm:h-16 items-center gap-2">
-                <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
-                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-400 text-slate-900 flex items-center justify-center font-bold text-base sm:text-xl shadow">
+                <div class="flex items-center space-x-2 sm:space-x-3 shrink-0 cursor-pointer" onclick="switchTab('members')">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 flex items-center justify-center font-black text-base sm:text-xl shadow-md">
                         <i class="fa-solid fa-shuttlecock"></i>
                     </div>
                     <div>
-                        <h1 class="text-sm sm:text-lg font-bold leading-tight flex items-center gap-1.5 sm:gap-2">
-                            <span class="truncate max-w-[150px] sm:max-w-none">CẦU LÔNG VICTORIA</span>
-                            <span id="role-badge" class="text-[10px] sm:text-xs font-normal bg-sky-500/20 text-sky-300 px-1.5 sm:px-2 py-0.5 rounded-full border border-sky-500/30 whitespace-nowrap">Thành Viên</span>
+                        <h1 class="text-sm sm:text-base lg:text-lg font-extrabold leading-tight flex items-center gap-1.5 sm:gap-2 tracking-tight">
+                            <span class="truncate max-w-[140px] sm:max-w-none">CẦU LÔNG VICTORIA</span>
+                            <span id="role-badge" class="text-[10px] sm:text-xs font-semibold bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full border border-sky-500/30 whitespace-nowrap">Thành Viên</span>
                         </h1>
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto custom-scrollbar">
-                    <button id="btn-tab-sheet" onclick="switchTab('sheet')" class="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amber-400 text-slate-900 transition flex items-center gap-1.5 shadow shrink-0">
-                        <i class="fa-solid fa-table-cells"></i> <span>Bảng Chi Tiết</span>
+                <!-- Desktop Tab Navigation (Ẩn trên mobile nhỏ, thay bằng Bottom Nav) -->
+                <div class="hidden sm:flex items-center space-x-1 sm:space-x-1.5 overflow-x-auto custom-scrollbar py-1">
+                    <button id="btn-tab-members" onclick="switchTab('members')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-xl bg-amber-400 text-slate-950 transition flex items-center gap-1.5 shadow shrink-0">
+                        <i class="fa-solid fa-users"></i> <span>Thành Viên</span>
                     </button>
+                    <button id="btn-tab-sheet" onclick="switchTab('sheet')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5 shrink-0">
+                        <i class="fa-solid fa-calendar-check"></i> <span>Điểm Danh</span>
+                    </button>
+                    <button id="btn-tab-payments" onclick="switchTab('payments')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5 shrink-0">
+                        <i class="fa-solid fa-money-bill-wave"></i> <span>Đóng Tiền</span>
+                    </button>
+                    <button id="btn-tab-batches" onclick="switchTab('batches')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5 shrink-0">
+                        <i class="fa-solid fa-boxes-stacked"></i> <span>Lô Cầu</span>
+                    </button>
+                    <button id="btn-tab-qr" onclick="switchTab('qr')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5 shrink-0">
+                        <i class="fa-solid fa-qrcode text-sky-400"></i> <span>VietQR</span>
+                    </button>
+                    
                     <!-- Admin Tabs -->
-                    <div id="admin-tabs" class="hidden flex items-center space-x-1.5 sm:space-x-2 shrink-0">
-                        <button id="btn-tab-ai" onclick="switchTab('ai')" class="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> AI
+                    <div id="admin-tabs" class="hidden flex items-center space-x-1 sm:space-x-1.5 shrink-0">
+                        <button id="btn-tab-ai" onclick="switchTab('ai')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> <span>AI</span>
                         </button>
-                        <button id="btn-tab-script" onclick="switchTab('script')" class="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-code text-emerald-400"></i> Code
+                        <button id="btn-tab-script" onclick="switchTab('script')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-code text-emerald-400"></i> <span>Code</span>
                         </button>
                     </div>
 
-                    <!-- API Settings (Ẩn đối với người dùng thông thường, chỉ hiện khi đăng nhập Admin) -->
-                    <button id="btn-open-api-modal" onclick="openApiConfigModal()" class="hidden px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5 shrink-0" title="Cấu hình Google Sheets API URL">
+                    <!-- API Settings (Admin only) -->
+                    <button id="btn-open-api-modal" onclick="openApiConfigModal()" class="hidden px-2.5 py-1.5 sm:py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5 shrink-0" title="Cấu hình Google Sheets API URL">
                         <i class="fa-solid fa-cloud-arrow-down text-sky-400"></i> <span class="hidden md:inline">API</span>
                     </button>
+                </div>
 
-                    <!-- Role Toggle -->
-                    <div class="ml-1 pl-1 sm:ml-2 sm:pl-2 border-l border-slate-700 shrink-0">
-                        <button id="btn-toggle-role" onclick="toggleRole()" class="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition flex items-center gap-1.5 shadow">
-                            <i class="fa-solid fa-user-shield text-amber-400"></i> <span id="btn-role-text">Admin</span>
-                        </button>
-                    </div>
+                <!-- Right Actions: Role Toggle -->
+                <div class="flex items-center space-x-2 shrink-0">
+                    <button id="btn-toggle-role" onclick="toggleRole()" class="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition flex items-center gap-1.5 shadow border border-slate-700">
+                        <i class="fa-solid fa-user-shield text-amber-400"></i> <span id="btn-role-text">Admin</span>
+                    </button>
                 </div>
             </div>
         </div>
     </header>
 
     <!-- ADMIN ACTION BAR -->
-    <div id="admin-action-bar" class="hidden bg-white border-b border-slate-200 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 shadow-sm z-40 relative">
+    <div id="admin-action-bar" class="hidden bg-white border-b border-slate-200 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 shadow-xs z-40 relative">
         <div class="max-w-[1720px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 text-xs sm:text-sm">
             <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-                <button onclick="openAddSessionModal()" class="px-3 sm:px-4 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition flex items-center gap-1.5 shadow-sm text-xs sm:text-sm">
+                <button onclick="openAddSessionModal()" class="px-3 sm:px-4 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition flex items-center gap-1.5 shadow-xs text-xs sm:text-sm">
                     <i class="fa-solid fa-calendar-plus"></i> + Buổi Chơi
                 </button>
-                <button onclick="openAddMemberModal()" class="px-3 sm:px-4 py-1.5 sm:py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-medium transition flex items-center gap-1.5 shadow-sm text-xs sm:text-sm">
+                <button onclick="openAddMemberModal()" class="px-3 sm:px-4 py-1.5 sm:py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-semibold transition flex items-center gap-1.5 shadow-xs text-xs sm:text-sm">
                     <i class="fa-solid fa-user-plus"></i> + Thành Viên
                 </button>
-                <button onclick="openPriceModal()" class="px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold rounded-xl transition flex items-center gap-1.5 shadow-sm text-xs sm:text-sm">
+                <button onclick="openPriceModal()" class="px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl transition flex items-center gap-1.5 shadow-xs text-xs sm:text-sm">
                     <i class="fa-solid fa-box-archive"></i> + Lô Cầu
                 </button>
             </div>
@@ -150,144 +164,244 @@
         </div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 max-w-[1720px] w-full mx-auto p-3 sm:p-6 lg:p-8 overflow-y-auto space-y-6 lg:space-y-8">
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 max-w-[1720px] w-full mx-auto p-3 sm:p-6 lg:p-8 overflow-y-auto space-y-6 lg:space-y-8 pb-24 sm:pb-12">
         
-        <!-- TAB 1: BẢNG CHI TIẾT -->
-        <section id="tab-sheet" class="space-y-6 lg:space-y-8">
+        <!-- ============================================================== -->
+        <!-- TAB 1: 🏠 TỔNG QUAN & THẺ THÀNH VIÊN (DEFAULT MOBILE-FIRST VIEW) -->
+        <!-- ============================================================== -->
+        <section id="tab-members" class="space-y-6">
             
-            <div id="member-banner" class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white p-4 sm:p-6 rounded-2xl shadow-sm flex items-start gap-4 sm:gap-5 border border-slate-700">
-                <div class="bg-amber-400 text-slate-900 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center text-xl sm:text-2xl shrink-0 shadow font-bold">
+            <!-- Hero Club Banner -->
+            <div id="member-banner" class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white p-4 sm:p-6 rounded-2xl shadow-sm flex items-start gap-4 sm:gap-5 border border-slate-800 relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 w-11 h-11 sm:w-13 sm:h-13 rounded-2xl flex items-center justify-center text-xl sm:text-2xl shrink-0 shadow font-bold">
                     <i class="fa-solid fa-shuttlecock"></i>
                 </div>
                 <div class="flex-1">
-                    <h2 class="text-base sm:text-lg font-bold text-white tracking-wide">CÂU LẠC BỘ CẦU LÔNG VICTORIA</h2>
-                    <p class="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">Hệ thống theo dõi điểm danh, tính tiền cầu và lịch sử đóng tiền tự động. Sắp xếp ưu tiên người nợ lên trước. Bấm vào tên thành viên để xem chi tiết.</p>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-base sm:text-lg font-black text-white tracking-wide">CÂU LẠC BỘ CẦU LÔNG VICTORIA</h2>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
+                        Ứng dụng theo dõi điểm danh, tính tiền cầu tự động và chuyển khoản VietQR 1 chạm. Bấm vào nút <strong>QR</strong> trên mỗi thẻ để thanh toán nhanh.
+                    </p>
                 </div>
             </div>
 
-            <!-- Main Table -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative">
-                <div class="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                    <h3 class="text-sm sm:text-base lg:text-lg font-bold text-slate-900 flex items-center gap-2.5">
-                        <i class="fa-solid fa-table-list text-amber-500"></i> BẢNG ĐIỂM DANH & THANH TOÁN CHI TIẾT
-                    </h3>
+            <!-- 4 KPI Dashboard Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-lg shrink-0">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[11px] sm:text-xs text-slate-500 font-semibold uppercase tracking-wider">Tổng Chi Phí</p>
+                        <p id="kpi-total-cost" class="text-sm sm:text-base lg:text-lg font-extrabold text-amber-950 font-mono truncate">0đ</p>
+                    </div>
                 </div>
-                <div class="overflow-x-auto custom-scrollbar max-h-[65vh] sm:max-h-[70vh] lg:max-h-[78vh] min-h-[420px] lg:min-h-[520px] touch-pan-x touch-pan-y">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg shrink-0">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[11px] sm:text-xs text-slate-500 font-semibold uppercase tracking-wider">Đã Thu (Quỹ)</p>
+                        <p id="kpi-total-paid" class="text-sm sm:text-base lg:text-lg font-extrabold text-emerald-700 font-mono truncate">0đ</p>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg shrink-0">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[11px] sm:text-xs text-slate-500 font-semibold uppercase tracking-wider">Chưa Thu (Nợ)</p>
+                        <p id="kpi-total-debt" class="text-sm sm:text-base lg:text-lg font-extrabold text-rose-600 font-mono truncate">0đ</p>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center text-lg shrink-0">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[11px] sm:text-xs text-slate-500 font-semibold uppercase tracking-wider">Thành Viên</p>
+                        <p id="kpi-total-members" class="text-sm sm:text-base lg:text-lg font-extrabold text-slate-900 font-mono">0 người</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search & Quick Filter Controls -->
+            <div class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="relative flex-1 max-w-md">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="member-card-search" oninput="renderMemberCards()" placeholder="Tìm nhanh theo tên thành viên..." class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-400 focus:outline-none transition">
+                </div>
+                
+                <!-- Filter Pills -->
+                <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar shrink-0">
+                    <button id="filter-btn-all" onclick="setMemberFilter('all')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-900 text-white transition shadow-xs">
+                        Tất cả (<span id="count-all">0</span>)
+                    </button>
+                    <button id="filter-btn-debt" onclick="setMemberFilter('debt')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 text-rose-700 hover:bg-rose-50 transition border border-slate-200">
+                        🔴 Còn nợ (<span id="count-debt">0</span>)
+                    </button>
+                    <button id="filter-btn-paid" onclick="setMemberFilter('paid')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 text-emerald-700 hover:bg-emerald-50 transition border border-slate-200">
+                        🟢 Đã đủ (<span id="count-paid">0</span>)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Member Cards Grid Container -->
+            <div id="member-cards-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                <!-- Rendered dynamically by renderMemberCards() -->
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 2: 📋 BẢNG ĐIỂM DANH CHI TIẾT (ATTENDANCE SHEET GRID) -->
+        <!-- ============================================================== -->
+        <section id="tab-sheet" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden relative">
+                <div class="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                        <h3 class="text-sm sm:text-base lg:text-lg font-bold text-slate-900 flex items-center gap-2.5">
+                            <i class="fa-solid fa-calendar-check text-amber-500"></i> BẢNG ĐIỂM DANH & TÍNH TIỀN THEO BUỔI
+                        </h3>
+                        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Sắp xếp ưu tiên người có số dư âm (nợ) lên trước. Cột buổi chơi xếp từ mới nhất ➡️ cũ nhất.</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar max-h-[65vh] sm:max-h-[72vh] min-h-[420px] touch-pan-x touch-pan-y">
                     <table class="grid-table w-full text-sm lg:text-[15px] text-left text-slate-800 border-collapse">
-                        <!-- DOM THEAD TO PREVENT HOISTING BUGS -->
-                        <thead id="sheet-thead" class="select-none text-center">
-                        </thead>
-                        <tbody id="sheet-body" class="divide-y divide-slate-200 font-medium">
-                        </tbody>
-                        <tfoot id="sheet-footer" class="bg-slate-50 border-t-2 border-slate-300">
-                        </tfoot>
+                        <thead id="sheet-thead" class="select-none text-center"></thead>
+                        <tbody id="sheet-body" class="divide-y divide-slate-200 font-medium"></tbody>
+                        <tfoot id="sheet-footer" class="bg-slate-50 border-t-2 border-slate-300"></tfoot>
                     </table>
                 </div>
             </div>
+        </section>
 
-            <!-- BẢNG NHẬP SỐ TIỀN THÀNH VIÊN ĐÓNG THEO BUỔI -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative">
+        <!-- ============================================================== -->
+        <!-- TAB 3: 💰 LỊCH SỬ ĐÓNG TIỀN (PAYMENT MATRIX GRID) -->
+        <!-- ============================================================== -->
+        <section id="tab-payments" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden relative">
                 <div class="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div>
                         <h3 class="text-sm sm:text-base lg:text-lg font-bold text-slate-900 flex items-center gap-2.5">
-                            <i class="fa-solid fa-money-check-dollar text-emerald-600"></i> BẢNG NHẬP SỐ TIỀN THÀNH VIÊN ĐÓNG MỖI LẦN (THEO BUỔI)
+                            <i class="fa-solid fa-money-check-dollar text-emerald-600"></i> BẢNG NHẬP SỐ TIỀN THÀNH VIÊN ĐÓNG MỖI LẦN
                         </h3>
                         <p class="text-xs sm:text-sm text-slate-500 mt-1">
-                            Hàng ngang: <strong>Tên thành viên</strong> (sắp xếp nợ nhiều nhất lên trước) • Cột dọc: <strong>Tên Buổi</strong> (Cũ ➡️ Mới) • Dưới cùng: <strong>Tổng tiền</strong> & <strong>Dư / Thiếu</strong>
+                            Hàng ngang: <strong>Tên thành viên</strong> • Cột dọc: <strong>Tên Buổi</strong> (Cũ ➡️ Mới) • Dưới cùng: <strong>Tổng tiền</strong> & <strong>Dư / Thiếu</strong>
                         </p>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto custom-scrollbar max-h-[55vh] sm:max-h-[65vh] lg:max-h-[75vh] min-h-[380px] lg:min-h-[480px] touch-pan-x touch-pan-y">
+                <div class="overflow-x-auto custom-scrollbar max-h-[60vh] sm:max-h-[70vh] min-h-[380px] touch-pan-x touch-pan-y">
                     <table class="grid-table w-full text-sm lg:text-[15px] text-left text-slate-800 border-collapse min-w-[700px]">
-                        <thead id="pay-thead" class="select-none text-center">
-                        </thead>
-                        <tbody id="pay-body" class="divide-y divide-slate-200 font-medium">
-                        </tbody>
-                        <tfoot id="pay-footer" class="bg-slate-50 border-t-2 border-slate-300 font-bold">
-                        </tfoot>
+                        <thead id="pay-thead" class="select-none text-center"></thead>
+                        <tbody id="pay-body" class="divide-y divide-slate-200 font-medium"></tbody>
+                        <tfoot id="pay-footer" class="bg-slate-50 border-t-2 border-slate-300 font-bold"></tfoot>
                     </table>
                 </div>
             </div>
+        </section>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-                <!-- Shuttlecock Batches Card -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 flex flex-col">
-                    <div class="flex justify-between items-center mb-3 pb-2.5 sm:mb-4 sm:pb-3 border-b border-slate-100">
-                        <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-                            <i class="fa-solid fa-boxes-stacked text-amber-500"></i> BẢNG GIÁ MUA CẦU (MỚI ➡️ CŨ)
+        <!-- ============================================================== -->
+        <!-- TAB 4: 📦 BẢNG GIÁ MUA CẦU (SHUTTLE BATCHES) -->
+        <!-- ============================================================== -->
+        <section id="tab-batches" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-4 sm:p-6 flex flex-col">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-boxes-stacked text-amber-500"></i> BẢNG GIÁ & DANH SÁCH MUA CẦU (MỚI ➡️ CŨ)
                         </h3>
-                    </div>
-                    <div class="overflow-x-auto flex-1 custom-scrollbar">
-                        <table class="w-full text-sm text-left border-collapse min-w-[460px]">
-                            <thead class="bg-slate-100 text-slate-700 border-b border-slate-200 text-xs sm:text-sm">
-                                <tr>
-                                    <th class="p-2.5 font-semibold text-center w-16">Trạng Thái</th>
-                                    <th class="p-2.5 font-semibold">Tên lô / Đợt mua</th>
-                                    <th class="p-2.5 font-semibold text-center">Số hộp</th>
-                                    <th class="p-2.5 font-semibold text-right">Giá 1 hộp</th>
-                                    <th class="p-2.5 font-semibold text-right text-rose-700 bg-rose-50/50">Tổng tiền mua</th>
-                                    <th class="p-2.5 font-semibold text-right text-emerald-700">Giá 1 trái</th>
-                                    <th class="p-2.5 font-semibold">Ghi chú</th>
-                                </tr>
-                            </thead>
-                            <tbody id="shuttle-batches-body" class="divide-y divide-slate-100">
-                            </tbody>
-                            <tfoot id="shuttle-batches-footer" class="bg-slate-50 font-bold border-t-2 border-slate-200 text-slate-800">
-                            </tfoot>
-                        </table>
+                        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Theo dõi giá nhập từng hộp và giá 1 quả cầu dùng để tính chi phí các buổi chơi.</p>
                     </div>
                 </div>
+                <div class="overflow-x-auto flex-1 custom-scrollbar">
+                    <table class="w-full text-sm text-left border-collapse min-w-[550px]">
+                        <thead class="bg-slate-100 text-slate-700 border-b border-slate-200 text-xs sm:text-sm">
+                            <tr>
+                                <th class="p-3 font-semibold text-center w-20">Trạng Thái</th>
+                                <th class="p-3 font-semibold">Tên lô / Đợt mua</th>
+                                <th class="p-3 font-semibold text-center">Số hộp</th>
+                                <th class="p-3 font-semibold text-right">Giá 1 hộp</th>
+                                <th class="p-3 font-semibold text-right text-rose-700 bg-rose-50/50">Tổng tiền mua</th>
+                                <th class="p-3 font-semibold text-right text-emerald-700">Giá 1 trái</th>
+                                <th class="p-3 font-semibold">Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shuttle-batches-body" class="divide-y divide-slate-100"></tbody>
+                        <tfoot id="shuttle-batches-footer" class="bg-slate-50 font-bold border-t-2 border-slate-200 text-slate-800"></tfoot>
+                    </table>
+                </div>
+            </div>
+        </section>
 
-                <!-- PAYMENT QR CARD -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 lg:p-6">
-                    <div class="flex justify-between items-center mb-3 pb-2.5 sm:mb-4 sm:pb-3 border-b border-slate-100">
-                        <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-                            <i class="fa-solid fa-qrcode text-sky-500"></i> THÔNG TIN CHUYỂN KHOẢN (VIETQR)
+        <!-- ============================================================== -->
+        <!-- TAB 5: 💳 THÔNG TIN CHUYỂN KHOẢN (VIETQR PAY) -->
+        <!-- ============================================================== -->
+        <section id="tab-qr" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-4 sm:p-6 lg:p-8">
+                <div class="flex justify-between items-center mb-5 pb-3.5 border-b border-slate-100">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-qrcode text-sky-500"></i> THÔNG TIN CHUYỂN KHOẢN QUỸ CLB (VIETQR)
                         </h3>
-                        <button id="btn-edit-qr" onclick="openQRModal()" class="hidden text-xs sm:text-sm text-sky-600 hover:underline font-semibold items-center gap-1">
-                            <i class="fa-solid fa-pen"></i> Chỉnh sửa
-                        </button>
+                        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Sử dụng App Ngân Hàng hoặc Ví Điện Tử bất kỳ để quét mã chuyển khoản.</p>
                     </div>
-                    <div class="flex flex-col sm:flex-row items-center gap-5 sm:gap-6 justify-center">
-                        <div class="w-[220px] h-[220px] sm:w-[260px] sm:h-[260px] lg:w-[280px] lg:h-[280px] shrink-0">
-                            <img id="display-qr-img" src="" alt="QR Code" class="w-full h-full object-contain mx-auto rounded-2xl shadow border border-slate-200 bg-white p-1.5">
+                    <button id="btn-edit-qr" onclick="openQRModal()" class="hidden text-xs sm:text-sm text-sky-600 hover:underline font-semibold items-center gap-1">
+                        <i class="fa-solid fa-pen"></i> Chỉnh sửa
+                    </button>
+                </div>
+
+                <div class="flex flex-col md:flex-row items-center gap-6 sm:gap-8 justify-center max-w-3xl mx-auto">
+                    <!-- QR Box -->
+                    <div class="w-[240px] h-[240px] sm:w-[280px] sm:h-[280px] shrink-0 bg-white p-3 rounded-2xl shadow-md border border-slate-200 flex items-center justify-center">
+                        <img id="display-qr-img" src="" alt="QR Code" class="w-full h-full object-contain mx-auto rounded-xl">
+                    </div>
+                    
+                    <!-- Bank Info Card -->
+                    <div class="space-y-4 text-left bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-5 sm:p-6 rounded-2xl border border-slate-800 w-full shadow-lg relative overflow-hidden">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Tài Khoản Quỹ CLB</span>
+                            <i class="fa-solid fa-credit-card text-slate-400 text-lg"></i>
                         </div>
-                        <div class="space-y-3.5 sm:space-y-4 text-left bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 w-full">
-                            <div>
-                                <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Ngân Hàng</p>
-                                <p id="display-bank-name" class="text-sm sm:text-base font-bold text-slate-900 mt-0.5">MB Bank</p>
+                        <div>
+                            <p class="text-xs text-slate-400 uppercase font-semibold tracking-wider">Ngân Hàng</p>
+                            <p id="display-bank-name" class="text-base sm:text-lg font-bold text-white mt-0.5">VIKKI BANK</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 uppercase font-semibold tracking-wider">Số Tài Khoản</p>
+                            <div class="flex items-center gap-2.5 mt-0.5">
+                                <p id="display-bank-acc" class="text-xl sm:text-2xl font-black text-amber-400 font-mono tracking-wider">965680589</p>
+                                <button onclick="copyAcc()" class="text-slate-300 hover:text-white bg-slate-700/60 hover:bg-slate-700 transition px-2.5 py-1 rounded-lg text-xs flex items-center gap-1" title="Sao chép STK">
+                                    <i class="fa-regular fa-copy"></i> Copy
+                                </button>
                             </div>
-                            <div>
-                                <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Số Tài Khoản</p>
-                                <div class="flex items-center gap-2 mt-0.5">
-                                    <p id="display-bank-acc" class="text-lg sm:text-xl font-extrabold text-sky-600 font-mono tracking-wider">1903</p>
-                                    <button onclick="copyAcc()" class="text-slate-400 hover:text-sky-600 transition p-1.5 rounded-lg hover:bg-sky-50" title="Sao chép STK"><i class="fa-regular fa-copy"></i></button>
-                                </div>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Chủ Tài Khoản</p>
-                                <p id="display-bank-owner" class="text-sm sm:text-base font-bold text-slate-900 uppercase mt-0.5">NGUYEN VAN A</p>
-                            </div>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 uppercase font-semibold tracking-wider">Chủ Tài Khoản</p>
+                            <p id="display-bank-owner" class="text-sm sm:text-base font-bold text-white uppercase mt-0.5">HUYNH THI QUY</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- TAB 3: AI ASSISTANT -->
+        <!-- ============================================================== -->
+        <!-- TAB 6: 🤖 AI ASSISTANT (ADMIN ONLY) -->
+        <!-- ============================================================== -->
         <section id="tab-ai" class="hidden space-y-6 h-full">
-            <div class="bg-white rounded-xl shadow-sm border border-purple-200 flex flex-col h-[600px] overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-xs border border-purple-200 flex flex-col h-[600px] overflow-hidden">
                 <div class="p-4 border-b border-purple-100 bg-purple-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <h3 class="text-sm font-bold text-purple-900 flex items-center gap-2">
                         <i class="fa-solid fa-wand-magic-sparkles text-purple-600"></i> AI Trợ Lý CLB (Gemini)
                     </h3>
                     <div class="flex gap-2 flex-wrap">
-                        <button onclick="aiGenerateReminder()" class="px-3 py-1.5 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-lg text-xs font-bold transition shadow-sm border border-rose-200 flex items-center gap-1">
+                        <button onclick="aiGenerateReminder()" class="px-3 py-1.5 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-xl text-xs font-bold transition shadow-xs border border-rose-200 flex items-center gap-1">
                             <i class="fa-solid fa-comment-dots"></i> Nhắc nợ
                         </button>
-                        <button onclick="aiAnalyzeFinances()" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg text-xs font-bold transition shadow-sm border border-emerald-200 flex items-center gap-1">
+                        <button onclick="aiAnalyzeFinances()" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-xl text-xs font-bold transition shadow-xs border border-emerald-200 flex items-center gap-1">
                             <i class="fa-solid fa-chart-pie"></i> Phân tích quỹ
                         </button>
                     </div>
@@ -298,14 +412,14 @@
                         <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md">
                             <i class="fa-solid fa-robot text-xs"></i>
                         </div>
-                        <div class="bg-white border border-purple-100 p-3 rounded-2xl rounded-tl-none text-sm text-slate-800 max-w-[85%] shadow-sm leading-relaxed">
-                            Chào sếp! Tôi là trợ lý AI của CLB. Sếp hãy bấm các nút phía trên để tự động soạn tin nhắc nợ gửi nhóm Zalo, hoặc gõ yêu cầu vào khung chat bên dưới nhé.
+                        <div class="bg-white border border-purple-100 p-3.5 rounded-2xl rounded-tl-none text-sm text-slate-800 max-w-[85%] shadow-xs leading-relaxed">
+                            Chào sếp! Tôi là trợ lý AI của CLB Cầu Lông Victoria. Sếp hãy bấm các nút phía trên để tự động soạn tin nhắc nợ gửi nhóm Zalo, hoặc gõ yêu cầu vào khung chat bên dưới nhé.
                         </div>
                     </div>
                 </div>
                 
                 <div class="p-3 border-t border-slate-200 bg-white flex gap-2">
-                    <input type="text" id="ai-chat-input" onkeydown="if(event.key==='Enter') aiSendCustomMessage()" placeholder="Hỏi AI..." class="flex-1 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm shadow-inner">
+                    <input type="text" id="ai-chat-input" onkeydown="if(event.key==='Enter') aiSendCustomMessage()" placeholder="Hỏi AI..." class="flex-1 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
                     <button onclick="aiSendCustomMessage()" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition shadow-md flex items-center gap-2">
                         <i class="fa-solid fa-paper-plane"></i> <span class="hidden sm:inline">Gửi</span>
                     </button>
@@ -313,16 +427,42 @@
             </div>
         </section>
 
-        <!-- TAB 4: APP SCRIPT INFO -->
+        <!-- ============================================================== -->
+        <!-- TAB 7: 💻 APPS SCRIPT INFO (ADMIN ONLY) -->
+        <!-- ============================================================== -->
         <section id="tab-script" class="hidden space-y-6">
-            <div class="bg-white p-5 rounded-xl border shadow-sm">
-                <h3 class="text-sm font-bold text-slate-900 pb-3 border-b">Tích hợp Google Apps Script</h3>
-                <p class="text-xs text-slate-600 mt-2">Mã nguồn này được tối ưu 100% để chạy trên Apps Script Web App. Hãy chọn <em>"Execute as: User accessing the web app"</em> khi deploy.</p>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+                <h3 class="text-sm font-bold text-slate-900 pb-3 border-b border-slate-100">Tích hợp Google Apps Script</h3>
+                <p class="text-xs text-slate-600 mt-2">Mã nguồn này được tối ưu 100% để chạy trên Apps Script Web App và REST API kết nối Google Sheets.</p>
                 <p class="text-xs text-sky-600 font-bold mt-2">Cấu hình Email Admin hiện tại:</p>
-                <pre class="mt-2 bg-slate-900 text-emerald-300 p-3 rounded-lg text-[11px] font-mono"><code>const adminEmails = ['sayoonara.htq90@gmail.com'];</code></pre>
+                <pre class="mt-2 bg-slate-900 text-emerald-300 p-3 rounded-xl text-[11px] font-mono"><code>const adminEmails = ['sayoonara.htq90@gmail.com'];</code></pre>
             </div>
         </section>
     </main>
+
+    <!-- MOBILE BOTTOM NAVIGATION BAR (FIXED AT BOTTOM FOR MOBILE) -->
+    <nav id="mobile-bottom-nav" class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 flex justify-around items-center py-2 px-1 text-[10px] font-bold text-slate-400">
+        <button id="mb-nav-members" onclick="switchTab('members')" class="flex flex-col items-center gap-1 text-amber-400 py-1 px-2.5 transition">
+            <i class="fa-solid fa-users text-base"></i>
+            <span>Thành viên</span>
+        </button>
+        <button id="mb-nav-sheet" onclick="switchTab('sheet')" class="flex flex-col items-center gap-1 text-slate-400 py-1 px-2.5 transition">
+            <i class="fa-solid fa-calendar-check text-base"></i>
+            <span>Điểm danh</span>
+        </button>
+        <button id="mb-nav-payments" onclick="switchTab('payments')" class="flex flex-col items-center gap-1 text-slate-400 py-1 px-2.5 transition">
+            <i class="fa-solid fa-money-bill-wave text-base"></i>
+            <span>Đóng tiền</span>
+        </button>
+        <button id="mb-nav-qr" onclick="switchTab('qr')" class="flex flex-col items-center gap-1 text-slate-400 py-1 px-2.5 transition">
+            <i class="fa-solid fa-qrcode text-base text-sky-400"></i>
+            <span>VietQR</span>
+        </button>
+        <button id="mb-nav-ai" onclick="switchTab('ai')" class="hidden flex flex-col items-center gap-1 text-slate-400 py-1 px-2.5 transition">
+            <i class="fa-solid fa-wand-magic-sparkles text-base text-purple-400"></i>
+            <span>AI</span>
+        </button>
+    </nav>
 
     <!-- UNSAVED CHANGES BANNER (GLOBAL SAVE/CANCEL) -->
     <div id="unsaved-banner" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-4 py-3 rounded-2xl shadow-2xl flex flex-col sm:flex-row items-center gap-3 sm:gap-6 z-[150] transition-all duration-300 translate-y-32 opacity-0 w-[92%] sm:w-auto border border-slate-700 pointer-events-auto">
@@ -391,6 +531,70 @@
                         <button onclick="saveApiUrl()" class="flex-1 sm:flex-none px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl shadow transition text-xs sm:text-sm">Lưu Cấu Hình</button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: PERSONAL VIETQR QUICK PAY POPUP -->
+    <div id="modal-personal-qr" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-5 sm:p-6 shadow-2xl border border-slate-100 relative overflow-hidden flex flex-col">
+            <div class="absolute top-0 left-0 w-full h-2.5 bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-600"></div>
+            
+            <div class="flex justify-between items-center mb-3 pb-2.5 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm sm:text-base font-bold text-slate-900 leading-tight">Chuyển Khoản Quỹ CLB</h3>
+                        <p class="text-[11px] text-slate-500">Mã VietQR tự động theo số tiền nợ</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('modal-personal-qr')" class="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full w-7 h-7 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Member & Amount Box -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-3.5 rounded-2xl text-center space-y-1 mb-3.5 shadow-inner">
+                <p class="text-xs text-slate-300">Thành viên: <strong id="pqr-member-name" class="text-amber-400 font-bold">---</strong></p>
+                <div class="flex items-center justify-center gap-1.5">
+                    <span class="text-xs text-slate-400 uppercase font-semibold">Số tiền cần đóng:</span>
+                    <span id="pqr-amount-text" class="text-lg sm:text-xl font-black text-rose-400 font-mono tracking-tight">0đ</span>
+                </div>
+            </div>
+
+            <!-- QR Image Box -->
+            <div class="w-[200px] h-[200px] sm:w-[220px] sm:h-[220px] mx-auto bg-white p-2.5 rounded-2xl border-2 border-dashed border-amber-400/80 shadow-md flex items-center justify-center mb-3.5 relative">
+                <img id="pqr-img" src="" alt="Personal VietQR" class="w-full h-full object-contain rounded-xl">
+            </div>
+
+            <!-- Details & Copy Buttons -->
+            <div class="space-y-2 text-xs bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Ngân hàng:</span>
+                    <strong id="pqr-bank-name" class="text-slate-800 font-bold">VIKKI BANK</strong>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Số tài khoản:</span>
+                    <div class="flex items-center gap-1.5">
+                        <strong id="pqr-bank-acc" class="text-sky-600 font-mono font-bold">965680589</strong>
+                        <button onclick="copyPqrAcc()" class="text-slate-400 hover:text-sky-600 p-0.5" title="Copy STK"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Nội dung CK:</span>
+                    <div class="flex items-center gap-1.5 max-w-[180px]">
+                        <span id="pqr-note" class="text-slate-800 font-medium truncate">---</span>
+                        <button onclick="copyPqrNote()" class="text-slate-400 hover:text-sky-600 p-0.5 shrink-0" title="Copy nội dung"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3.5 flex justify-end">
+                <button onclick="closeModal('modal-personal-qr')" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs shadow-md transition">
+                    Đã chuyển khoản / Đóng
+                </button>
             </div>
         </div>
     </div>
@@ -940,8 +1144,270 @@
             return th;
         }
 
+        let currentMemberFilter = 'all';
+
+        function setMemberFilter(type) {
+            currentMemberFilter = type;
+            ['all', 'debt', 'paid'].forEach(t => {
+                const btn = document.getElementById('filter-btn-' + t);
+                if (btn) {
+                    if (t === type) {
+                        btn.className = "px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-900 text-white transition shadow-xs";
+                    } else if (t === 'debt') {
+                        btn.className = "px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 text-rose-700 hover:bg-rose-50 transition border border-slate-200";
+                    } else if (t === 'paid') {
+                        btn.className = "px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 text-emerald-700 hover:bg-emerald-50 transition border border-slate-200";
+                    } else {
+                        btn.className = "px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition border border-slate-200";
+                    }
+                }
+            });
+            renderMemberCards();
+        }
+
+        function getMemberAvatarColors(name) {
+            const gradients = [
+                'from-amber-500 to-yellow-400 text-slate-950',
+                'from-sky-500 to-blue-600 text-white',
+                'from-emerald-500 to-teal-600 text-white',
+                'from-purple-500 to-indigo-600 text-white',
+                'from-rose-500 to-pink-600 text-white',
+                'from-indigo-500 to-cyan-500 text-white'
+            ];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            const index = Math.abs(hash) % gradients.length;
+            return gradients[index];
+        }
+
+        function renderMemberCards() {
+            const container = document.getElementById('member-cards-container');
+            if (!container) return;
+
+            let totalClubCost = 0;
+            let totalClubPaid = 0;
+            let totalClubDebt = 0;
+            let debtCount = 0;
+            let paidCount = 0;
+
+            const memberStats = members.map(m => {
+                let bill = 0;
+                let attendedSessions = 0;
+                sessions.forEach(s => {
+                    if (m.attendance && m.attendance[s.id] && sessionStats[s.id]) {
+                        bill += sessionStats[s.id].costPerPerson;
+                        attendedSessions++;
+                    }
+                });
+                const paid = Number(m.paid) || 0;
+                const remaining = paid - bill; // < 0 => nợ, > 0 => dư
+                
+                totalClubCost += bill;
+                totalClubPaid += paid;
+                if (remaining < -1000) {
+                    totalClubDebt += Math.abs(remaining);
+                    debtCount++;
+                } else {
+                    paidCount++;
+                }
+
+                return {
+                    member: m,
+                    bill,
+                    paid,
+                    remaining,
+                    attendedSessions
+                };
+            });
+
+            // Update KPI Dashboard
+            const elTotalCost = document.getElementById('kpi-total-cost');
+            const elTotalPaid = document.getElementById('kpi-total-paid');
+            const elTotalDebt = document.getElementById('kpi-total-debt');
+            const elTotalMembers = document.getElementById('kpi-total-members');
+            if (elTotalCost) elTotalCost.textContent = formatVND(totalClubCost) + 'đ';
+            if (elTotalPaid) elTotalPaid.textContent = formatVND(totalClubPaid) + 'đ';
+            if (elTotalDebt) elTotalDebt.textContent = formatVND(totalClubDebt) + 'đ';
+            if (elTotalMembers) elTotalMembers.textContent = members.length + ' người';
+
+            // Cập nhật số lượng trên các nút lọc
+            const elCountAll = document.getElementById('count-all');
+            const elCountDebt = document.getElementById('count-debt');
+            const elCountPaid = document.getElementById('count-paid');
+            if (elCountAll) elCountAll.textContent = members.length;
+            if (elCountDebt) elCountDebt.textContent = debtCount;
+            if (elCountPaid) elCountPaid.textContent = paidCount;
+
+            // Sắp xếp: Nợ nhiều nhất lên đầu
+            memberStats.sort((a, b) => a.remaining - b.remaining);
+
+            // Tìm kiếm & Lọc
+            const searchVal = document.getElementById('member-card-search')?.value.toLowerCase().trim() || '';
+            const filtered = memberStats.filter(item => {
+                const matchSearch = !searchVal || item.member.name.toLowerCase().includes(searchVal);
+                if (!matchSearch) return false;
+                if (currentMemberFilter === 'debt') return item.remaining < -1000;
+                if (currentMemberFilter === 'paid') return item.remaining >= -1000;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200 p-8 shadow-xs">
+                        <i class="fa-solid fa-user-slash text-3xl sm:text-4xl mb-3 text-slate-300"></i>
+                        <p class="text-sm font-semibold">Không tìm thấy thành viên nào phù hợp bộ lọc.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            filtered.forEach(item => {
+                const m = item.member;
+                const initials = m.name.split(' ').map(w => w[0]).slice(-2).join('').toUpperCase();
+                const avatarGrad = getMemberAvatarColors(m.name);
+                const isDebt = item.remaining < -1000;
+                const isSurplus = item.remaining > 1000;
+
+                let statusBadge = '';
+                if (isDebt) {
+                    statusBadge = `<span class="bg-rose-50 text-rose-700 border border-rose-200 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-xs font-black font-mono flex items-center gap-1 shadow-2xs">
+                        <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> Nợ: ${formatVND(item.remaining)}đ
+                    </span>`;
+                } else if (isSurplus) {
+                    statusBadge = `<span class="bg-sky-50 text-sky-700 border border-sky-200 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-xs font-black font-mono flex items-center gap-1 shadow-2xs">
+                        <i class="fa-solid fa-star text-[10px]"></i> Dư: +${formatVND(item.remaining)}đ
+                    </span>`;
+                } else {
+                    statusBadge = `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-xs font-black font-mono flex items-center gap-1 shadow-2xs">
+                        <i class="fa-solid fa-circle-check text-[10px]"></i> Đã đủ
+                    </span>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-2xl border ${isDebt ? 'border-rose-200 shadow-xs hover:border-rose-300' : 'border-slate-200/80 shadow-xs hover:border-slate-300'} p-4 sm:p-5 transition-all duration-200 flex flex-col justify-between hover:shadow-md`;
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-start justify-between gap-2.5 mb-3.5">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr ${avatarGrad} flex items-center justify-center font-black text-xs sm:text-sm shrink-0 shadow-xs">
+                                    ${initials}
+                                </div>
+                                <div class="min-w-0">
+                                    <h4 class="text-sm sm:text-base font-extrabold text-slate-900 truncate leading-snug flex items-center gap-1.5">
+                                        <span class="truncate">${m.name}</span>
+                                        ${isKantan(m) ? '<span class="text-[10px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded shrink-0">Chủ Quỹ</span>' : ''}
+                                    </h4>
+                                    <p class="text-xs text-slate-500 font-medium">Tham gia: <strong class="text-slate-700 font-bold">${item.attendedSessions}/${sessions.length}</strong> buổi</p>
+                                </div>
+                            </div>
+                            <div class="shrink-0">
+                                ${statusBadge}
+                            </div>
+                        </div>
+
+                        <!-- Mini Stats Grid -->
+                        <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs mb-3.5">
+                            <div>
+                                <span class="text-slate-400 block text-[10px] font-semibold uppercase">Tiền Cầu Cần Trả</span>
+                                <strong class="text-slate-800 font-mono font-bold text-xs sm:text-sm">${formatVND(item.bill)}đ</strong>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block text-[10px] font-semibold uppercase">Đã Thanh Toán</span>
+                                <strong class="text-emerald-700 font-mono font-bold text-xs sm:text-sm">${formatVND(item.paid)}đ</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Actions -->
+                    <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                        <button onclick="openMemberDetails(${m.id})" class="flex-1 py-2 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-list-ul"></i> Chi Tiết
+                        </button>
+                        ${isDebt ? `
+                        <button onclick="openPersonalQR(${m.id})" class="flex-1 py-2 px-2.5 bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white rounded-xl font-bold text-xs transition shadow-xs flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-qrcode"></i> Quét QR Trả
+                        </button>
+                        ` : `
+                        <button onclick="openPersonalQR(${m.id})" class="flex-1 py-2 px-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 border border-sky-100">
+                            <i class="fa-solid fa-qrcode"></i> QR Quỹ
+                        </button>
+                        `}
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function openPersonalQR(memberId) {
+            const m = members.find(x => x.id === memberId);
+            if (!m) return;
+
+            let bill = 0;
+            sessions.forEach(s => {
+                if (m.attendance && m.attendance[s.id] && sessionStats[s.id]) {
+                    bill += sessionStats[s.id].costPerPerson;
+                }
+            });
+            const paid = Number(m.paid) || 0;
+            const remaining = paid - bill;
+            const debt = remaining < 0 ? Math.abs(remaining) : 0;
+
+            const elName = document.getElementById('pqr-member-name');
+            const elAmount = document.getElementById('pqr-amount-text');
+            const elImg = document.getElementById('pqr-img');
+            const elBank = document.getElementById('pqr-bank-name');
+            const elAcc = document.getElementById('pqr-bank-acc');
+            const elNote = document.getElementById('pqr-note');
+
+            const bankNameStr = qrInfo.bankName || "VIKKI BANK";
+            const bankAccStr = qrInfo.bankAcc || "965680589";
+            const bankOwnerStr = qrInfo.bankOwner || "HUYNH THI QUY";
+
+            let bankCode = 'vikki';
+            const bLow = bankNameStr.toLowerCase();
+            if (bLow.includes('mb')) bankCode = 'mbbank';
+            else if (bLow.includes('vietin')) bankCode = 'vietinbank';
+            else if (bLow.includes('tech')) bankCode = 'techcombank';
+            else if (bLow.includes('acb')) bankCode = 'acb';
+            else if (bLow.includes('tp')) bankCode = 'tpb';
+            else if (bLow.includes('vcb') || bLow.includes('vietcom')) bankCode = 'vietcombank';
+
+            const amountNumber = Math.round(debt);
+            const noteText = `${m.name} dong tien cau Victoria`;
+
+            if (elName) elName.textContent = m.name;
+            if (elAmount) elAmount.textContent = debt > 0 ? formatVND(debt) + 'đ' : 'Đã đủ (0đ)';
+            if (elBank) elBank.textContent = bankNameStr;
+            if (elAcc) elAcc.textContent = bankAccStr;
+            if (elNote) elNote.textContent = noteText;
+
+            // Generate live dynamic VietQR URL
+            const dynamicQrUrl = `https://img.vietqr.io/image/${bankCode}-${bankAccStr}-compact2.png?amount=${amountNumber}&addInfo=${encodeURIComponent(noteText)}&accountName=${encodeURIComponent(bankOwnerStr)}`;
+            if (elImg) elImg.src = dynamicQrUrl;
+
+            document.getElementById('modal-personal-qr').classList.remove('hidden');
+        }
+
+        function copyPqrAcc() {
+            const acc = qrInfo.bankAcc || "965680589";
+            navigator.clipboard.writeText(acc).then(() => {
+                showToast('Đã sao chép số tài khoản: ' + acc, 'success');
+            });
+        }
+
+        function copyPqrNote() {
+            const note = document.getElementById('pqr-note')?.textContent || "";
+            navigator.clipboard.writeText(note).then(() => {
+                showToast('Đã sao chép nội dung: ' + note, 'success');
+            });
+        }
+
         function renderAll() {
             calculateSheetMath();
+            renderMemberCards();
             renderSheetGrid();
             renderPaymentGrid();
             renderShuttleBatches();
@@ -1710,6 +2176,77 @@
             showToast('Đã cập nhật thông tin QR! Bấm "LƯU DATA" để lưu vào cơ sở dữ liệu.', 'info');
         }
 
+        function updateUIByRole() {
+            const badge = document.getElementById('role-badge');
+            const btnToggle = document.getElementById('btn-toggle-role');
+            const mbNavAi = document.getElementById('mb-nav-ai');
+            
+            if (isAdmin) {
+                badge.textContent = "Quản Trị Viên";
+                badge.className = "text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded-full border border-rose-500/30";
+                btnToggle.innerHTML = `<i class="fa-solid fa-right-from-bracket text-rose-400"></i> <span class="hidden sm:inline">Thoát Admin</span>`;
+                btnToggle.className = "px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 transition flex items-center gap-1.5 shadow border border-rose-900/40";
+                
+                document.getElementById('btn-open-api-modal')?.classList.remove('hidden');
+                document.getElementById('admin-tabs')?.classList.remove('hidden');
+                document.getElementById('admin-action-bar')?.classList.remove('hidden');
+                document.getElementById('btn-edit-qr')?.classList.remove('hidden');
+                document.getElementById('btn-edit-qr')?.classList.add('flex');
+                if (mbNavAi) mbNavAi.classList.remove('hidden');
+            } else {
+                badge.textContent = "Thành Viên";
+                badge.className = "text-[10px] sm:text-xs font-semibold bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full border border-sky-500/30 whitespace-nowrap";
+                btnToggle.innerHTML = `<i class="fa-solid fa-user-shield text-amber-400"></i> <span class="hidden sm:inline">Đăng nhập Admin</span><span class="sm:hidden">Admin</span>`;
+                btnToggle.className = "px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition flex items-center gap-1.5 shadow border border-slate-700";
+                
+                document.getElementById('btn-open-api-modal')?.classList.add('hidden');
+                document.getElementById('admin-tabs')?.classList.add('hidden');
+                document.getElementById('admin-action-bar')?.classList.add('hidden');
+                document.getElementById('btn-edit-qr')?.classList.add('hidden');
+                document.getElementById('btn-edit-qr')?.classList.remove('flex');
+                if (mbNavAi) mbNavAi.classList.add('hidden');
+            }
+        }
+
+        function switchTab(tabId) {
+            const allTabs = ['members', 'sheet', 'payments', 'batches', 'qr', 'ai', 'script'];
+            
+            allTabs.forEach(id => {
+                document.getElementById('tab-' + id)?.classList.add('hidden');
+                
+                // Desktop Header Tab Button
+                const btn = document.getElementById('btn-tab-' + id);
+                if (btn) {
+                    btn.classList.remove('bg-amber-400', 'text-slate-950', 'shadow');
+                    btn.classList.add('text-slate-300', 'hover:bg-slate-800');
+                }
+
+                // Mobile Bottom Nav Button
+                const mbBtn = document.getElementById('mb-nav-' + id);
+                if (mbBtn) {
+                    mbBtn.classList.remove('text-amber-400');
+                    mbBtn.classList.add('text-slate-400');
+                }
+            });
+
+            // Activate Target Tab
+            document.getElementById('tab-' + tabId)?.classList.remove('hidden');
+            
+            const activeBtn = document.getElementById('btn-tab-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-300', 'hover:bg-slate-800');
+                activeBtn.classList.add('bg-amber-400', 'text-slate-950', 'shadow');
+            }
+
+            const activeMbBtn = document.getElementById('mb-nav-' + tabId);
+            if (activeMbBtn) {
+                activeMbBtn.classList.remove('text-slate-400');
+                activeMbBtn.classList.add('text-amber-400');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         function copyAcc() {
             navigator.clipboard.writeText(qrInfo.bankAcc).then(() => showToast('Đã sao chép STK!', 'success')).catch(() => {
                 const ta = document.createElement('textarea'); ta.value = qrInfo.bankAcc; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('Đã sao chép STK!', 'success');
@@ -1728,7 +2265,7 @@
                 isAdmin = false;
                 safeRemoveStorage('CLB_ADMIN_LOGGED');
                 renderAll();
-                switchTab('sheet');
+                switchTab('members');
                 showToast('Đã chuyển sang chế độ Thành Viên', 'info');
             } else {
                 document.getElementById('google-email').value = '';
@@ -1750,26 +2287,6 @@
             }
         }
 
-        function updateUIByRole() {
-            const badge = document.getElementById('role-badge');
-            const btnToggle = document.getElementById('btn-toggle-role');
-            const btnToggleText = document.getElementById('btn-role-text');
-            
-            if (isAdmin) {
-                badge.textContent = "Quản Trị Viên";
-                badge.className = "text-[10px] uppercase tracking-wider font-bold bg-rose-500/20 text-rose-600 px-2 py-0.5 rounded-full border border-rose-500/30";
-                btnToggle.innerHTML = `<i class="fa-solid fa-right-from-bracket text-slate-500"></i> <span class="hidden sm:inline">Thoát Admin</span>`;
-                btnToggle.className = "px-3.5 py-2 text-xs font-bold rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 transition flex items-center gap-1.5 shadow-sm";
-                
-                document.getElementById('btn-open-api-modal')?.classList.remove('hidden');
-                document.getElementById('admin-tabs').classList.remove('hidden');
-                document.getElementById('admin-action-bar').classList.remove('hidden');
-                document.getElementById('member-banner').classList.add('hidden');
-                document.getElementById('btn-edit-qr').classList.remove('hidden');
-                document.getElementById('btn-edit-qr').classList.add('flex');
-            } else {
-                badge.textContent = "Thành Viên";
-                badge.className = "text-[10px] uppercase tracking-wider font-bold bg-sky-500/20 text-sky-600 px-2 py-0.5 rounded-full border border-sky-500/30";
                 btnToggle.innerHTML = `<i class="fa-brands fa-google text-rose-400"></i> <span class="hidden sm:inline">Đăng nhập Admin</span>`;
                 btnToggle.className = "px-3.5 py-2 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition flex items-center gap-1.5 shadow-sm";
                 
