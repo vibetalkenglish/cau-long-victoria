@@ -829,8 +829,8 @@
             } catch(e) {}
         }
 
-        // URL Web App của Google Apps Script (REST API Endpoint)
-        const DEFAULT_SCRIPT_API_URL = 'https://script.google.com/macros/s/AKfycbxtEZgoalXo5UzktFuw0xBMe_0DZRZIYqBGjrWbYigw_qwlxQHeFQe6UUJLym4EtlVhbg/exec';
+        // URL API Endpoint (Vercel Serverless Function hoặc Google Apps Script)
+        const DEFAULT_SCRIPT_API_URL = '/api/data';
         let GOOGLE_SCRIPT_API_URL = safeGetStorage('CLB_SCRIPT_API_URL', DEFAULT_SCRIPT_API_URL);
         
         let originalState = null;
@@ -845,7 +845,7 @@
         function saveApiUrl() {
             const val = document.getElementById('input-api-url').value.trim();
             if (!val) {
-                showToast('Vui lòng nhập Google Apps Script Web App URL!', 'error');
+                showToast('Vui lòng nhập API URL hoặc /api/data!', 'error');
                 return;
             }
             GOOGLE_SCRIPT_API_URL = val;
@@ -856,40 +856,45 @@
         }
 
         function testApiConnection() {
-            const val = document.getElementById('input-api-url').value.trim();
+            let val = document.getElementById('input-api-url').value.trim() || '/api/data';
             const statusEl = document.getElementById('api-status-text');
             const btn = document.getElementById('btn-test-api');
-            if (!val) {
-                statusEl.innerHTML = '<span class="text-rose-600 font-bold">⚠️ Vui lòng nhập URL trước khi kiểm tra!</span>';
-                return;
-            }
+            
             btn.disabled = true;
-            statusEl.innerHTML = '<span class="text-sky-600 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Đang kết nối tới Google Sheets...</span>';
+            statusEl.innerHTML = '<span class="text-sky-600 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Đang kết nối tới Google Sheets qua API...</span>';
 
-            fetch(val + (val.includes('?') ? '&' : '?') + 'action=loadData')
+            const testUrl = val.startsWith('/') ? val : (val + (val.includes('?') ? '&' : '?') + 'action=loadData');
+
+            fetch(testUrl)
                 .then(res => res.json())
                 .then(data => {
                     btn.disabled = false;
-                    if (data && data.success) {
+                    if (data && data.success && data.data) {
                         const sCount = data.data?.sessions?.length || 0;
                         const mCount = data.data?.members?.length || 0;
                         statusEl.innerHTML = `<span class="text-emerald-600 font-bold">✅ Kết nối thành công! Đã tìm thấy ${sCount} buổi chơi, ${mCount} thành viên trong Google Sheets.</span>`;
                         showToast('Kết nối Google Sheets thành công!', 'success');
+                    } else if (data && data.isConfigRequired) {
+                        statusEl.innerHTML = `<span class="text-amber-600 font-bold">⚠️ Vercel API đang chạy! Hãy thêm GOOGLE_SHEET_ID và GOOGLE_SERVICE_ACCOUNT trong Vercel Environment Variables.</span>`;
                     } else {
-                        statusEl.innerHTML = `<span class="text-rose-600 font-bold">❌ Server phản hồi lỗi: ${data.error || 'Dữ liệu không đúng định dạng'}</span>`;
+                        statusEl.innerHTML = `<span class="text-rose-600 font-bold">❌ Server phản hồi lỗi: ${data.error || data.message || 'Dữ liệu không đúng định dạng'}</span>`;
                     }
                 })
                 .catch(err => {
                     btn.disabled = false;
-                    statusEl.innerHTML = `<span class="text-rose-600 font-bold">❌ Lỗi kết nối: ${err.message}. Hãy kiểm tra Web App đã được Deploy ở chế độ "Anyone" (Bất kỳ ai).</span>`;
+                    statusEl.innerHTML = `<span class="text-rose-600 font-bold">❌ Lỗi kết nối: ${err.message}</span>`;
                 });
         }
 
         function loadDataFromApi() {
-            if (!GOOGLE_SCRIPT_API_URL || GOOGLE_SCRIPT_API_URL.includes('PLACEHOLDER')) {
-                return;
-            }
-            fetch(GOOGLE_SCRIPT_API_URL + (GOOGLE_SCRIPT_API_URL.includes('?') ? '&' : '?') + 'action=loadData')
+            let url = GOOGLE_SCRIPT_API_URL || '/api/data';
+            if (url.includes('PLACEHOLDER')) url = '/api/data';
+
+            const fetchUrl = url.startsWith('/') 
+                ? url 
+                : (url + (url.includes('?') ? '&' : '?') + 'action=loadData');
+
+            fetch(fetchUrl)
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.success && data.data) {
@@ -904,6 +909,8 @@
                             updateQRDisplay();
                             renderAll();
                         }
+                    } else if (data && data.isConfigRequired) {
+                        console.info('Vercel API đang chờ cấu hình biến môi trường Service Account.');
                     }
                 })
                 .catch(err => {
@@ -983,11 +990,12 @@
                         showToast(err.message || 'Có lỗi xảy ra khi lưu!', 'error');
                     })
                     .saveToSheets(payloadString);
-            } else if (GOOGLE_SCRIPT_API_URL && !GOOGLE_SCRIPT_API_URL.includes('PLACEHOLDER')) {
-                // Gửi HTTP POST request tới Google Apps Script Web App API
-                fetch(GOOGLE_SCRIPT_API_URL, {
+            } else {
+                // Gửi HTTP POST request tới Vercel Serverless Function hoặc API Endpoint
+                const apiUrl = GOOGLE_SCRIPT_API_URL || '/api/data';
+                fetch(apiUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'saveData', payload: payload })
                 })
                 .then(res => res.json())
@@ -1000,7 +1008,7 @@
                         showToast('Đã lưu dữ liệu vào Google Sheets thành công!', 'success');
                     } else {
                         backupState();
-                        showToast(data.error || 'Có lỗi khi lưu vào Google Sheets!', 'error');
+                        showToast(data.error || data.message || 'Có lỗi khi lưu vào Google Sheets!', 'error');
                     }
                 })
                 .catch(err => {
@@ -1008,14 +1016,8 @@
                     icon.className = "";
                     btnText.textContent = "Lưu Data";
                     backupState();
-                    showToast('Đã lưu tạm (Lỗi kết nối API: ' + err.message + ')', 'info');
+                    showToast('Đã lưu cục bộ (' + err.message + ')', 'info');
                 });
-            } else {
-                backupState();
-                btn.disabled = false;
-                icon.className = "";
-                btnText.textContent = "Lưu Data";
-                showToast('Đã lưu thành công (Chế độ Test Local)', 'success');
             }
         }
 
@@ -2477,24 +2479,27 @@
                 return;
             }
 
-            // 2. Nếu chạy trên Vercel / External có cấu hình API URL
-            if (GOOGLE_SCRIPT_API_URL && !GOOGLE_SCRIPT_API_URL.includes('PLACEHOLDER')) {
-                fetch(GOOGLE_SCRIPT_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'askGemini', prompt: promptText, context: getClubContextData() })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('ai-loading-indicator')?.remove();
-                    appendAIChatMessage('ai', data.reply || "Không nhận được phản hồi từ AI.");
-                })
-                .catch(err => {
-                    document.getElementById('ai-loading-indicator')?.remove();
-                    appendAIChatMessage('ai', "Lỗi kết nối AI qua API Google Apps Script: " + err.message);
-                });
-                return;
-            }
+            // 2. Gửi request qua API Endpoint (/api/data hoặc Google Apps Script)
+            const apiUrl = GOOGLE_SCRIPT_API_URL || '/api/data';
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'askGemini', prompt: promptText, context: getClubContextData() })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('ai-loading-indicator')?.remove();
+                if (data && data.success && data.reply) {
+                    appendAIChatMessage('ai', data.reply);
+                } else {
+                    appendAIChatMessage('ai', data.error || "Không nhận được phản hồi từ AI.");
+                }
+            })
+            .catch(err => {
+                document.getElementById('ai-loading-indicator')?.remove();
+                appendAIChatMessage('ai', "Lỗi kết nối AI: " + err.message);
+            });
+            return;
 
             // 3. Fallback khi chạy ở môi trường Test Local không có API URL
             try {

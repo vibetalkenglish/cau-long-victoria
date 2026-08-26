@@ -1,0 +1,15 @@
+{
+  "name": "cau-long-victoria",
+  "version": "2.0.0",
+  "description": "WebApp Quản Lý CLB Cầu Lông Victoria chạy trên Vercel & Google Sheets API",
+  "main": "api/data.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "googleapis": "^144.0.0"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}
