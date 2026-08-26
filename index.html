@@ -1249,6 +1249,55 @@
             return gradients[index];
         }
 
+        // ==========================================
+        // BIỆT DANH HÀI HƯỚC DÀNH CHO THÀNH VIÊN CLB
+        // ==========================================
+        function getMemberNickname(name) {
+            if (!name) return "🏸 Tay Vợt Ẩn Danh";
+            const cleanName = name.trim().toLowerCase();
+            
+            // Biệt danh riêng theo tên thành viên
+            const specialMap = {
+                'kantan': '👑 Thủ Quỹ Quyền Lực',
+                'a đức': '🦅 Thần Điêu Đại Hiệp',
+                'đức': '🦅 Thần Điêu Đại Hiệp',
+                'a phương': '⚡ Chiến Thần Đập Cầu',
+                'phương': '⚡ Chiến Thần Đập Cầu',
+                'a toàn': '💎 Cơ Trưởng Đam Mê',
+                'toàn': '💎 Cơ Trưởng Đam Mê',
+                'cô hà': '🌸 Đại Tỷ Bất Tử',
+                'hà': '🌸 Đại Tỷ Bất Tử',
+                'song anh': '⚔️ Song Kiếm Hợp Bích',
+                'lộc': '🌪️ Thánh Lưới Vô Đối',
+                'lâm': '🔥 Đập Cầu Cháy Sân',
+                'tài': '🎯 Vua Phản Tạt',
+                'nghĩa': '🪄 Phù Thủy Cắt Cầu',
+                'hoàng anh': '✨ Lãng Tử Cầu Lông'
+            };
+
+            if (specialMap[cleanName]) return specialMap[cleanName];
+
+            // Danh sách biệt danh hài hước ngẫu nhiên có tính nhất quán
+            const funnyNicknames = [
+                '🚀 Tay Vợt Tên Lửa',
+                '🥷 Sát Thủ Bỏ Nhỏ',
+                '🛡️ Bức Tường Phòng Thủ',
+                '⚡ Chiến Thần Phông Cầu',
+                '🎯 Bắt Bài Đối Thủ',
+                '🎩 Ảo Thuật Gia Sân Cầu',
+                '🔥 Thánh Cứu Cầu Bất Tử',
+                '🌪️ Cơn Lốc Đập Cầu',
+                '🦁 Chúa Tể Vạch Cuối',
+                '🏆 Huyền Thoại Đôi Nam Nữ',
+                '💣 Quả Bom Nổ Chậm',
+                '👀 Camera Chạy Bằng Cơm'
+            ];
+
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            return funnyNicknames[Math.abs(hash) % funnyNicknames.length];
+        }
+
         function renderMemberCards() {
             const container = document.getElementById('member-cards-container');
             if (!container) return;
@@ -1352,6 +1401,7 @@
                 const isDebt = item.remaining < -1000;
                 const isSurplus = item.remaining > 1000;
                 const attPct = sessions.length > 0 ? Math.round((item.attendedSessions / sessions.length) * 100) : 0;
+                const nickname = getMemberNickname(m.name);
 
                 let statusBadge = '';
                 if (isDebt) {
@@ -1385,7 +1435,7 @@
                                         <span class="truncate">${m.name}</span>
                                         ${isKantan(m) ? '<span class="text-[10px] font-black bg-amber-400 text-slate-950 px-2 py-0.5 rounded-lg shadow-xs shrink-0">👑 Chủ Quỹ</span>' : ''}
                                     </h4>
-                                    <p class="text-xs text-slate-500 font-medium mt-0.5">Hội viên CLB • <strong class="text-slate-800">${item.attendedSessions}/${sessions.length}</strong> buổi</p>
+                                    <p class="text-xs text-slate-500 font-medium mt-0.5"><span class="text-amber-700 font-bold">${nickname}</span> • <strong class="text-slate-800">${item.attendedSessions}/${sessions.length}</strong> buổi</p>
                                 </div>
                             </div>
                             <div>
@@ -2140,7 +2190,7 @@
             const remaining = m.paid - memberTotalBill;
 
             document.getElementById('md-name').textContent = m.name;
-            document.getElementById('md-sessions-badge').textContent = `Thành viên CLB • Đã tham gia ${attendedSessions} buổi`;
+            document.getElementById('md-sessions-badge').textContent = `${getMemberNickname(m.name)} • Đã tham gia ${attendedSessions} buổi`;
             document.getElementById('md-sessions-count').textContent = `${attendedSessions} buổi`;
             document.getElementById('md-session-list').innerHTML = sessionListHTML;
             document.getElementById('md-total').textContent = formatVND(memberTotalBill);
