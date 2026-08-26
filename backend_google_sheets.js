@@ -33,7 +33,7 @@ function doGet(e) {
   }
 
   // 2. Mặc định trả về giao diện HTML cho Google Apps Script Web App
-  return HtmlService.createHtmlOutputFromFile('Index')
+  return HtmlService.createHtmlOutputFromFile('index')
       .setTitle('CẦU LÔNG VICTORIA')
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
       .addMetaTag('viewport', 'width=device-width, initial-scale=1');
