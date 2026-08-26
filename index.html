@@ -688,7 +688,8 @@
                 </div>
             </div>
             
-            <div class="mt-4 pt-3 border-t border-slate-100 text-center">
+            <div id="md-action-container" class="mt-4 pt-3 border-t border-slate-100 flex flex-col gap-2">
+                <!-- Rendered by openMemberDetails() -->
                 <button onclick="closeModal('modal-member-details')" class="w-full py-3 bg-slate-900 hover:bg-slate-950 text-white text-sm font-black rounded-2xl shadow-lg transition active:scale-95">
                     Đóng
                 </button>
@@ -1382,7 +1383,8 @@
                 }
 
                 const card = document.createElement('div');
-                card.className = `bg-white rounded-3xl border ${isDebt ? 'border-rose-200/90 shadow-luxury hover:border-rose-300' : 'border-slate-200/90 shadow-luxury hover:border-slate-300'} p-5 sm:p-6 transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden group`;
+                card.className = `bg-white rounded-3xl border ${isDebt ? 'border-rose-200/90 shadow-luxury hover:border-rose-300' : 'border-slate-200/90 shadow-luxury hover:border-slate-300'} p-5 sm:p-6 transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden group cursor-pointer active:scale-[0.99]`;
+                card.onclick = () => openMemberDetails(m.id);
 
                 card.innerHTML = `
                     ${isDebt ? '<div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 via-rose-400 to-amber-400"></div>' : ''}
@@ -1407,43 +1409,21 @@
                         </div>
 
                         <!-- Attendance Progress Indicator -->
-                        <div class="mb-4 bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                        <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
                             <div class="flex justify-between items-center text-xs sm:text-sm font-bold text-slate-600 mb-1.5">
                                 <span>Tần suất ra sân</span>
-                                <span class="text-slate-900 font-mono font-black">${attPct}%</span>
+                                <span class="text-slate-900 font-black">${attPct}%</span>
                             </div>
                             <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
                                 <div class="h-full ${isDebt ? 'bg-gradient-to-r from-rose-500 to-amber-500' : 'bg-gradient-to-r from-emerald-500 to-teal-400'} rounded-full transition-all duration-500" style="width: ${attPct}%;"></div>
                             </div>
                         </div>
-
-                        <!-- Mini Financial Box -->
-                        <div class="grid grid-cols-2 gap-2.5 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 text-sm mb-4">
-                            <div class="p-1">
-                                <span class="text-slate-400 block text-xs font-bold uppercase tracking-wider">Cần Trả</span>
-                                <strong class="text-slate-900 font-mono font-black text-base sm:text-lg">${formatVND(item.bill)}đ</strong>
-                            </div>
-                            <div class="p-1 border-l border-slate-200/80 pl-3">
-                                <span class="text-slate-400 block text-xs font-bold uppercase tracking-wider">Đã Nộp</span>
-                                <strong class="text-emerald-700 font-mono font-black text-base sm:text-lg">${formatVND(item.paid)}đ</strong>
-                            </div>
-                        </div>
                     </div>
 
-                    <!-- Luxury Card Actions -->
-                    <div class="flex items-center gap-2 pt-3 border-t border-slate-100">
-                        <button onclick="openMemberDetails(${m.id})" class="flex-1 py-3 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl font-bold text-xs sm:text-sm transition active:scale-95 flex items-center justify-center gap-1.5 shadow-2xs">
-                            <i class="fa-solid fa-list-ul text-slate-500"></i> Chi Tiết
-                        </button>
-                        ${isDebt ? `
-                        <button onclick="openPersonalQR(${m.id})" class="flex-1 py-3 px-3 bg-gradient-to-r from-rose-500 via-rose-600 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white rounded-2xl font-black text-xs sm:text-sm transition shadow-[0_4px_15px_rgba(244,63,94,0.35)] active:scale-95 flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-qrcode text-amber-200"></i> Quét QR Trả
-                        </button>
-                        ` : `
-                        <button onclick="openPersonalQR(${m.id})" class="flex-1 py-3 px-3 bg-sky-50 hover:bg-sky-100 text-sky-800 rounded-2xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 border border-sky-100 active:scale-95">
-                            <i class="fa-solid fa-qrcode text-sky-500"></i> QR Quỹ
-                        </button>
-                        `}
+                    <!-- Subtle Click-to-view hint -->
+                    <div class="flex items-center justify-between pt-3.5 mt-3 border-t border-slate-100 text-xs sm:text-sm text-slate-500 font-semibold group-hover:text-amber-600 transition">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-receipt text-amber-500"></i> Chạm xem chi tiết & đóng tiền</span>
+                        <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-1 transition-transform"></i>
                     </div>
                 `;
 
@@ -2175,6 +2155,29 @@
                 remBox.className = "p-3 rounded-xl border flex justify-between items-center shadow-sm bg-slate-50 border-slate-200 text-slate-700";
                 remLabel.innerHTML = '<span class="flex items-center gap-1"><i class="fa-solid fa-check text-slate-500"></i> Tình trạng:</span>';
                 remValue.textContent = "Đã thanh toán đủ (0)";
+            }
+
+            const actionContainer = document.getElementById('md-action-container');
+            if (actionContainer) {
+                if (remaining < -1000) {
+                    actionContainer.innerHTML = `
+                        <button onclick="closeModal('modal-member-details'); openPersonalQR(${m.id});" class="w-full py-3 px-4 bg-gradient-to-r from-rose-500 via-rose-600 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white rounded-2xl font-black text-sm shadow-[0_4px_15px_rgba(244,63,94,0.35)] transition active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-qrcode text-amber-200"></i> Quét QR Trả Tiền (${formatVND(Math.abs(remaining))}đ)
+                        </button>
+                        <button onclick="closeModal('modal-member-details')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-2xl transition active:scale-95">
+                            Đóng
+                        </button>
+                    `;
+                } else {
+                    actionContainer.innerHTML = `
+                        <button onclick="closeModal('modal-member-details'); openPersonalQR(${m.id});" class="w-full py-3 px-4 bg-sky-50 hover:bg-sky-100 text-sky-800 rounded-2xl font-bold text-sm transition border border-sky-200 active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-qrcode text-sky-500"></i> Xem Mã QR Chuyển Khoản CLB
+                        </button>
+                        <button onclick="closeModal('modal-member-details')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-2xl transition active:scale-95">
+                            Đóng
+                        </button>
+                    `;
+                }
             }
 
             document.getElementById('modal-member-details').classList.remove('hidden');
