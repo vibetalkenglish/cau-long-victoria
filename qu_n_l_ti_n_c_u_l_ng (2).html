@@ -113,8 +113,8 @@
                         </button>
                     </div>
 
-                    <!-- API Settings (cho Vercel / GitHub) -->
-                    <button id="btn-open-api-modal" onclick="openApiConfigModal()" class="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5 shrink-0" title="Cấu hình Google Sheets API URL">
+                    <!-- API Settings (Ẩn đối với người dùng thông thường, chỉ hiện khi đăng nhập Admin) -->
+                    <button id="btn-open-api-modal" onclick="openApiConfigModal()" class="hidden px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5 shrink-0" title="Cấu hình Google Sheets API URL">
                         <i class="fa-solid fa-cloud-arrow-down text-sky-400"></i> <span class="hidden md:inline">API</span>
                     </button>
 
@@ -647,7 +647,7 @@
                             members = d.members || [];
                             if (d.qrInfo && Object.keys(d.qrInfo).length > 0) qrInfo = d.qrInfo;
                             shuttleBatches = d.shuttleBatches || [];
-                            showToast('Đã đồng bộ dữ liệu từ Google Sheets!', 'success');
+                            localStorage.setItem('CLB_CACHED_DATA', JSON.stringify({ sessions, members, qrInfo, shuttleBatches }));
                         } else {
                             initMockData();
                         }
@@ -660,7 +660,6 @@
                 })
                 .catch(err => {
                     console.warn('API load failed, using cache', err);
-                    initMockData();
                     backupState();
                     updateQRDisplay();
                     renderAll();
@@ -809,12 +808,26 @@
                 isAdmin = true;
             }
 
+            // Nạp dữ liệu cache sẵn nếu có để hiển thị ngay lập tức không bị giật/chờ
+            const cached = localStorage.getItem('CLB_CACHED_DATA');
+            if (cached) {
+                try {
+                    const d = JSON.parse(cached);
+                    if (d.sessions?.length > 0) sessions = d.sessions;
+                    if (d.members?.length > 0) members = d.members;
+                    if (d.qrInfo) qrInfo = d.qrInfo;
+                    if (d.shuttleBatches?.length > 0) shuttleBatches = d.shuttleBatches;
+                    backupState();
+                    updateQRDisplay();
+                    renderAll();
+                } catch(e) {}
+            }
+
             if (typeof google !== 'undefined' && google.script) {
                 // 1. Kiểm tra vai trò Admin từ Server Google Apps Script
                 google.script.run.withSuccessHandler((role) => {
                     if (role && role.isAdmin) {
                         isAdmin = true;
-                        showToast(`Chào Admin (${role.email})`, 'success');
                     }
                     updateUIByRole();
                 }).getUserRole();
@@ -827,8 +840,8 @@
                             members = data.members || [];
                             if (data.qrInfo && Object.keys(data.qrInfo).length > 0) qrInfo = data.qrInfo;
                             shuttleBatches = data.shuttleBatches || [];
-                            showToast('Đã tải dữ liệu từ Google Sheets!', 'success');
-                        } else {
+                            localStorage.setItem('CLB_CACHED_DATA', JSON.stringify({ sessions, members, qrInfo, shuttleBatches }));
+                        } else if (!cached) {
                             initMockData();
                         }
                         backupState();
@@ -836,7 +849,7 @@
                         renderAll();
                     })
                     .withFailureHandler(() => {
-                        initMockData();
+                        if (!cached) initMockData();
                         backupState();
                         updateQRDisplay();
                         renderAll();
@@ -1733,6 +1746,7 @@
                 btnToggle.innerHTML = `<i class="fa-solid fa-right-from-bracket text-slate-500"></i> <span class="hidden sm:inline">Thoát Admin</span>`;
                 btnToggle.className = "px-3.5 py-2 text-xs font-bold rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 transition flex items-center gap-1.5 shadow-sm";
                 
+                document.getElementById('btn-open-api-modal')?.classList.remove('hidden');
                 document.getElementById('admin-tabs').classList.remove('hidden');
                 document.getElementById('admin-action-bar').classList.remove('hidden');
                 document.getElementById('member-banner').classList.add('hidden');
@@ -1744,6 +1758,7 @@
                 btnToggle.innerHTML = `<i class="fa-brands fa-google text-rose-400"></i> <span class="hidden sm:inline">Đăng nhập Admin</span>`;
                 btnToggle.className = "px-3.5 py-2 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition flex items-center gap-1.5 shadow-sm";
                 
+                document.getElementById('btn-open-api-modal')?.classList.add('hidden');
                 document.getElementById('admin-tabs').classList.add('hidden');
                 document.getElementById('admin-action-bar').classList.add('hidden');
                 document.getElementById('member-banner').classList.remove('hidden');
