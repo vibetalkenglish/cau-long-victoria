@@ -574,8 +574,27 @@
         const adminEmails = ['sayoonara.htq90@gmail.com'];
         const DEFAULT_ADMIN_PIN = '123456';
         
+        function safeGetStorage(key, defaultVal = null) {
+            try {
+                return localStorage.getItem(key) || defaultVal;
+            } catch(e) {
+                return defaultVal;
+            }
+        }
+        function safeSetStorage(key, val) {
+            try {
+                localStorage.setItem(key, val);
+            } catch(e) {}
+        }
+        function safeRemoveStorage(key) {
+            try {
+                localStorage.removeItem(key);
+            } catch(e) {}
+        }
+
         // URL Web App của Google Apps Script (REST API Endpoint)
-        let GOOGLE_SCRIPT_API_URL = localStorage.getItem('CLB_SCRIPT_API_URL') || 'https://script.google.com/macros/s/AKfycbxtEZgoalXo5UzktFuw0xBMe_0DZRZIYqBGjrWbYigw_qwlxQHeFQe6UUJLym4EtlVhbg/exec';
+        const DEFAULT_SCRIPT_API_URL = 'https://script.google.com/macros/s/AKfycbxtEZgoalXo5UzktFuw0xBMe_0DZRZIYqBGjrWbYigw_qwlxQHeFQe6UUJLym4EtlVhbg/exec';
+        let GOOGLE_SCRIPT_API_URL = safeGetStorage('CLB_SCRIPT_API_URL', DEFAULT_SCRIPT_API_URL);
         
         let originalState = null;
         let hasUnsavedChanges = false;
@@ -593,7 +612,7 @@
                 return;
             }
             GOOGLE_SCRIPT_API_URL = val;
-            localStorage.setItem('CLB_SCRIPT_API_URL', val);
+            safeSetStorage('CLB_SCRIPT_API_URL', val);
             closeModal('modal-api-config');
             showToast('Đã lưu URL API! Đang tải lại dữ liệu từ Google Sheets...', 'success');
             loadDataFromApi();
@@ -631,10 +650,6 @@
 
         function loadDataFromApi() {
             if (!GOOGLE_SCRIPT_API_URL || GOOGLE_SCRIPT_API_URL.includes('PLACEHOLDER')) {
-                initMockData();
-                backupState();
-                updateQRDisplay();
-                renderAll();
                 return;
             }
             fetch(GOOGLE_SCRIPT_API_URL + (GOOGLE_SCRIPT_API_URL.includes('?') ? '&' : '?') + 'action=loadData')
@@ -647,22 +662,15 @@
                             members = d.members || [];
                             if (d.qrInfo && Object.keys(d.qrInfo).length > 0) qrInfo = d.qrInfo;
                             shuttleBatches = d.shuttleBatches || [];
-                            localStorage.setItem('CLB_CACHED_DATA', JSON.stringify({ sessions, members, qrInfo, shuttleBatches }));
-                        } else {
-                            initMockData();
+                            safeSetStorage('CLB_CACHED_DATA', JSON.stringify({ sessions, members, qrInfo, shuttleBatches }));
+                            backupState();
+                            updateQRDisplay();
+                            renderAll();
                         }
-                    } else {
-                        initMockData();
                     }
-                    backupState();
-                    updateQRDisplay();
-                    renderAll();
                 })
                 .catch(err => {
-                    console.warn('API load failed, using cache', err);
-                    backupState();
-                    updateQRDisplay();
-                    renderAll();
+                    console.warn('API load failed, using active snapshot', err);
                 });
         }
 
@@ -815,12 +823,11 @@
         }
 
         window.onload = () => {
-            if (localStorage.getItem('CLB_ADMIN_LOGGED') === 'true') {
-                isAdmin = true;
-            }
+            // 1. Luôn nạp bộ dữ liệu ban đầu trước (0ms) để tab ẩn danh / trình duyệt mới luôn luôn có dữ liệu đầy đủ
+            initMockData();
 
-            // Nạp dữ liệu cache sẵn nếu có để hiển thị ngay lập tức không bị giật/chờ
-            const cached = localStorage.getItem('CLB_CACHED_DATA');
+            // 2. Nếu có bộ nhớ cache cục bộ mới hơn thì cập nhật đè
+            const cached = safeGetStorage('CLB_CACHED_DATA');
             if (cached) {
                 try {
                     const d = JSON.parse(cached);
@@ -828,14 +835,21 @@
                     if (d.members?.length > 0) members = d.members;
                     if (d.qrInfo) qrInfo = d.qrInfo;
                     if (d.shuttleBatches?.length > 0) shuttleBatches = d.shuttleBatches;
-                    backupState();
-                    updateQRDisplay();
-                    renderAll();
                 } catch(e) {}
             }
 
+            // 3. Render giao diện ngay lập tức
+            backupState();
+            updateQRDisplay();
+            renderAll();
+
+            if (safeGetStorage('CLB_ADMIN_LOGGED') === 'true') {
+                isAdmin = true;
+            }
+            updateUIByRole();
+
+            // 4. Đồng bộ dữ liệu ngầm với Google Sheets
             if (typeof google !== 'undefined' && google.script) {
-                // 1. Kiểm tra vai trò Admin từ Server Google Apps Script
                 google.script.run.withSuccessHandler((role) => {
                     if (role && role.isAdmin) {
                         isAdmin = true;
@@ -843,7 +857,6 @@
                     updateUIByRole();
                 }).getUserRole();
 
-                // 2. Nạp dữ liệu thực tế từ Google Sheets
                 google.script.run
                     .withSuccessHandler((data) => {
                         if (data && (data.sessions?.length > 0 || data.members?.length > 0)) {
@@ -851,24 +864,15 @@
                             members = data.members || [];
                             if (data.qrInfo && Object.keys(data.qrInfo).length > 0) qrInfo = data.qrInfo;
                             shuttleBatches = data.shuttleBatches || [];
-                            localStorage.setItem('CLB_CACHED_DATA', JSON.stringify({ sessions, members, qrInfo, shuttleBatches }));
-                        } else if (!cached) {
-                            initMockData();
+                            safeSetStorage('CLB_CACHED_DATA', JSON.stringify({ sessions, members, qrInfo, shuttleBatches }));
+                            backupState();
+                            updateQRDisplay();
+                            renderAll();
                         }
-                        backupState();
-                        updateQRDisplay();
-                        renderAll();
-                    })
-                    .withFailureHandler(() => {
-                        if (!cached) initMockData();
-                        backupState();
-                        updateQRDisplay();
-                        renderAll();
                     })
                     .getFromSheets();
             } else {
-                // Chạy trên Vercel / GitHub / Localhost: tải qua REST API
-                updateUIByRole();
+                // Chạy trên Vercel / GitHub / Localhost: tải ngầm qua REST API
                 loadDataFromApi();
             }
         };
@@ -1722,7 +1726,7 @@
                     restoreState(); // revert
                 }
                 isAdmin = false;
-                localStorage.removeItem('CLB_ADMIN_LOGGED');
+                safeRemoveStorage('CLB_ADMIN_LOGGED');
                 renderAll();
                 switchTab('sheet');
                 showToast('Đã chuyển sang chế độ Thành Viên', 'info');
@@ -1737,7 +1741,7 @@
             const lowerEmail = val.toLowerCase();
             if (adminEmails.includes(lowerEmail) || val === DEFAULT_ADMIN_PIN) {
                 isAdmin = true;
-                localStorage.setItem('CLB_ADMIN_LOGGED', 'true');
+                safeSetStorage('CLB_ADMIN_LOGGED', 'true');
                 closeModal('modal-google-login');
                 renderAll();
                 showToast('Đăng nhập Admin thành công!', 'success');
