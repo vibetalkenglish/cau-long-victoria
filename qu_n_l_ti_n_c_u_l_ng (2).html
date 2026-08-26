@@ -11,17 +11,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Be Vietnam Pro (Đồng nhất 100% tiếng Việt) & JetBrains Mono (Dãy số) -->
+    <!-- Google Fonts: Be Vietnam Pro (100% Đồng nhất toàn bộ văn bản và số tiền) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: { 
                         sans: ['"Be Vietnam Pro"', 'sans-serif'],
-                        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace']
+                        mono: ['"Be Vietnam Pro"', 'sans-serif']
                     },
                     colors: {
                         sheet: { greenYes: '#059669', grayNo: '#f1f5f9' }
@@ -48,11 +48,8 @@
         @media (min-width: 1440px) {
             html { font-size: 16.5px; }
         }
-        *, body, button, input, select, textarea, table, th, td, h1, h2, h3, h4, h5, h6, p, span, div { 
-            font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-        }
-        .font-mono { 
-            font-family: 'JetBrains Mono', ui-monospace, monospace !important; 
+        *, *::before, *::after, html, body, button, input, select, textarea, table, th, td, h1, h2, h3, h4, h5, h6, p, span, div, strong, b, code, pre, .font-mono { 
+            font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; 
         }
         body { 
             font-size: 1rem; 
