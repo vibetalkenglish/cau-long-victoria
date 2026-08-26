@@ -2287,32 +2287,6 @@
             }
         }
 
-                btnToggle.innerHTML = `<i class="fa-brands fa-google text-rose-400"></i> <span class="hidden sm:inline">Đăng nhập Admin</span>`;
-                btnToggle.className = "px-3.5 py-2 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition flex items-center gap-1.5 shadow-sm";
-                
-                document.getElementById('btn-open-api-modal')?.classList.add('hidden');
-                document.getElementById('admin-tabs').classList.add('hidden');
-                document.getElementById('admin-action-bar').classList.add('hidden');
-                document.getElementById('member-banner').classList.remove('hidden');
-                document.getElementById('btn-edit-qr').classList.add('hidden');
-                document.getElementById('btn-edit-qr').classList.remove('flex');
-            }
-        }
-
-        function switchTab(tabId) {
-            ['sheet', 'ai', 'script'].forEach(id => {
-                document.getElementById('tab-' + id)?.classList.add('hidden');
-                document.getElementById('btn-tab-' + id)?.classList.remove('bg-amber-400', 'text-slate-900', 'shadow');
-                document.getElementById('btn-tab-' + id)?.classList.add('text-slate-300');
-            });
-            document.getElementById('tab-' + tabId)?.classList.remove('hidden');
-            const btn = document.getElementById('btn-tab-' + tabId);
-            if (btn) {
-                btn.classList.remove('text-slate-300', 'hover:bg-slate-800');
-                btn.classList.add('bg-amber-400', 'text-slate-900', 'shadow');
-            }
-        }
-
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
         
         function showToast(msg, type='info') {
