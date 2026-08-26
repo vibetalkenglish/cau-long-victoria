@@ -5,12 +5,25 @@ function doGet(e) {
   // 1. Phục vụ REST API lấy dữ liệu JSON (cho Vercel / GitHub Pages / Mobile App)
   if (e && e.parameter && (e.parameter.action === 'loadData' || e.parameter.api === 'true')) {
     try {
+      const cache = CacheService.getScriptCache();
+      const cached = cache.get('CLB_SHEET_DATA_JSON');
+      if (cached) {
+        return ContentService.createTextOutput(cached).setMimeType(ContentService.MimeType.JSON);
+      }
+      
       const data = getFromSheets();
-      return ContentService.createTextOutput(JSON.stringify({
+      const jsonStr = JSON.stringify({
         success: true,
         data: data,
         timestamp: new Date().toISOString()
-      })).setMimeType(ContentService.MimeType.JSON);
+      });
+      
+      try {
+        // Cache dữ liệu 30 phút để tăng tốc độ phản hồi tức thì
+        cache.put('CLB_SHEET_DATA_JSON', jsonStr, 1800);
+      } catch (cacheErr) {}
+
+      return ContentService.createTextOutput(jsonStr).setMimeType(ContentService.MimeType.JSON);
     } catch (err) {
       return ContentService.createTextOutput(JSON.stringify({
         success: false,
@@ -41,6 +54,13 @@ function doPost(e) {
     if (action === 'saveData') {
       const payload = requestData.payload || requestData;
       saveToSheets(payload);
+      
+      // Xóa cache cũ để nạp dữ liệu mới nhất
+      try {
+        const cache = CacheService.getScriptCache();
+        cache.remove('CLB_SHEET_DATA_JSON');
+      } catch (cacheErr) {}
+
       return ContentService.createTextOutput(JSON.stringify({
         success: true,
         message: 'Đã lưu dữ liệu vào Google Sheets thành công!'
