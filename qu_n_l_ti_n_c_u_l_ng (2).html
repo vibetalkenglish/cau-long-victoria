@@ -116,17 +116,17 @@
     <!-- ULTRA-PREMIUM HEADER (DESKTOP & MOBILE APP BAR) -->
     <header class="bg-slate-950/90 backdrop-blur-2xl text-white sticky top-0 z-50 border-b border-slate-800/80 shadow-md">
         <div class="max-w-[1720px] mx-auto px-3.5 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 sm:h-18 items-center gap-2">
+            <div class="flex justify-between h-16 sm:h-20 items-center gap-2">
                 <!-- Brand & Official Logo -->
                 <div class="flex items-center space-x-3 shrink-0 cursor-pointer group" onclick="switchTab('members')">
                     <div class="relative shrink-0">
-                        <div class="absolute -inset-0.5 bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-500 rounded-2xl blur-xs opacity-75 group-hover:opacity-100 transition duration-300"></div>
+                        <div class="absolute -inset-0.5 bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-500 rounded-2xl blur-sm opacity-75 group-hover:opacity-100 transition duration-300"></div>
                         <img src="logo.png" onerror="this.src='https://lh3.googleusercontent.com/d/1TqOD0ecIMUMmst9mSq-h86BDcs8rQZFD'" alt="Victoria Logo" class="relative w-10 h-10 sm:w-12 sm:h-12 rounded-2xl object-cover shadow-lg border border-amber-400/40 shrink-0 bg-white">
                     </div>
                     <div>
                         <h1 class="text-base sm:text-lg lg:text-xl font-black leading-tight flex items-center gap-2 tracking-tight">
                             <span class="bg-gradient-to-r from-white via-slate-100 to-amber-200 bg-clip-text text-transparent truncate max-w-[160px] sm:max-w-none">VICTORIA BADMINTON</span>
-                            <span id="role-badge" class="text-xs font-bold bg-amber-400/10 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-400/30 whitespace-nowrap shadow-xs">Thành Viên</span>
+                            <span id="role-badge" class="text-xs font-bold bg-amber-400/10 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-400/30 whitespace-nowrap shadow-sm">Thành Viên</span>
                         </h1>
                         <p class="text-xs text-slate-400 font-medium hidden sm:block">Câu Lạc Bộ Cầu Lông • Quản Lý Quỹ & Điểm Danh</p>
                     </div>
@@ -177,16 +177,16 @@
     </header>
 
     <!-- ADMIN ACTION BAR -->
-    <div id="admin-action-bar" class="hidden bg-white/95 backdrop-blur-md border-b border-slate-200 px-3 sm:px-6 lg:px-8 py-3 shadow-xs z-40 relative">
+    <div id="admin-action-bar" class="hidden bg-white/95 backdrop-blur-md border-b border-slate-200 px-3 sm:px-6 lg:px-8 py-3 shadow-sm z-40 relative">
         <div class="max-w-[1720px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm">
             <div class="flex items-center gap-2.5 sm:gap-3.5 flex-wrap">
-                <button onclick="openAddSessionModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition flex items-center gap-1.5 shadow-xs text-xs sm:text-sm active:scale-95">
+                <button onclick="openAddSessionModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition flex items-center gap-1.5 shadow-sm text-xs sm:text-sm active:scale-95">
                     <i class="fa-solid fa-calendar-plus"></i> + Buổi Chơi
                 </button>
-                <button onclick="openAddMemberModal()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold transition flex items-center gap-1.5 shadow-xs text-xs sm:text-sm active:scale-95">
+                <button onclick="openAddMemberModal()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold transition flex items-center gap-1.5 shadow-sm text-xs sm:text-sm active:scale-95">
                     <i class="fa-solid fa-user-plus"></i> + Thành Viên
                 </button>
-                <button onclick="openPriceModal()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl transition flex items-center gap-1.5 shadow-xs text-xs sm:text-sm active:scale-95">
+                <button onclick="openPriceModal()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl transition flex items-center gap-1.5 shadow-sm text-xs sm:text-sm active:scale-95">
                     <i class="fa-solid fa-box-archive"></i> + Lô Cầu
                 </button>
             </div>
@@ -210,7 +210,7 @@
                 <!-- Card 1: Tổng Chi -->
                 <div class="bg-white rounded-3xl p-4 sm:p-5 border border-amber-200/80 shadow-luxury hover:shadow-glow-amber transition-all duration-300 flex items-center gap-4 relative overflow-hidden group">
                     <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-amber-500/5 rounded-full blur-xl group-hover:scale-150 transition duration-500"></div>
-                    <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 flex items-center justify-center text-2xl shrink-0 shadow-[0_4px_15px_rgba(245,158,11,0.3)]">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 flex items-center justify-center text-2xl shrink-0 shadow-[0_4px_15px_rgba(245,158,11,0.3)]">
                         <i class="fa-solid fa-receipt"></i>
                     </div>
                     <div class="min-w-0">
@@ -222,7 +222,7 @@
                 <!-- Card 2: Đã Thu -->
                 <div class="bg-white rounded-3xl p-4 sm:p-5 border border-emerald-200/80 shadow-luxury hover:shadow-glow-emerald transition-all duration-300 flex items-center gap-4 relative overflow-hidden group">
                     <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-emerald-500/5 rounded-full blur-xl group-hover:scale-150 transition duration-500"></div>
-                    <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-slate-950 flex items-center justify-center text-2xl shrink-0 shadow-[0_4px_15px_rgba(16,185,129,0.3)]">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-slate-950 flex items-center justify-center text-2xl shrink-0 shadow-[0_4px_15px_rgba(16,185,129,0.3)]">
                         <i class="fa-solid fa-hand-holding-dollar"></i>
                     </div>
                     <div class="min-w-0">
@@ -234,7 +234,7 @@
                 <!-- Card 3: Còn Nợ -->
                 <div class="bg-white rounded-3xl p-4 sm:p-5 border border-rose-200/80 shadow-luxury hover:shadow-glow-rose transition-all duration-300 flex items-center gap-4 relative overflow-hidden group">
                     <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-rose-500/5 rounded-full blur-xl group-hover:scale-150 transition duration-500"></div>
-                    <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 text-white flex items-center justify-center text-2xl shrink-0 shadow-[0_4px_15px_rgba(244,63,94,0.3)]">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 text-white flex items-center justify-center text-2xl shrink-0 shadow-[0_4px_15px_rgba(244,63,94,0.3)]">
                         <i class="fa-solid fa-circle-exclamation"></i>
                     </div>
                     <div class="min-w-0">
@@ -246,7 +246,7 @@
                 <!-- Card 4: Thành Viên -->
                 <div class="bg-white rounded-3xl p-4 sm:p-5 border border-sky-200/80 shadow-luxury hover:shadow-glow-sky transition-all duration-300 flex items-center gap-4 relative overflow-hidden group">
                     <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-sky-500/5 rounded-full blur-xl group-hover:scale-150 transition duration-500"></div>
-                    <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-indigo-500 text-slate-950 flex items-center justify-center text-2xl shrink-0 shadow-[0_4px_15px_rgba(56,189,248,0.3)]">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-indigo-500 text-slate-950 flex items-center justify-center text-2xl shrink-0 shadow-[0_4px_15px_rgba(56,189,248,0.3)]">
                         <i class="fa-solid fa-users"></i>
                     </div>
                     <div class="min-w-0">
@@ -268,10 +268,10 @@
                     <button id="filter-btn-all" onclick="setMemberFilter('all')" class="px-4 py-2.5 text-xs sm:text-sm font-black rounded-2xl bg-slate-950 text-white transition shadow-sm active:scale-95">
                         Tất cả (<span id="count-all">0</span>)
                     </button>
-                    <button id="filter-btn-debt" onclick="setMemberFilter('debt')" class="px-4 py-2.5 text-xs sm:text-sm font-black rounded-2xl bg-rose-50 text-rose-700 hover:bg-rose-100 transition border border-rose-200/80 active:scale-95 shadow-2xs">
+                    <button id="filter-btn-debt" onclick="setMemberFilter('debt')" class="px-4 py-2.5 text-xs sm:text-sm font-black rounded-2xl bg-rose-50 text-rose-700 hover:bg-rose-100 transition border border-rose-200/80 active:scale-95 shadow-sm">
                         🔴 Còn nợ (<span id="count-debt">0</span>)
                     </button>
-                    <button id="filter-btn-paid" onclick="setMemberFilter('paid')" class="px-4 py-2.5 text-xs sm:text-sm font-black rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-200/80 active:scale-95 shadow-2xs">
+                    <button id="filter-btn-paid" onclick="setMemberFilter('paid')" class="px-4 py-2.5 text-xs sm:text-sm font-black rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-200/80 active:scale-95 shadow-sm">
                         🟢 Đã đủ (<span id="count-paid">0</span>)
                     </button>
                 </div>
@@ -385,7 +385,7 @@
                 <div class="flex flex-col md:flex-row items-center gap-6 sm:gap-10 justify-center max-w-4xl mx-auto">
                     <!-- QR Box -->
                     <div class="w-[260px] h-[260px] sm:w-[300px] sm:h-[300px] shrink-0 bg-white p-3.5 rounded-3xl shadow-2xl border-2 border-slate-200/80 flex items-center justify-center relative group">
-                        <div class="absolute -inset-1 bg-gradient-to-r from-amber-400 to-sky-400 rounded-3xl blur-xs opacity-40 group-hover:opacity-75 transition duration-300"></div>
+                        <div class="absolute -inset-1 bg-gradient-to-r from-amber-400 to-sky-400 rounded-3xl blur-sm opacity-40 group-hover:opacity-75 transition duration-300"></div>
                         <img id="display-qr-img" src="" alt="QR Code" class="relative w-full h-full object-contain mx-auto rounded-2xl">
                     </div>
                     
@@ -432,10 +432,10 @@
                         <i class="fa-solid fa-wand-magic-sparkles text-purple-600"></i> AI Trợ Lý CLB (Gemini)
                     </h3>
                     <div class="flex gap-2 flex-wrap">
-                        <button onclick="aiGenerateReminder()" class="px-3.5 py-1.5 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-xl text-xs font-bold transition shadow-xs border border-rose-200 flex items-center gap-1.5 active:scale-95">
+                        <button onclick="aiGenerateReminder()" class="px-3.5 py-1.5 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-xl text-xs font-bold transition shadow-sm border border-rose-200 flex items-center gap-1.5 active:scale-95">
                             <i class="fa-solid fa-comment-dots"></i> Nhắc nợ
                         </button>
-                        <button onclick="aiAnalyzeFinances()" class="px-3.5 py-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-xl text-xs font-bold transition shadow-xs border border-emerald-200 flex items-center gap-1.5 active:scale-95">
+                        <button onclick="aiAnalyzeFinances()" class="px-3.5 py-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-xl text-xs font-bold transition shadow-sm border border-emerald-200 flex items-center gap-1.5 active:scale-95">
                             <i class="fa-solid fa-chart-pie"></i> Phân tích quỹ
                         </button>
                     </div>
@@ -446,7 +446,7 @@
                         <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md">
                             <i class="fa-solid fa-robot text-sm"></i>
                         </div>
-                        <div class="bg-white border border-purple-100 p-4 rounded-3xl rounded-tl-none text-sm text-slate-800 max-w-[85%] shadow-xs leading-relaxed">
+                        <div class="bg-white border border-purple-100 p-4 rounded-3xl rounded-tl-none text-sm text-slate-800 max-w-[85%] shadow-sm leading-relaxed">
                             Chào sếp! Tôi là trợ lý AI của CLB Cầu Lông Victoria. Sếp hãy bấm các nút phía trên để tự động soạn tin nhắc nợ gửi nhóm Zalo, hoặc gõ yêu cầu vào khung chat bên dưới nhé.
                         </div>
                     </div>
@@ -638,7 +638,7 @@
             
             <div class="flex justify-between items-start mb-4 pb-3 border-b border-slate-100">
                 <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 rounded-2xl flex items-center justify-center text-xl font-black shadow-sm shrink-0">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 rounded-2xl flex items-center justify-center text-xl font-black shadow-sm shrink-0">
                         <i class="fa-solid fa-user"></i>
                     </div>
                     <div>
@@ -679,7 +679,7 @@
                         </span>
                         <strong class="text-emerald-700 text-sm sm:text-base font-black font-mono" id="md-paid">0</strong>
                     </div>
-                    <div class="p-3.5 rounded-2xl border flex justify-between items-center shadow-xs" id="md-remaining-box">
+                    <div class="p-3.5 rounded-2xl border flex justify-between items-center shadow-sm" id="md-remaining-box">
                         <span class="text-xs sm:text-sm font-extrabold uppercase tracking-wider flex items-center gap-2" id="md-remaining-label">
                             Số dư / Nợ:
                         </span>
@@ -1187,9 +1187,9 @@
                     if (t === type) {
                         btn.className = "px-4 py-2 text-xs font-black rounded-2xl bg-slate-950 text-white transition shadow-sm active:scale-95";
                     } else if (t === 'debt') {
-                        btn.className = "px-4 py-2 text-xs font-black rounded-2xl bg-rose-50 text-rose-700 hover:bg-rose-100 transition border border-rose-200/80 active:scale-95 shadow-2xs";
+                        btn.className = "px-4 py-2 text-xs font-black rounded-2xl bg-rose-50 text-rose-700 hover:bg-rose-100 transition border border-rose-200/80 active:scale-95 shadow-sm";
                     } else if (t === 'paid') {
-                        btn.className = "px-4 py-2 text-xs font-black rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-200/80 active:scale-95 shadow-2xs";
+                        btn.className = "px-4 py-2 text-xs font-black rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-200/80 active:scale-95 shadow-sm";
                     } else {
                         btn.className = "px-4 py-2 text-xs font-black rounded-2xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition border border-slate-200 active:scale-95";
                     }
@@ -1369,15 +1369,15 @@
 
                 let statusBadge = '';
                 if (isDebt) {
-                    statusBadge = `<span class="bg-rose-500/10 text-rose-600 border border-rose-500/30 px-3 py-1 rounded-2xl text-xs font-black font-mono flex items-center gap-1.5 shadow-2xs shrink-0">
+                    statusBadge = `<span class="bg-rose-500/10 text-rose-600 border border-rose-500/30 px-3 py-1 rounded-2xl text-xs font-black font-mono flex items-center gap-1.5 shadow-sm shrink-0">
                         <i class="fa-solid fa-triangle-exclamation text-[11px] text-rose-500 animate-pulse"></i> Nợ: ${formatVND(item.remaining)}đ
                     </span>`;
                 } else if (isSurplus) {
-                    statusBadge = `<span class="bg-sky-500/10 text-sky-600 border border-sky-500/30 px-3 py-1 rounded-2xl text-xs font-black font-mono flex items-center gap-1.5 shadow-2xs shrink-0">
+                    statusBadge = `<span class="bg-sky-500/10 text-sky-600 border border-sky-500/30 px-3 py-1 rounded-2xl text-xs font-black font-mono flex items-center gap-1.5 shadow-sm shrink-0">
                         <i class="fa-solid fa-star text-[11px] text-sky-500"></i> Dư: +${formatVND(item.remaining)}đ
                     </span>`;
                 } else {
-                    statusBadge = `<span class="bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 px-3 py-1 rounded-2xl text-xs font-black font-mono flex items-center gap-1.5 shadow-2xs shrink-0">
+                    statusBadge = `<span class="bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 px-3 py-1 rounded-2xl text-xs font-black font-mono flex items-center gap-1.5 shadow-sm shrink-0">
                         <i class="fa-solid fa-circle-check text-[11px] text-emerald-500"></i> Đã đủ
                     </span>`;
                 }
@@ -1392,13 +1392,13 @@
                         <!-- Header & Avatar -->
                         <div class="flex items-start justify-between gap-3 mb-4">
                             <div class="flex items-center gap-3.5 min-w-0">
-                                <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${avatarGrad} flex items-center justify-center font-black text-base shrink-0 shadow-md">
+                                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${avatarGrad} flex items-center justify-center font-black text-base shrink-0 shadow-md">
                                     ${initials}
                                 </div>
                                 <div class="min-w-0">
                                     <h4 class="text-base sm:text-lg font-black text-slate-900 truncate leading-snug flex items-center gap-2">
                                         <span class="truncate">${m.name}</span>
-                                        ${isKantan(m) ? '<span class="text-xs font-black bg-amber-400 text-slate-950 px-2 py-0.5 rounded-lg shadow-xs shrink-0">👑 Chủ Quỹ</span>' : ''}
+                                        ${isKantan(m) ? '<span class="text-xs font-black bg-amber-400 text-slate-950 px-2 py-0.5 rounded-lg shadow-sm shrink-0">👑 Chủ Quỹ</span>' : ''}
                                     </h4>
                                     <p class="text-xs sm:text-sm text-slate-500 font-medium mt-1"><span class="text-amber-700 font-extrabold">${nickname}</span> • <strong class="text-slate-800 font-bold">${item.attendedSessions}/${sessions.length}</strong> buổi</p>
                                 </div>
@@ -1549,7 +1549,7 @@
                     actionBtns = `<button onclick="deleteSession('${s.id}')" title="Xóa buổi này" class="text-slate-400 hover:text-rose-400 text-xs ml-1.5 p-0.5"><i class="fa-solid fa-trash-can"></i></button>`;
                 }
                 const newestBadge = isNewest 
-                    ? `<span class="bg-amber-400 text-slate-950 font-black text-[10px] sm:text-xs px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs animate-pulse">Mới nhất</span>` 
+                    ? `<span class="bg-amber-400 text-slate-950 font-black text-[10px] sm:text-xs px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm animate-pulse">Mới nhất</span>` 
                     : '';
 
                 const thS = document.createElement('th');
@@ -1599,7 +1599,7 @@
                     const isAttending = m.attendance && m.attendance[s.id] ? true : false;
                     const cost = isAttending ? sessionStats[s.id].costPerPerson : 0;
 
-                    const bClass = isAttending ? 'bg-emerald-600 text-white shadow-xs hover:bg-emerald-700' : 'bg-slate-100 text-slate-400 hover:bg-slate-200';
+                    const bClass = isAttending ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700' : 'bg-slate-100 text-slate-400 hover:bg-slate-200';
                     const btn = isAdmin 
                         ? `<button onclick="toggleAtt(${m.id}, '${s.id}')" class="w-10 sm:w-12 lg:w-14 py-1 sm:py-1.5 text-xs lg:text-sm font-bold rounded-lg ${bClass} active:scale-95 transition-all">${isAttending ? 'Yes' : 'No'}</button>`
                         : `<span class="w-10 sm:w-12 lg:w-14 py-1 sm:py-1.5 text-xs lg:text-sm font-bold rounded-lg inline-block text-center ${bClass}">${isAttending ? 'Yes' : 'No'}</span>`;
@@ -1743,7 +1743,7 @@
                 });
 
                 const newestBadge = isNewest 
-                    ? `<span class="bg-amber-400 text-slate-950 font-black text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs animate-pulse">Mới nhất</span>` 
+                    ? `<span class="bg-amber-400 text-slate-950 font-black text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm animate-pulse">Mới nhất</span>` 
                     : '';
                 const rowHighlight = isNewest ? 'bg-amber-50/60 font-semibold border-y-2 border-amber-400/80' : 'hover:bg-slate-50/80';
                 const dateBg = isNewest ? 'bg-amber-100/80 font-bold text-amber-950' : 'bg-white font-bold text-slate-900';
@@ -2108,7 +2108,7 @@
                         : ``;
 
                     sessionListHTML += `
-                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-xs hover:border-sky-300 transition-colors text-sm">
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-sm hover:border-sky-300 transition-colors text-sm">
                             <div class="flex items-center gap-2.5 truncate pr-2">
                                 <span class="w-2.5 h-2.5 rounded-full ${isAttending ? 'bg-emerald-500' : 'bg-slate-300'} shrink-0"></span>
                                 <span class="font-bold text-slate-800 truncate">${s.date}</span>
