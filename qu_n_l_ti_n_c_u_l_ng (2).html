@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi" class="h-full bg-slate-50 text-[14px]">
+<html lang="vi" class="h-full bg-slate-950 text-[14px]">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CẦU LÔNG VICTORIA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CẦU LÔNG VICTORIA • CLB Thể Thao</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -14,7 +14,7 @@
     <!-- Google Fonts: Plus Jakarta Sans & Be Vietnam Pro & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -25,6 +25,13 @@
                     },
                     colors: {
                         sheet: { greenYes: '#059669', grayNo: '#f1f5f9' }
+                    },
+                    boxShadow: {
+                        'glow-amber': '0 0 25px -5px rgba(245, 158, 11, 0.4)',
+                        'glow-emerald': '0 0 25px -5px rgba(16, 185, 129, 0.4)',
+                        'glow-rose': '0 0 25px -5px rgba(244, 63, 94, 0.4)',
+                        'glow-sky': '0 0 25px -5px rgba(56, 189, 248, 0.4)',
+                        'luxury': '0 20px 40px -15px rgba(0, 0, 0, 0.08), 0 0 1px 1px rgba(0, 0, 0, 0.04)'
                     }
                 }
             }
@@ -42,8 +49,9 @@
             font-size: 14px; 
             line-height: 1.5; 
             font-family: 'Plus Jakarta Sans', 'Be Vietnam Pro', sans-serif;
-            color: #1e293b;
+            color: #0f172a;
             background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .custom-scrollbar::-webkit-scrollbar { height: 7px; width: 7px; }
@@ -58,7 +66,7 @@
             white-space: nowrap;
         }
         
-        /* ĐÓNG BĂNG CỘT 1 (#) và CỘT 2 (TÊN) - TỐI ƯU CẢ MOBILE LẪN DESKTOP RỘNG RÃI */
+        /* ĐÓNG BĂNG CỘT 1 (#) và CỘT 2 (TÊN) */
         .sticky-col-left-1 { position: sticky; left: 0; z-index: 25; width: 44px; min-width: 44px; max-width: 44px; }
         .sticky-col-left-2 { position: sticky; left: 44px; z-index: 25; min-width: 125px; max-width: 220px; border-right: 2px solid #cbd5e1 !important; box-shadow: 2px 0 6px -2px rgba(0,0,0,0.08); }
         
@@ -66,7 +74,7 @@
         .sticky-top-row-1 { position: sticky; top: 0 !important; z-index: 30 !important; }
         .sticky-top-row-2 { position: sticky; top: 43px !important; z-index: 30 !important; }
         
-        /* Intersection of frozen rows and columns needs highest z-index */
+        /* Intersection of frozen rows and columns */
         .sticky-top-row-1.sticky-col-left-1, .sticky-top-row-1.sticky-col-left-2 { z-index: 40 !important; }
         .sticky-top-row-2.sticky-col-left-1, .sticky-top-row-2.sticky-col-left-2 { z-index: 40 !important; }
         tfoot td.sticky-col-left-1, tfoot td.sticky-col-left-2 { z-index: 30 !important; }
@@ -82,48 +90,64 @@
         }
         .currency-input:hover { background: rgba(255,255,255,0.9); border-color: #cbd5e1; }
         .currency-input:focus { background: #ffffff; border-color: #059669; box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2); }
+
+        /* Shimmer animation */
+        @keyframes subtle-shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .shimmer-badge {
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%);
+            background-size: 200% 100%;
+            animation: subtle-shimmer 3.5s infinite;
+        }
     </style>
 </head>
-<body class="h-full font-sans text-slate-800 flex flex-col relative pb-20 sm:pb-16 bg-slate-50">
+<body class="h-full font-sans text-slate-900 flex flex-col relative pb-28 sm:pb-16 bg-[#f8fafc]">
 
-    <!-- HEADER (DESKTOP & MOBILE APP BAR) -->
-    <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
-        <div class="max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-14 sm:h-16 items-center gap-2">
-                <div class="flex items-center space-x-2.5 sm:space-x-3 shrink-0 cursor-pointer" onclick="switchTab('members')">
-                    <img src="logo.png" onerror="this.src='https://lh3.googleusercontent.com/d/1TqOD0ecIMUMmst9mSq-h86BDcs8rQZFD'" alt="Victoria Logo" class="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl object-cover shadow-md border border-amber-400/40 shrink-0 bg-white">
+    <!-- ULTRA-PREMIUM HEADER (DESKTOP & MOBILE APP BAR) -->
+    <header class="bg-slate-950/90 backdrop-blur-2xl text-white sticky top-0 z-50 border-b border-slate-800/80 shadow-md">
+        <div class="max-w-[1720px] mx-auto px-3.5 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-15 sm:h-17 items-center gap-2">
+                <!-- Brand & Official Logo -->
+                <div class="flex items-center space-x-3 shrink-0 cursor-pointer group" onclick="switchTab('members')">
+                    <div class="relative shrink-0">
+                        <div class="absolute -inset-0.5 bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-500 rounded-2xl blur-xs opacity-75 group-hover:opacity-100 transition duration-300"></div>
+                        <img src="logo.png" onerror="this.src='https://lh3.googleusercontent.com/d/1TqOD0ecIMUMmst9mSq-h86BDcs8rQZFD'" alt="Victoria Logo" class="relative w-9 h-9 sm:w-11 sm:h-11 rounded-2xl object-cover shadow-lg border border-amber-400/40 shrink-0 bg-white">
+                    </div>
                     <div>
-                        <h1 class="text-sm sm:text-base lg:text-lg font-extrabold leading-tight flex items-center gap-1.5 sm:gap-2 tracking-tight">
-                            <span class="truncate max-w-[140px] sm:max-w-none">CẦU LÔNG VICTORIA</span>
-                            <span id="role-badge" class="text-[10px] sm:text-xs font-semibold bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full border border-sky-500/30 whitespace-nowrap">Thành Viên</span>
+                        <h1 class="text-sm sm:text-base lg:text-lg font-black leading-tight flex items-center gap-2 tracking-tight">
+                            <span class="bg-gradient-to-r from-white via-slate-100 to-amber-200 bg-clip-text text-transparent truncate max-w-[150px] sm:max-w-none">VICTORIA BADMINTON</span>
+                            <span id="role-badge" class="text-[10px] sm:text-xs font-bold bg-amber-400/10 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-400/30 whitespace-nowrap shadow-xs">Thành Viên</span>
                         </h1>
+                        <p class="text-[11px] text-slate-400 font-medium hidden sm:block">Câu Lạc Bộ Cầu Lông • Quản Lý Quỹ & Điểm Danh</p>
                     </div>
                 </div>
 
-                <!-- Desktop Tab Navigation (Ẩn trên mobile nhỏ, thay bằng Bottom Nav) -->
-                <div class="hidden sm:flex items-center space-x-1 sm:space-x-1.5 overflow-x-auto custom-scrollbar py-1">
-                    <button id="btn-tab-members" onclick="switchTab('members')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-xl bg-amber-400 text-slate-950 transition flex items-center gap-1.5 shadow shrink-0">
+                <!-- Desktop Tab Navigation (Pill Glass Tabs) -->
+                <div class="hidden sm:flex items-center space-x-1.5 overflow-x-auto custom-scrollbar py-1 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800">
+                    <button id="btn-tab-members" onclick="switchTab('members')" class="px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-extrabold rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 transition flex items-center gap-1.5 shadow-[0_2px_12px_rgba(245,158,11,0.35)] shrink-0">
                         <i class="fa-solid fa-users"></i> <span>Thành Viên</span>
                     </button>
-                    <button id="btn-tab-sheet" onclick="switchTab('sheet')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5 shrink-0">
-                        <i class="fa-solid fa-calendar-check"></i> <span>Điểm Danh</span>
+                    <button id="btn-tab-sheet" onclick="switchTab('sheet')" class="px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition flex items-center gap-1.5 shrink-0">
+                        <i class="fa-solid fa-calendar-check text-sky-400"></i> <span>Điểm Danh</span>
                     </button>
-                    <button id="btn-tab-payments" onclick="switchTab('payments')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5 shrink-0">
-                        <i class="fa-solid fa-money-bill-wave"></i> <span>Đóng Tiền</span>
+                    <button id="btn-tab-payments" onclick="switchTab('payments')" class="px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition flex items-center gap-1.5 shrink-0">
+                        <i class="fa-solid fa-money-bill-wave text-emerald-400"></i> <span>Đóng Tiền</span>
                     </button>
-                    <button id="btn-tab-batches" onclick="switchTab('batches')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5 shrink-0">
-                        <i class="fa-solid fa-boxes-stacked"></i> <span>Lô Cầu</span>
+                    <button id="btn-tab-batches" onclick="switchTab('batches')" class="px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition flex items-center gap-1.5 shrink-0">
+                        <i class="fa-solid fa-boxes-stacked text-amber-400"></i> <span>Lô Cầu</span>
                     </button>
-                    <button id="btn-tab-qr" onclick="switchTab('qr')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5 shrink-0">
-                        <i class="fa-solid fa-qrcode text-sky-400"></i> <span>VietQR</span>
+                    <button id="btn-tab-qr" onclick="switchTab('qr')" class="px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition flex items-center gap-1.5 shrink-0">
+                        <i class="fa-solid fa-qrcode text-indigo-400"></i> <span>VietQR</span>
                     </button>
                     
                     <!-- Admin Tabs -->
-                    <div id="admin-tabs" class="hidden flex items-center space-x-1 sm:space-x-1.5 shrink-0">
-                        <button id="btn-tab-ai" onclick="switchTab('ai')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <div id="admin-tabs" class="hidden flex items-center space-x-1.5 shrink-0 pl-1 border-l border-slate-800">
+                        <button id="btn-tab-ai" onclick="switchTab('ai')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-purple-300 hover:bg-purple-950/50 transition flex items-center gap-1.5">
                             <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> <span>AI</span>
                         </button>
-                        <button id="btn-tab-script" onclick="switchTab('script')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <button id="btn-tab-script" onclick="switchTab('script')" class="px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-emerald-300 hover:bg-emerald-950/50 transition flex items-center gap-1.5">
                             <i class="fa-solid fa-code text-emerald-400"></i> <span>Code</span>
                         </button>
                     </div>
@@ -136,7 +160,7 @@
 
                 <!-- Right Actions: Role Toggle -->
                 <div class="flex items-center space-x-2 shrink-0">
-                    <button id="btn-toggle-role" onclick="toggleRole()" class="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition flex items-center gap-1.5 shadow border border-slate-700">
+                    <button id="btn-toggle-role" onclick="toggleRole()" class="px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-extrabold rounded-xl bg-slate-900 hover:bg-slate-800 text-white transition flex items-center gap-1.5 shadow-sm border border-slate-700/80 active:scale-95">
                         <i class="fa-solid fa-user-shield text-amber-400"></i> <span id="btn-role-text">Admin</span>
                     </button>
                 </div>
@@ -145,20 +169,20 @@
     </header>
 
     <!-- ADMIN ACTION BAR -->
-    <div id="admin-action-bar" class="hidden bg-white border-b border-slate-200 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 shadow-xs z-40 relative">
+    <div id="admin-action-bar" class="hidden bg-white/95 backdrop-blur-md border-b border-slate-200 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 shadow-xs z-40 relative">
         <div class="max-w-[1720px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 text-xs sm:text-sm">
             <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-                <button onclick="openAddSessionModal()" class="px-3 sm:px-4 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition flex items-center gap-1.5 shadow-xs text-xs sm:text-sm">
+                <button onclick="openAddSessionModal()" class="px-3.5 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition flex items-center gap-1.5 shadow-xs text-xs sm:text-sm active:scale-95">
                     <i class="fa-solid fa-calendar-plus"></i> + Buổi Chơi
                 </button>
-                <button onclick="openAddMemberModal()" class="px-3 sm:px-4 py-1.5 sm:py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-semibold transition flex items-center gap-1.5 shadow-xs text-xs sm:text-sm">
+                <button onclick="openAddMemberModal()" class="px-3.5 sm:px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold transition flex items-center gap-1.5 shadow-xs text-xs sm:text-sm active:scale-95">
                     <i class="fa-solid fa-user-plus"></i> + Thành Viên
                 </button>
-                <button onclick="openPriceModal()" class="px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl transition flex items-center gap-1.5 shadow-xs text-xs sm:text-sm">
+                <button onclick="openPriceModal()" class="px-3.5 sm:px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl transition flex items-center gap-1.5 shadow-xs text-xs sm:text-sm active:scale-95">
                     <i class="fa-solid fa-box-archive"></i> + Lô Cầu
                 </button>
             </div>
-            <div class="flex items-center justify-between sm:justify-end gap-4 text-slate-700 font-medium bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs sm:text-sm">
+            <div class="flex items-center justify-between sm:justify-end gap-4 text-slate-700 font-medium bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm">
                 <span>Tổng chi: <strong id="summary-total-cost" class="text-amber-700 font-bold font-mono">0</strong></span>
                 <span>Đã thu: <strong id="summary-total-paid" class="text-emerald-700 font-bold font-mono">0</strong></span>
             </div>
@@ -166,90 +190,132 @@
     </div>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 max-w-[1720px] w-full mx-auto p-3 sm:p-6 lg:p-8 overflow-y-auto space-y-6 lg:space-y-8 pb-24 sm:pb-12">
+    <main class="flex-1 max-w-[1720px] w-full mx-auto p-3.5 sm:p-6 lg:p-8 overflow-y-auto space-y-6 lg:space-y-8 pb-32 sm:pb-16">
         
         <!-- ============================================================== -->
         <!-- TAB 1: 🏠 TỔNG QUAN & THẺ THÀNH VIÊN (DEFAULT MOBILE-FIRST VIEW) -->
         <!-- ============================================================== -->
         <section id="tab-members" class="space-y-6">
             
-            <!-- Hero Club Banner -->
-            <div id="member-banner" class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white p-4 sm:p-6 rounded-2xl shadow-sm flex items-start gap-4 sm:gap-5 border border-slate-800 relative overflow-hidden">
-                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl pointer-events-none"></div>
-                <img src="logo.png" onerror="this.src='https://lh3.googleusercontent.com/d/1TqOD0ecIMUMmst9mSq-h86BDcs8rQZFD'" alt="Victoria Logo" class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl object-cover shadow-lg shrink-0 border-2 border-amber-400/50 bg-white">
-                <div class="flex-1">
-                    <div class="flex items-center gap-2">
-                        <h2 class="text-base sm:text-lg font-black text-white tracking-wide">CÂU LẠC BỘ CẦU LÔNG VICTORIA</h2>
+            <!-- LUXURY SPORT CLUB HERO BANNER -->
+            <div id="member-banner" class="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white p-5 sm:p-7 rounded-3xl shadow-xl border border-amber-500/20 relative overflow-hidden">
+                <!-- Background ambient glows -->
+                <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-10 -top-10 w-48 h-48 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative z-10">
+                    <div class="flex items-start sm:items-center gap-4 sm:gap-5">
+                        <div class="relative shrink-0">
+                            <div class="absolute -inset-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 rounded-3xl blur-xs opacity-75"></div>
+                            <img src="logo.png" onerror="this.src='https://lh3.googleusercontent.com/d/1TqOD0ecIMUMmst9mSq-h86BDcs8rQZFD'" alt="Victoria Logo" class="relative w-14 h-14 sm:w-18 sm:h-18 rounded-2xl object-cover shadow-2xl border-2 border-amber-400/60 bg-white">
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] sm:text-xs font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow-xs">SÂN CHƠI & ĐAM MÊ</span>
+                                <span class="text-xs text-slate-400 font-medium">Victoria Badminton Club</span>
+                            </div>
+                            <h2 class="text-lg sm:text-2xl font-black bg-gradient-to-r from-white via-slate-100 to-amber-200 bg-clip-text text-transparent tracking-tight mt-1">
+                                CÂU LẠC BỘ CẦU LÔNG VICTORIA
+                            </h2>
+                            <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                                Theo dõi điểm danh minh bạch, tính chi phí cầu tự động và thanh toán quỹ qua VietQR 1 chạm.
+                            </p>
+                        </div>
                     </div>
-                    <p class="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
-                        Ứng dụng theo dõi điểm danh, tính tiền cầu tự động và chuyển khoản VietQR 1 chạm. Bấm vào nút <strong>QR</strong> trên mỗi thẻ để thanh toán nhanh.
-                    </p>
+
+                    <!-- Live Fund Collection Progress Box -->
+                    <div class="w-full md:w-auto bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800/90 shadow-inner flex flex-col gap-2 shrink-0 min-w-[260px]">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-chart-line text-emerald-400"></i> Tiến độ thu quỹ:
+                            </span>
+                            <span id="kpi-fund-percent" class="text-emerald-400 font-extrabold font-mono text-sm">100%</span>
+                        </div>
+                        <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                            <div id="kpi-fund-bar" class="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-300 rounded-full transition-all duration-700 shadow-[0_0_12px_rgba(16,185,129,0.5)]" style="width: 100%;"></div>
+                        </div>
+                        <div class="flex justify-between items-center text-[11px] text-slate-400 pt-1">
+                            <span id="kpi-banner-sessions">🏸 <strong class="text-slate-200">10</strong> buổi chơi</span>
+                            <span id="kpi-banner-members">👥 <strong class="text-slate-200">11</strong> thành viên</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 4 KPI Dashboard Cards -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5">
-                    <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-lg shrink-0">
+            <!-- 4 KPI 3D GLASS DASHBOARD CARDS -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5">
+                <!-- Card 1: Tổng Chi -->
+                <div class="bg-white rounded-3xl p-4 sm:p-5 border border-amber-200/80 shadow-luxury hover:shadow-glow-amber transition-all duration-300 flex items-center gap-3.5 sm:gap-4 relative overflow-hidden group">
+                    <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-amber-500/5 rounded-full blur-xl group-hover:scale-150 transition duration-500"></div>
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 flex items-center justify-center text-xl shrink-0 shadow-[0_4px_15px_rgba(245,158,11,0.3)]">
                         <i class="fa-solid fa-receipt"></i>
                     </div>
                     <div class="min-w-0">
-                        <p class="text-[11px] sm:text-xs text-slate-500 font-semibold uppercase tracking-wider">Tổng Chi Phí</p>
-                        <p id="kpi-total-cost" class="text-sm sm:text-base lg:text-lg font-extrabold text-amber-950 font-mono truncate">0đ</p>
+                        <p class="text-[11px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider">Tổng Chi Phí</p>
+                        <p id="kpi-total-cost" class="text-base sm:text-lg lg:text-xl font-black text-slate-900 font-mono truncate tracking-tight">0đ</p>
                     </div>
                 </div>
-                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg shrink-0">
+
+                <!-- Card 2: Đã Thu -->
+                <div class="bg-white rounded-3xl p-4 sm:p-5 border border-emerald-200/80 shadow-luxury hover:shadow-glow-emerald transition-all duration-300 flex items-center gap-3.5 sm:gap-4 relative overflow-hidden group">
+                    <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-emerald-500/5 rounded-full blur-xl group-hover:scale-150 transition duration-500"></div>
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-slate-950 flex items-center justify-center text-xl shrink-0 shadow-[0_4px_15px_rgba(16,185,129,0.3)]">
                         <i class="fa-solid fa-hand-holding-dollar"></i>
                     </div>
                     <div class="min-w-0">
-                        <p class="text-[11px] sm:text-xs text-slate-500 font-semibold uppercase tracking-wider">Đã Thu (Quỹ)</p>
-                        <p id="kpi-total-paid" class="text-sm sm:text-base lg:text-lg font-extrabold text-emerald-700 font-mono truncate">0đ</p>
+                        <p class="text-[11px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider">Đã Thu (Quỹ)</p>
+                        <p id="kpi-total-paid" class="text-base sm:text-lg lg:text-xl font-black text-emerald-700 font-mono truncate tracking-tight">0đ</p>
                     </div>
                 </div>
-                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5">
-                    <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg shrink-0">
+
+                <!-- Card 3: Còn Nợ -->
+                <div class="bg-white rounded-3xl p-4 sm:p-5 border border-rose-200/80 shadow-luxury hover:shadow-glow-rose transition-all duration-300 flex items-center gap-3.5 sm:gap-4 relative overflow-hidden group">
+                    <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-rose-500/5 rounded-full blur-xl group-hover:scale-150 transition duration-500"></div>
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 text-white flex items-center justify-center text-xl shrink-0 shadow-[0_4px_15px_rgba(244,63,94,0.3)]">
                         <i class="fa-solid fa-circle-exclamation"></i>
                     </div>
                     <div class="min-w-0">
-                        <p class="text-[11px] sm:text-xs text-slate-500 font-semibold uppercase tracking-wider">Chưa Thu (Nợ)</p>
-                        <p id="kpi-total-debt" class="text-sm sm:text-base lg:text-lg font-extrabold text-rose-600 font-mono truncate">0đ</p>
+                        <p class="text-[11px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider">Chưa Thu (Nợ)</p>
+                        <p id="kpi-total-debt" class="text-base sm:text-lg lg:text-xl font-black text-rose-600 font-mono truncate tracking-tight">0đ</p>
                     </div>
                 </div>
-                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5">
-                    <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center text-lg shrink-0">
+
+                <!-- Card 4: Thành Viên -->
+                <div class="bg-white rounded-3xl p-4 sm:p-5 border border-sky-200/80 shadow-luxury hover:shadow-glow-sky transition-all duration-300 flex items-center gap-3.5 sm:gap-4 relative overflow-hidden group">
+                    <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-sky-500/5 rounded-full blur-xl group-hover:scale-150 transition duration-500"></div>
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-400 to-indigo-500 text-slate-950 flex items-center justify-center text-xl shrink-0 shadow-[0_4px_15px_rgba(56,189,248,0.3)]">
                         <i class="fa-solid fa-users"></i>
                     </div>
                     <div class="min-w-0">
-                        <p class="text-[11px] sm:text-xs text-slate-500 font-semibold uppercase tracking-wider">Thành Viên</p>
-                        <p id="kpi-total-members" class="text-sm sm:text-base lg:text-lg font-extrabold text-slate-900 font-mono">0 người</p>
+                        <p class="text-[11px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider">Thành Viên CLB</p>
+                        <p id="kpi-total-members" class="text-base sm:text-lg lg:text-xl font-black text-slate-900 font-mono truncate tracking-tight">0 người</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Search & Quick Filter Controls -->
-            <div class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <!-- SEARCH & QUICK FILTER CONTROLS -->
+            <div class="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-luxury flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5">
                 <div class="relative flex-1 max-w-md">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                    <input type="text" id="member-card-search" oninput="renderMemberCards()" placeholder="Tìm nhanh theo tên thành viên..." class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-400 focus:outline-none transition">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="member-card-search" oninput="renderMemberCards()" placeholder="🔍 Tìm nhanh thành viên theo tên..." class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-amber-400 focus:outline-none transition shadow-inner font-medium">
                 </div>
                 
                 <!-- Filter Pills -->
-                <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar shrink-0">
-                    <button id="filter-btn-all" onclick="setMemberFilter('all')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-900 text-white transition shadow-xs">
+                <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar shrink-0">
+                    <button id="filter-btn-all" onclick="setMemberFilter('all')" class="px-4 py-2 text-xs font-black rounded-2xl bg-slate-950 text-white transition shadow-sm active:scale-95">
                         Tất cả (<span id="count-all">0</span>)
                     </button>
-                    <button id="filter-btn-debt" onclick="setMemberFilter('debt')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 text-rose-700 hover:bg-rose-50 transition border border-slate-200">
+                    <button id="filter-btn-debt" onclick="setMemberFilter('debt')" class="px-4 py-2 text-xs font-black rounded-2xl bg-rose-50 text-rose-700 hover:bg-rose-100 transition border border-rose-200/80 active:scale-95 shadow-2xs">
                         🔴 Còn nợ (<span id="count-debt">0</span>)
                     </button>
-                    <button id="filter-btn-paid" onclick="setMemberFilter('paid')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 text-emerald-700 hover:bg-emerald-50 transition border border-slate-200">
+                    <button id="filter-btn-paid" onclick="setMemberFilter('paid')" class="px-4 py-2 text-xs font-black rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-200/80 active:scale-95 shadow-2xs">
                         🟢 Đã đủ (<span id="count-paid">0</span>)
                     </button>
                 </div>
             </div>
 
-            <!-- Member Cards Grid Container -->
-            <div id="member-cards-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+            <!-- MEMBER CARDS CONTAINER (VIP MEMBERSHIP CARDS) -->
+            <div id="member-cards-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 <!-- Rendered dynamically by renderMemberCards() -->
             </div>
         </section>
@@ -258,13 +324,13 @@
         <!-- TAB 2: 📋 BẢNG ĐIỂM DANH CHI TIẾT (ATTENDANCE SHEET GRID) -->
         <!-- ============================================================== -->
         <section id="tab-sheet" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden relative">
-                <div class="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="bg-white rounded-3xl shadow-luxury border border-slate-200/90 overflow-hidden relative">
+                <div class="p-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
-                        <h3 class="text-sm sm:text-base lg:text-lg font-bold text-slate-900 flex items-center gap-2.5">
-                            <i class="fa-solid fa-calendar-check text-amber-500"></i> BẢNG ĐIỂM DANH & TÍNH TIỀN THEO BUỔI
+                        <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2.5">
+                            <i class="fa-solid fa-calendar-check text-amber-400"></i> BẢNG ĐIỂM DANH & TÍNH TIỀN THEO BUỔI
                         </h3>
-                        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Sắp xếp ưu tiên người có số dư âm (nợ) lên trước. Cột buổi chơi xếp từ mới nhất ➡️ cũ nhất.</p>
+                        <p class="text-xs text-slate-300 mt-0.5">Sắp xếp ưu tiên người nợ lên trước. Cột buổi chơi xếp từ mới nhất ➡️ cũ nhất.</p>
                     </div>
                 </div>
                 <div class="overflow-x-auto custom-scrollbar max-h-[65vh] sm:max-h-[72vh] min-h-[420px] touch-pan-x touch-pan-y">
@@ -281,14 +347,14 @@
         <!-- TAB 3: 💰 LỊCH SỬ ĐÓNG TIỀN (PAYMENT MATRIX GRID) -->
         <!-- ============================================================== -->
         <section id="tab-payments" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden relative">
-                <div class="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div class="bg-white rounded-3xl shadow-luxury border border-slate-200/90 overflow-hidden relative">
+                <div class="p-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div>
-                        <h3 class="text-sm sm:text-base lg:text-lg font-bold text-slate-900 flex items-center gap-2.5">
-                            <i class="fa-solid fa-money-check-dollar text-emerald-600"></i> BẢNG NHẬP SỐ TIỀN THÀNH VIÊN ĐÓNG MỖI LẦN
+                        <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2.5">
+                            <i class="fa-solid fa-money-check-dollar text-emerald-400"></i> BẢNG GHI NHẬN TIỀN THÀNH VIÊN ĐÓNG MỖI LẦN
                         </h3>
-                        <p class="text-xs sm:text-sm text-slate-500 mt-1">
-                            Hàng ngang: <strong>Tên thành viên</strong> • Cột dọc: <strong>Tên Buổi</strong> (Cũ ➡️ Mới) • Dưới cùng: <strong>Tổng tiền</strong> & <strong>Dư / Thiếu</strong>
+                        <p class="text-xs text-slate-300 mt-1">
+                            Hàng ngang: <strong>Tên thành viên</strong> • Cột dọc: <strong>Tên Buổi</strong> (Cũ ➡️ Mới) • Dưới cùng: <strong>Tổng tiền & Dư / Thiếu</strong>
                         </p>
                     </div>
                 </div>
@@ -307,10 +373,10 @@
         <!-- TAB 4: 📦 BẢNG GIÁ MUA CẦU (SHUTTLE BATCHES) -->
         <!-- ============================================================== -->
         <section id="tab-batches" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-4 sm:p-6 flex flex-col">
+            <div class="bg-white rounded-3xl shadow-luxury border border-slate-200/90 p-5 sm:p-7 flex flex-col">
                 <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
                     <div>
-                        <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <h3 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
                             <i class="fa-solid fa-boxes-stacked text-amber-500"></i> BẢNG GIÁ & DANH SÁCH MUA CẦU (MỚI ➡️ CŨ)
                         </h3>
                         <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Theo dõi giá nhập từng hộp và giá 1 quả cầu dùng để tính chi phí các buổi chơi.</p>
@@ -337,50 +403,56 @@
         </section>
 
         <!-- ============================================================== -->
-        <!-- TAB 5: 💳 THÔNG TIN CHUYỂN KHOẢN (VIETQR PAY) -->
+        <!-- TAB 5: 💳 THÔNG TIN CHUYỂN KHOẢN (APPLE WALLET STYLE VIETQR) -->
         <!-- ============================================================== -->
         <section id="tab-qr" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-4 sm:p-6 lg:p-8">
-                <div class="flex justify-between items-center mb-5 pb-3.5 border-b border-slate-100">
+            <div class="bg-white rounded-3xl shadow-luxury border border-slate-200/90 p-5 sm:p-8">
+                <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
                     <div>
-                        <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-                            <i class="fa-solid fa-qrcode text-sky-500"></i> THÔNG TIN CHUYỂN KHOẢN QUỸ CLB (VIETQR)
+                        <h3 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-qrcode text-amber-500"></i> THÔNG TIN CHUYỂN KHOẢN QUỸ CLB (VIETQR)
                         </h3>
                         <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Sử dụng App Ngân Hàng hoặc Ví Điện Tử bất kỳ để quét mã chuyển khoản.</p>
                     </div>
-                    <button id="btn-edit-qr" onclick="openQRModal()" class="hidden text-xs sm:text-sm text-sky-600 hover:underline font-semibold items-center gap-1">
+                    <button id="btn-edit-qr" onclick="openQRModal()" class="hidden text-xs sm:text-sm text-sky-600 hover:underline font-bold items-center gap-1">
                         <i class="fa-solid fa-pen"></i> Chỉnh sửa
                     </button>
                 </div>
 
-                <div class="flex flex-col md:flex-row items-center gap-6 sm:gap-8 justify-center max-w-3xl mx-auto">
+                <div class="flex flex-col md:flex-row items-center gap-6 sm:gap-10 justify-center max-w-4xl mx-auto">
                     <!-- QR Box -->
-                    <div class="w-[240px] h-[240px] sm:w-[280px] sm:h-[280px] shrink-0 bg-white p-3 rounded-2xl shadow-md border border-slate-200 flex items-center justify-center">
-                        <img id="display-qr-img" src="" alt="QR Code" class="w-full h-full object-contain mx-auto rounded-xl">
+                    <div class="w-[260px] h-[260px] sm:w-[300px] sm:h-[300px] shrink-0 bg-white p-3.5 rounded-3xl shadow-2xl border-2 border-slate-200/80 flex items-center justify-center relative group">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-amber-400 to-sky-400 rounded-3xl blur-xs opacity-40 group-hover:opacity-75 transition duration-300"></div>
+                        <img id="display-qr-img" src="" alt="QR Code" class="relative w-full h-full object-contain mx-auto rounded-2xl">
                     </div>
                     
-                    <!-- Bank Info Card -->
-                    <div class="space-y-4 text-left bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-5 sm:p-6 rounded-2xl border border-slate-800 w-full shadow-lg relative overflow-hidden">
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Tài Khoản Quỹ CLB</span>
-                            <i class="fa-solid fa-credit-card text-slate-400 text-lg"></i>
+                    <!-- Luxury Titanium Card (Apple Wallet Style) -->
+                    <div class="space-y-5 text-left bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-6 sm:p-7 rounded-3xl border border-amber-500/30 w-full shadow-2xl relative overflow-hidden">
+                        <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                        
+                        <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-wifi rotate-90 text-amber-400 text-sm"></i>
+                                <span class="text-xs font-black text-amber-400 uppercase tracking-widest">VICTORIA BADMINTON CARD</span>
+                            </div>
+                            <span class="text-xs text-slate-400 font-mono font-bold">Vikki Pay</span>
                         </div>
                         <div>
-                            <p class="text-xs text-slate-400 uppercase font-semibold tracking-wider">Ngân Hàng</p>
-                            <p id="display-bank-name" class="text-base sm:text-lg font-bold text-white mt-0.5">VIKKI BANK</p>
+                            <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Ngân Hàng Nhận</p>
+                            <p id="display-bank-name" class="text-base sm:text-xl font-black text-white mt-0.5">VIKKI BANK</p>
                         </div>
                         <div>
-                            <p class="text-xs text-slate-400 uppercase font-semibold tracking-wider">Số Tài Khoản</p>
-                            <div class="flex items-center gap-2.5 mt-0.5">
-                                <p id="display-bank-acc" class="text-xl sm:text-2xl font-black text-amber-400 font-mono tracking-wider">965680589</p>
-                                <button onclick="copyAcc()" class="text-slate-300 hover:text-white bg-slate-700/60 hover:bg-slate-700 transition px-2.5 py-1 rounded-lg text-xs flex items-center gap-1" title="Sao chép STK">
-                                    <i class="fa-regular fa-copy"></i> Copy
+                            <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Số Tài Khoản Quỹ</p>
+                            <div class="flex items-center gap-3 mt-1">
+                                <p id="display-bank-acc" class="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-widest">965680589</p>
+                                <button onclick="copyAcc()" class="text-slate-900 bg-amber-400 hover:bg-amber-300 font-black transition px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-sm active:scale-95" title="Sao chép STK">
+                                    <i class="fa-regular fa-copy"></i> Sao chép
                                 </button>
                             </div>
                         </div>
                         <div>
-                            <p class="text-xs text-slate-400 uppercase font-semibold tracking-wider">Chủ Tài Khoản</p>
-                            <p id="display-bank-owner" class="text-sm sm:text-base font-bold text-white uppercase mt-0.5">HUYNH THI QUY</p>
+                            <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Chủ Tài Khoản</p>
+                            <p id="display-bank-owner" class="text-sm sm:text-base font-bold text-slate-200 uppercase mt-0.5 tracking-wider">HUYNH THI QUY</p>
                         </div>
                     </div>
                 </div>
@@ -391,16 +463,16 @@
         <!-- TAB 6: 🤖 AI ASSISTANT (ADMIN ONLY) -->
         <!-- ============================================================== -->
         <section id="tab-ai" class="hidden space-y-6 h-full">
-            <div class="bg-white rounded-2xl shadow-xs border border-purple-200 flex flex-col h-[600px] overflow-hidden">
+            <div class="bg-white rounded-3xl shadow-luxury border border-purple-200 flex flex-col h-[600px] overflow-hidden">
                 <div class="p-4 border-b border-purple-100 bg-purple-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <h3 class="text-sm font-bold text-purple-900 flex items-center gap-2">
                         <i class="fa-solid fa-wand-magic-sparkles text-purple-600"></i> AI Trợ Lý CLB (Gemini)
                     </h3>
                     <div class="flex gap-2 flex-wrap">
-                        <button onclick="aiGenerateReminder()" class="px-3 py-1.5 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-xl text-xs font-bold transition shadow-xs border border-rose-200 flex items-center gap-1">
+                        <button onclick="aiGenerateReminder()" class="px-3.5 py-1.5 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-xl text-xs font-bold transition shadow-xs border border-rose-200 flex items-center gap-1.5 active:scale-95">
                             <i class="fa-solid fa-comment-dots"></i> Nhắc nợ
                         </button>
-                        <button onclick="aiAnalyzeFinances()" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-xl text-xs font-bold transition shadow-xs border border-emerald-200 flex items-center gap-1">
+                        <button onclick="aiAnalyzeFinances()" class="px-3.5 py-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-xl text-xs font-bold transition shadow-xs border border-emerald-200 flex items-center gap-1.5 active:scale-95">
                             <i class="fa-solid fa-chart-pie"></i> Phân tích quỹ
                         </button>
                     </div>
@@ -408,18 +480,18 @@
                 
                 <div id="ai-chat-box" class="flex-1 p-4 overflow-y-auto space-y-5 custom-scrollbar bg-slate-50/50">
                     <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md">
-                            <i class="fa-solid fa-robot text-xs"></i>
+                        <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                            <i class="fa-solid fa-robot text-sm"></i>
                         </div>
-                        <div class="bg-white border border-purple-100 p-3.5 rounded-2xl rounded-tl-none text-sm text-slate-800 max-w-[85%] shadow-xs leading-relaxed">
+                        <div class="bg-white border border-purple-100 p-4 rounded-3xl rounded-tl-none text-sm text-slate-800 max-w-[85%] shadow-xs leading-relaxed">
                             Chào sếp! Tôi là trợ lý AI của CLB Cầu Lông Victoria. Sếp hãy bấm các nút phía trên để tự động soạn tin nhắc nợ gửi nhóm Zalo, hoặc gõ yêu cầu vào khung chat bên dưới nhé.
                         </div>
                     </div>
                 </div>
                 
-                <div class="p-3 border-t border-slate-200 bg-white flex gap-2">
-                    <input type="text" id="ai-chat-input" onkeydown="if(event.key==='Enter') aiSendCustomMessage()" placeholder="Hỏi AI..." class="flex-1 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
-                    <button onclick="aiSendCustomMessage()" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition shadow-md flex items-center gap-2">
+                <div class="p-3.5 border-t border-slate-200 bg-white flex gap-2">
+                    <input type="text" id="ai-chat-input" onkeydown="if(event.key==='Enter') aiSendCustomMessage()" placeholder="Hỏi AI bất kỳ điều gì..." class="flex-1 p-3 rounded-2xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
+                    <button onclick="aiSendCustomMessage()" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold transition shadow-md flex items-center gap-2 active:scale-95">
                         <i class="fa-solid fa-paper-plane"></i> <span class="hidden sm:inline">Gửi</span>
                     </button>
                 </div>
@@ -430,34 +502,34 @@
         <!-- TAB 7: 💻 APPS SCRIPT INFO (ADMIN ONLY) -->
         <!-- ============================================================== -->
         <section id="tab-script" class="hidden space-y-6">
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-luxury">
                 <h3 class="text-sm font-bold text-slate-900 pb-3 border-b border-slate-100">Tích hợp Google Apps Script</h3>
                 <p class="text-xs text-slate-600 mt-2">Mã nguồn này được tối ưu 100% để chạy trên Apps Script Web App và REST API kết nối Google Sheets.</p>
                 <p class="text-xs text-sky-600 font-bold mt-2">Cấu hình Email Admin hiện tại:</p>
-                <pre class="mt-2 bg-slate-900 text-emerald-300 p-3 rounded-xl text-[11px] font-mono"><code>const adminEmails = ['sayoonara.htq90@gmail.com'];</code></pre>
+                <pre class="mt-2 bg-slate-900 text-emerald-300 p-3 rounded-2xl text-[11px] font-mono"><code>const adminEmails = ['sayoonara.htq90@gmail.com'];</code></pre>
             </div>
         </section>
     </main>
 
-    <!-- MOBILE BOTTOM NAVIGATION BAR (FIXED AT BOTTOM FOR MOBILE) -->
-    <nav id="mobile-bottom-nav" class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 flex justify-around items-center py-2 px-1 text-[10px] font-bold text-slate-400">
-        <button id="mb-nav-members" onclick="switchTab('members')" class="flex flex-col items-center gap-1 text-amber-400 py-1 px-2.5 transition">
+    <!-- FLOATING ISLAND MOBILE NAVIGATION (ULTRA MODERN iOS STYLE) -->
+    <nav id="mobile-bottom-nav" class="sm:hidden fixed bottom-3 left-3 right-3 z-50 bg-slate-950/90 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] flex justify-around items-center py-2 px-1 text-[10px] font-bold text-slate-400">
+        <button id="mb-nav-members" onclick="switchTab('members')" class="flex flex-col items-center gap-1 text-amber-400 py-1.5 px-3 rounded-2xl transition-all duration-200 active:scale-90">
             <i class="fa-solid fa-users text-base"></i>
             <span>Thành viên</span>
         </button>
-        <button id="mb-nav-sheet" onclick="switchTab('sheet')" class="flex flex-col items-center gap-1 text-slate-400 py-1 px-2.5 transition">
+        <button id="mb-nav-sheet" onclick="switchTab('sheet')" class="flex flex-col items-center gap-1 text-slate-400 py-1.5 px-3 rounded-2xl transition-all duration-200 active:scale-90">
             <i class="fa-solid fa-calendar-check text-base"></i>
             <span>Điểm danh</span>
         </button>
-        <button id="mb-nav-payments" onclick="switchTab('payments')" class="flex flex-col items-center gap-1 text-slate-400 py-1 px-2.5 transition">
+        <button id="mb-nav-payments" onclick="switchTab('payments')" class="flex flex-col items-center gap-1 text-slate-400 py-1.5 px-3 rounded-2xl transition-all duration-200 active:scale-90">
             <i class="fa-solid fa-money-bill-wave text-base"></i>
             <span>Đóng tiền</span>
         </button>
-        <button id="mb-nav-qr" onclick="switchTab('qr')" class="flex flex-col items-center gap-1 text-slate-400 py-1 px-2.5 transition">
+        <button id="mb-nav-qr" onclick="switchTab('qr')" class="flex flex-col items-center gap-1 text-slate-400 py-1.5 px-3 rounded-2xl transition-all duration-200 active:scale-90">
             <i class="fa-solid fa-qrcode text-base text-sky-400"></i>
             <span>VietQR</span>
         </button>
-        <button id="mb-nav-ai" onclick="switchTab('ai')" class="hidden flex flex-col items-center gap-1 text-slate-400 py-1 px-2.5 transition">
+        <button id="mb-nav-ai" onclick="switchTab('ai')" class="hidden flex flex-col items-center gap-1 text-slate-400 py-1.5 px-3 rounded-2xl transition-all duration-200 active:scale-90">
             <i class="fa-solid fa-wand-magic-sparkles text-base text-purple-400"></i>
             <span>AI</span>
         </button>
@@ -533,82 +605,82 @@
     </div>
 
     <!-- MODAL: PERSONAL VIETQR QUICK PAY POPUP -->
-    <div id="modal-personal-qr" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-3 sm:p-4">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-5 sm:p-6 shadow-2xl border border-slate-100 relative overflow-hidden flex flex-col">
-            <div class="absolute top-0 left-0 w-full h-2.5 bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-600"></div>
+    <div id="modal-personal-qr" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[200] hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-7 shadow-2xl border border-slate-200/90 relative overflow-hidden flex flex-col">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-600"></div>
             
-            <div class="flex justify-between items-center mb-3 pb-2.5 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-sm font-bold">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center text-base font-black shadow-sm">
                         <i class="fa-solid fa-qrcode"></i>
                     </div>
                     <div>
-                        <h3 class="text-sm sm:text-base font-bold text-slate-900 leading-tight">Chuyển Khoản Quỹ CLB</h3>
-                        <p class="text-[11px] text-slate-500">Mã VietQR tự động theo số tiền nợ</p>
+                        <h3 class="text-base font-black text-slate-900 leading-tight">Chuyển Khoản Quỹ CLB</h3>
+                        <p class="text-[11px] text-slate-500 font-medium">Mã VietQR tự động theo số nợ chính xác</p>
                     </div>
                 </div>
-                <button onclick="closeModal('modal-personal-qr')" class="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full w-7 h-7 flex items-center justify-center transition">
+                <button onclick="closeModal('modal-personal-qr')" class="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full w-8 h-8 flex items-center justify-center transition">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
             <!-- Member & Amount Box -->
-            <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-3.5 rounded-2xl text-center space-y-1 mb-3.5 shadow-inner">
-                <p class="text-xs text-slate-300">Thành viên: <strong id="pqr-member-name" class="text-amber-400 font-bold">---</strong></p>
-                <div class="flex items-center justify-center gap-1.5">
-                    <span class="text-xs text-slate-400 uppercase font-semibold">Số tiền cần đóng:</span>
-                    <span id="pqr-amount-text" class="text-lg sm:text-xl font-black text-rose-400 font-mono tracking-tight">0đ</span>
+            <div class="bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-4 rounded-2xl text-center space-y-1.5 mb-4 shadow-xl border border-slate-800">
+                <p class="text-xs text-slate-300 font-medium">Thành viên: <strong id="pqr-member-name" class="text-amber-300 font-black text-sm">---</strong></p>
+                <div class="flex items-center justify-center gap-2">
+                    <span class="text-[11px] text-slate-400 uppercase font-bold tracking-wider">Số tiền nợ:</span>
+                    <span id="pqr-amount-text" class="text-xl sm:text-2xl font-black text-rose-400 font-mono tracking-tight">0đ</span>
                 </div>
             </div>
 
             <!-- QR Image Box -->
-            <div class="w-[200px] h-[200px] sm:w-[220px] sm:h-[220px] mx-auto bg-white p-2.5 rounded-2xl border-2 border-dashed border-amber-400/80 shadow-md flex items-center justify-center mb-3.5 relative">
+            <div class="w-[210px] h-[210px] sm:w-[230px] sm:h-[230px] mx-auto bg-white p-3 rounded-2xl border-2 border-dashed border-amber-400/90 shadow-lg flex items-center justify-center mb-4 relative group">
                 <img id="pqr-img" src="" alt="Personal VietQR" class="w-full h-full object-contain rounded-xl">
             </div>
 
             <!-- Details & Copy Buttons -->
-            <div class="space-y-2 text-xs bg-slate-50 p-3 rounded-2xl border border-slate-200">
+            <div class="space-y-2.5 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
                 <div class="flex justify-between items-center">
-                    <span class="text-slate-500 font-medium">Ngân hàng:</span>
-                    <strong id="pqr-bank-name" class="text-slate-800 font-bold">VIKKI BANK</strong>
+                    <span class="text-slate-500 font-bold uppercase text-[10px]">Ngân hàng</span>
+                    <strong id="pqr-bank-name" class="text-slate-800 font-extrabold">VIKKI BANK</strong>
                 </div>
                 <div class="flex justify-between items-center">
-                    <span class="text-slate-500 font-medium">Số tài khoản:</span>
-                    <div class="flex items-center gap-1.5">
-                        <strong id="pqr-bank-acc" class="text-sky-600 font-mono font-bold">965680589</strong>
-                        <button onclick="copyPqrAcc()" class="text-slate-400 hover:text-sky-600 p-0.5" title="Copy STK"><i class="fa-regular fa-copy"></i></button>
+                    <span class="text-slate-500 font-bold uppercase text-[10px]">Số tài khoản</span>
+                    <div class="flex items-center gap-2">
+                        <strong id="pqr-bank-acc" class="text-sky-700 font-mono font-black text-sm">965680589</strong>
+                        <button onclick="copyPqrAcc()" class="text-slate-500 hover:text-slate-900 bg-slate-200/80 px-2 py-0.5 rounded-md font-bold text-[11px] flex items-center gap-1 active:scale-95" title="Copy STK"><i class="fa-regular fa-copy"></i> Copy</button>
                     </div>
                 </div>
                 <div class="flex justify-between items-center">
-                    <span class="text-slate-500 font-medium">Nội dung CK:</span>
-                    <div class="flex items-center gap-1.5 max-w-[180px]">
-                        <span id="pqr-note" class="text-slate-800 font-medium truncate">---</span>
-                        <button onclick="copyPqrNote()" class="text-slate-400 hover:text-sky-600 p-0.5 shrink-0" title="Copy nội dung"><i class="fa-regular fa-copy"></i></button>
+                    <span class="text-slate-500 font-bold uppercase text-[10px]">Nội dung CK</span>
+                    <div class="flex items-center gap-2 max-w-[180px]">
+                        <span id="pqr-note" class="text-slate-900 font-bold truncate">---</span>
+                        <button onclick="copyPqrNote()" class="text-slate-500 hover:text-slate-900 bg-slate-200/80 px-2 py-0.5 rounded-md font-bold text-[11px] shrink-0 flex items-center gap-1 active:scale-95" title="Copy nội dung"><i class="fa-regular fa-copy"></i> Copy</button>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-3.5 flex justify-end">
-                <button onclick="closeModal('modal-personal-qr')" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs shadow-md transition">
-                    Đã chuyển khoản / Đóng
+            <div class="mt-4 flex justify-end">
+                <button onclick="closeModal('modal-personal-qr')" class="w-full py-3 bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-950 hover:to-slate-900 text-white rounded-2xl font-black text-xs shadow-xl transition active:scale-95">
+                    Đã Chuyển Khoản / Hoàn Tất
                 </button>
             </div>
         </div>
     </div>
 
     <!-- MODAL: MEMBER DETAILS POPUP -->
-    <div id="modal-member-details" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-3 sm:p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl border border-slate-100 relative overflow-hidden flex flex-col max-h-[90vh]">
+    <div id="modal-member-details" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[200] hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-7 shadow-2xl border border-slate-200/90 relative overflow-hidden flex flex-col max-h-[90vh]">
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-amber-400 via-sky-400 to-indigo-500"></div>
             
-            <div class="flex justify-between items-start mb-3 pb-3 border-b border-slate-100">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center text-lg sm:text-xl font-bold shadow-sm shrink-0">
+            <div class="flex justify-between items-start mb-4 pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 rounded-2xl flex items-center justify-center text-xl font-black shadow-sm shrink-0">
                         <i class="fa-solid fa-user"></i>
                     </div>
                     <div>
-                        <h3 class="text-base sm:text-lg font-bold text-slate-900 leading-tight" id="md-name">Tên Thành Viên</h3>
-                        <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5" id="md-sessions-badge">Thành viên CLB</p>
+                        <h3 class="text-base sm:text-lg font-black text-slate-900 leading-tight" id="md-name">Tên Thành Viên</h3>
+                        <p class="text-xs text-slate-500 mt-0.5 font-medium" id="md-sessions-badge">Hội viên CLB Victoria</p>
                     </div>
                 </div>
                 <button onclick="closeModal('modal-member-details')" class="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full w-8 h-8 flex items-center justify-center transition shrink-0">
@@ -616,45 +688,45 @@
                 </button>
             </div>
 
-            <div class="flex-1 overflow-y-auto space-y-3.5 custom-scrollbar pr-1">
+            <div class="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-1">
                 <!-- Session breakdown list -->
                 <div>
                     <div class="flex items-center justify-between mb-2 px-1">
                         <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                            <i class="fa-solid fa-list-check text-sky-500"></i> Chi tiết các buổi chơi (Mới ➡️ Cũ)
+                            <i class="fa-solid fa-list-check text-amber-500"></i> Lịch sử tham gia (Mới ➡️ Cũ)
                         </span>
-                        <span class="text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md" id="md-sessions-count">0 buổi</span>
+                        <span class="text-xs font-black text-slate-800 bg-slate-100 px-2.5 py-0.5 rounded-lg" id="md-sessions-count">0 buổi</span>
                     </div>
-                    <div id="md-session-list" class="space-y-2 max-h-44 sm:max-h-52 overflow-y-auto custom-scrollbar bg-slate-50 p-2.5 rounded-xl border border-slate-200/70 text-sm">
+                    <div id="md-session-list" class="space-y-2 max-h-48 sm:max-h-56 overflow-y-auto custom-scrollbar bg-slate-50 p-3 rounded-2xl border border-slate-200/80 text-sm">
                         <!-- Rendered by JS -->
                     </div>
                 </div>
 
                 <!-- Financial Summary -->
-                <div class="space-y-2.5 pt-1.5 border-t border-slate-100">
-                    <div class="bg-amber-50/80 p-3 rounded-xl border border-amber-100 flex justify-between items-center text-sm">
-                        <span class="font-semibold text-amber-900 flex items-center gap-2">
+                <div class="space-y-2.5 pt-2 border-t border-slate-100">
+                    <div class="bg-amber-50/80 p-3.5 rounded-2xl border border-amber-200/80 flex justify-between items-center text-sm">
+                        <span class="font-bold text-amber-950 flex items-center gap-2">
                             <i class="fa-solid fa-money-bill-wave text-amber-500 w-4 text-center"></i> Cần thanh toán:
                         </span>
-                        <strong class="text-amber-900 text-sm sm:text-base font-bold font-mono" id="md-total">0</strong>
+                        <strong class="text-amber-950 text-sm sm:text-base font-black font-mono" id="md-total">0</strong>
                     </div>
-                    <div class="bg-emerald-50/80 p-3 rounded-xl border border-emerald-100 flex justify-between items-center text-sm">
-                        <span class="font-semibold text-emerald-900 flex items-center gap-2">
+                    <div class="bg-emerald-50/80 p-3.5 rounded-2xl border border-emerald-200/80 flex justify-between items-center text-sm">
+                        <span class="font-bold text-emerald-950 flex items-center gap-2">
                             <i class="fa-solid fa-hand-holding-dollar text-emerald-500 w-4 text-center"></i> Đã thanh toán:
                         </span>
-                        <strong class="text-emerald-700 text-sm sm:text-base font-bold font-mono" id="md-paid">0</strong>
+                        <strong class="text-emerald-700 text-sm sm:text-base font-black font-mono" id="md-paid">0</strong>
                     </div>
-                    <div class="p-3.5 rounded-xl border flex justify-between items-center shadow-xs" id="md-remaining-box">
-                        <span class="text-xs sm:text-sm font-bold uppercase tracking-wide flex items-center gap-2" id="md-remaining-label">
+                    <div class="p-3.5 rounded-2xl border flex justify-between items-center shadow-xs" id="md-remaining-box">
+                        <span class="text-xs sm:text-sm font-extrabold uppercase tracking-wider flex items-center gap-2" id="md-remaining-label">
                             Số dư / Nợ:
                         </span>
-                        <strong class="text-base sm:text-lg font-extrabold font-mono tracking-tight" id="md-remaining">0</strong>
+                        <strong class="text-base sm:text-lg font-black font-mono tracking-tight" id="md-remaining">0</strong>
                     </div>
                 </div>
             </div>
             
             <div class="mt-4 pt-3 border-t border-slate-100 text-center">
-                <button onclick="closeModal('modal-member-details')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold rounded-xl shadow transition">
+                <button onclick="closeModal('modal-member-details')" class="w-full py-3 bg-slate-900 hover:bg-slate-950 text-white text-sm font-black rounded-2xl shadow-lg transition active:scale-95">
                     Đóng
                 </button>
             </div>
@@ -1149,13 +1221,13 @@
                 const btn = document.getElementById('filter-btn-' + t);
                 if (btn) {
                     if (t === type) {
-                        btn.className = "px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-900 text-white transition shadow-xs";
+                        btn.className = "px-4 py-2 text-xs font-black rounded-2xl bg-slate-950 text-white transition shadow-sm active:scale-95";
                     } else if (t === 'debt') {
-                        btn.className = "px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 text-rose-700 hover:bg-rose-50 transition border border-slate-200";
+                        btn.className = "px-4 py-2 text-xs font-black rounded-2xl bg-rose-50 text-rose-700 hover:bg-rose-100 transition border border-rose-200/80 active:scale-95 shadow-2xs";
                     } else if (t === 'paid') {
-                        btn.className = "px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 text-emerald-700 hover:bg-emerald-50 transition border border-slate-200";
+                        btn.className = "px-4 py-2 text-xs font-black rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-200/80 active:scale-95 shadow-2xs";
                     } else {
-                        btn.className = "px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition border border-slate-200";
+                        btn.className = "px-4 py-2 text-xs font-black rounded-2xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition border border-slate-200 active:scale-95";
                     }
                 }
             });
@@ -1164,12 +1236,12 @@
 
         function getMemberAvatarColors(name) {
             const gradients = [
-                'from-amber-500 to-yellow-400 text-slate-950',
-                'from-sky-500 to-blue-600 text-white',
-                'from-emerald-500 to-teal-600 text-white',
-                'from-purple-500 to-indigo-600 text-white',
-                'from-rose-500 to-pink-600 text-white',
-                'from-indigo-500 to-cyan-500 text-white'
+                'from-amber-400 via-amber-500 to-yellow-500 text-slate-950 shadow-[0_4px_14px_rgba(245,158,11,0.4)]',
+                'from-sky-400 via-blue-500 to-indigo-600 text-white shadow-[0_4px_14px_rgba(56,189,248,0.4)]',
+                'from-emerald-400 via-teal-500 to-emerald-600 text-slate-950 shadow-[0_4px_14px_rgba(16,185,129,0.4)]',
+                'from-purple-400 via-purple-600 to-indigo-700 text-white shadow-[0_4px_14px_rgba(168,85,247,0.4)]',
+                'from-rose-400 via-rose-500 to-pink-600 text-white shadow-[0_4px_14px_rgba(244,63,94,0.4)]',
+                'from-amber-300 via-teal-500 to-sky-600 text-white shadow-[0_4px_14px_rgba(20,184,166,0.4)]'
             ];
             let hash = 0;
             for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -1227,6 +1299,17 @@
             if (elTotalDebt) elTotalDebt.textContent = formatVND(totalClubDebt) + 'đ';
             if (elTotalMembers) elTotalMembers.textContent = members.length + ' người';
 
+            // Cập nhật Banner tiến độ thu quỹ thời gian thực
+            const fundPct = totalClubCost > 0 ? Math.min(100, Math.round((totalClubPaid / totalClubCost) * 100)) : 100;
+            const elFundPct = document.getElementById('kpi-fund-percent');
+            const elFundBar = document.getElementById('kpi-fund-bar');
+            const elBannerSessions = document.getElementById('kpi-banner-sessions');
+            const elBannerMembers = document.getElementById('kpi-banner-members');
+            if (elFundPct) elFundPct.textContent = fundPct + '%';
+            if (elFundBar) elFundBar.style.width = fundPct + '%';
+            if (elBannerSessions) elBannerSessions.innerHTML = `🏸 <strong class="text-slate-200">${sessions.length}</strong> buổi chơi`;
+            if (elBannerMembers) elBannerMembers.innerHTML = `👥 <strong class="text-slate-200">${members.length}</strong> thành viên`;
+
             // Cập nhật số lượng trên các nút lọc
             const elCountAll = document.getElementById('count-all');
             const elCountDebt = document.getElementById('count-debt');
@@ -1250,9 +1333,12 @@
 
             if (filtered.length === 0) {
                 container.innerHTML = `
-                    <div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200 p-8 shadow-xs">
-                        <i class="fa-solid fa-user-slash text-3xl sm:text-4xl mb-3 text-slate-300"></i>
-                        <p class="text-sm font-semibold">Không tìm thấy thành viên nào phù hợp bộ lọc.</p>
+                    <div class="col-span-full py-16 text-center text-slate-400 bg-white rounded-3xl border border-slate-200/90 p-8 shadow-luxury">
+                        <div class="w-16 h-16 rounded-3xl bg-slate-100 text-slate-400 flex items-center justify-center text-2xl mx-auto mb-3">
+                            <i class="fa-solid fa-user-slash"></i>
+                        </div>
+                        <p class="text-sm font-bold text-slate-700">Không tìm thấy thành viên nào phù hợp bộ lọc.</p>
+                        <p class="text-xs text-slate-400 mt-1">Hãy thử xóa bộ lọc hoặc tìm kiếm bằng từ khóa khác.</p>
                     </div>
                 `;
                 return;
@@ -1265,70 +1351,84 @@
                 const avatarGrad = getMemberAvatarColors(m.name);
                 const isDebt = item.remaining < -1000;
                 const isSurplus = item.remaining > 1000;
+                const attPct = sessions.length > 0 ? Math.round((item.attendedSessions / sessions.length) * 100) : 0;
 
                 let statusBadge = '';
                 if (isDebt) {
-                    statusBadge = `<span class="bg-rose-50 text-rose-700 border border-rose-200 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-xs font-black font-mono flex items-center gap-1 shadow-2xs">
-                        <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> Nợ: ${formatVND(item.remaining)}đ
+                    statusBadge = `<span class="bg-rose-500/10 text-rose-600 border border-rose-500/30 px-3 py-1 rounded-2xl text-xs font-black font-mono flex items-center gap-1.5 shadow-2xs shrink-0">
+                        <i class="fa-solid fa-triangle-exclamation text-[11px] text-rose-500 animate-pulse"></i> Nợ: ${formatVND(item.remaining)}đ
                     </span>`;
                 } else if (isSurplus) {
-                    statusBadge = `<span class="bg-sky-50 text-sky-700 border border-sky-200 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-xs font-black font-mono flex items-center gap-1 shadow-2xs">
-                        <i class="fa-solid fa-star text-[10px]"></i> Dư: +${formatVND(item.remaining)}đ
+                    statusBadge = `<span class="bg-sky-500/10 text-sky-600 border border-sky-500/30 px-3 py-1 rounded-2xl text-xs font-black font-mono flex items-center gap-1.5 shadow-2xs shrink-0">
+                        <i class="fa-solid fa-star text-[11px] text-sky-500"></i> Dư: +${formatVND(item.remaining)}đ
                     </span>`;
                 } else {
-                    statusBadge = `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-xs font-black font-mono flex items-center gap-1 shadow-2xs">
-                        <i class="fa-solid fa-circle-check text-[10px]"></i> Đã đủ
+                    statusBadge = `<span class="bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 px-3 py-1 rounded-2xl text-xs font-black font-mono flex items-center gap-1.5 shadow-2xs shrink-0">
+                        <i class="fa-solid fa-circle-check text-[11px] text-emerald-500"></i> Đã đủ
                     </span>`;
                 }
 
                 const card = document.createElement('div');
-                card.className = `bg-white rounded-2xl border ${isDebt ? 'border-rose-200 shadow-xs hover:border-rose-300' : 'border-slate-200/80 shadow-xs hover:border-slate-300'} p-4 sm:p-5 transition-all duration-200 flex flex-col justify-between hover:shadow-md`;
+                card.className = `bg-white rounded-3xl border ${isDebt ? 'border-rose-200/90 shadow-luxury hover:border-rose-300' : 'border-slate-200/90 shadow-luxury hover:border-slate-300'} p-5 sm:p-6 transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden group`;
 
                 card.innerHTML = `
+                    ${isDebt ? '<div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 via-rose-400 to-amber-400"></div>' : ''}
                     <div>
-                        <div class="flex items-start justify-between gap-2.5 mb-3.5">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr ${avatarGrad} flex items-center justify-center font-black text-xs sm:text-sm shrink-0 shadow-xs">
+                        <!-- Header & Avatar -->
+                        <div class="flex items-start justify-between gap-3 mb-4">
+                            <div class="flex items-center gap-3.5 min-w-0">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br ${avatarGrad} flex items-center justify-center font-black text-sm shrink-0">
                                     ${initials}
                                 </div>
                                 <div class="min-w-0">
-                                    <h4 class="text-sm sm:text-base font-extrabold text-slate-900 truncate leading-snug flex items-center gap-1.5">
+                                    <h4 class="text-base font-black text-slate-900 truncate leading-snug flex items-center gap-2">
                                         <span class="truncate">${m.name}</span>
-                                        ${isKantan(m) ? '<span class="text-[10px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded shrink-0">Chủ Quỹ</span>' : ''}
+                                        ${isKantan(m) ? '<span class="text-[10px] font-black bg-amber-400 text-slate-950 px-2 py-0.5 rounded-lg shadow-xs shrink-0">👑 Chủ Quỹ</span>' : ''}
                                     </h4>
-                                    <p class="text-xs text-slate-500 font-medium">Tham gia: <strong class="text-slate-700 font-bold">${item.attendedSessions}/${sessions.length}</strong> buổi</p>
+                                    <p class="text-xs text-slate-500 font-medium mt-0.5">Hội viên CLB • <strong class="text-slate-800">${item.attendedSessions}/${sessions.length}</strong> buổi</p>
                                 </div>
                             </div>
-                            <div class="shrink-0">
+                            <div>
                                 ${statusBadge}
                             </div>
                         </div>
 
-                        <!-- Mini Stats Grid -->
-                        <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs mb-3.5">
-                            <div>
-                                <span class="text-slate-400 block text-[10px] font-semibold uppercase">Tiền Cầu Cần Trả</span>
-                                <strong class="text-slate-800 font-mono font-bold text-xs sm:text-sm">${formatVND(item.bill)}đ</strong>
+                        <!-- Attendance Progress Indicator -->
+                        <div class="mb-4 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                            <div class="flex justify-between items-center text-[11px] font-bold text-slate-500 mb-1.5">
+                                <span>Tần suất ra sân</span>
+                                <span class="text-slate-800 font-mono">${attPct}%</span>
                             </div>
-                            <div>
-                                <span class="text-slate-400 block text-[10px] font-semibold uppercase">Đã Thanh Toán</span>
-                                <strong class="text-emerald-700 font-mono font-bold text-xs sm:text-sm">${formatVND(item.paid)}đ</strong>
+                            <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                                <div class="h-full ${isDebt ? 'bg-gradient-to-r from-rose-500 to-amber-500' : 'bg-gradient-to-r from-emerald-500 to-teal-400'} rounded-full transition-all duration-500" style="width: ${attPct}%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Mini Financial Box -->
+                        <div class="grid grid-cols-2 gap-2.5 bg-slate-50 p-3 rounded-2xl border border-slate-100 text-xs mb-4">
+                            <div class="p-1">
+                                <span class="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">Cần Trả</span>
+                                <strong class="text-slate-900 font-mono font-black text-sm sm:text-base">${formatVND(item.bill)}đ</strong>
+                            </div>
+                            <div class="p-1 border-l border-slate-200/80 pl-2.5">
+                                <span class="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">Đã Nộp</span>
+                                <strong class="text-emerald-700 font-mono font-black text-sm sm:text-base">${formatVND(item.paid)}đ</strong>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Card Actions -->
-                    <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
-                        <button onclick="openMemberDetails(${m.id})" class="flex-1 py-2 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-list-ul"></i> Chi Tiết
+                    <!-- Luxury Card Actions -->
+                    <div class="flex items-center gap-2 pt-3 border-t border-slate-100">
+                        <button onclick="openMemberDetails(${m.id})" class="flex-1 py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold text-xs transition active:scale-95 flex items-center justify-center gap-1.5 shadow-2xs">
+                            <i class="fa-solid fa-list-ul text-slate-500"></i> Chi Tiết
                         </button>
                         ${isDebt ? `
-                        <button onclick="openPersonalQR(${m.id})" class="flex-1 py-2 px-2.5 bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white rounded-xl font-bold text-xs transition shadow-xs flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-qrcode"></i> Quét QR Trả
+                        <button onclick="openPersonalQR(${m.id})" class="flex-1 py-2.5 px-3 bg-gradient-to-r from-rose-500 via-rose-600 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white rounded-2xl font-black text-xs transition shadow-[0_4px_15px_rgba(244,63,94,0.35)] active:scale-95 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-qrcode text-amber-200"></i> Quét QR Trả
                         </button>
                         ` : `
-                        <button onclick="openPersonalQR(${m.id})" class="flex-1 py-2 px-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 border border-sky-100">
-                            <i class="fa-solid fa-qrcode"></i> QR Quỹ
+                        <button onclick="openPersonalQR(${m.id})" class="flex-1 py-2.5 px-3 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-2xl font-bold text-xs transition flex items-center justify-center gap-1.5 border border-sky-100 active:scale-95">
+                            <i class="fa-solid fa-qrcode text-sky-500"></i> QR Quỹ
                         </button>
                         `}
                     </div>
@@ -2214,15 +2314,15 @@
                 // Desktop Header Tab Button
                 const btn = document.getElementById('btn-tab-' + id);
                 if (btn) {
-                    btn.classList.remove('bg-amber-400', 'text-slate-950', 'shadow');
-                    btn.classList.add('text-slate-300', 'hover:bg-slate-800');
+                    btn.classList.remove('bg-gradient-to-r', 'from-amber-400', 'to-yellow-400', 'text-slate-950', 'font-extrabold', 'shadow-[0_2px_12px_rgba(245,158,11,0.35)]');
+                    btn.classList.add('text-slate-300', 'font-semibold', 'hover:bg-slate-800', 'hover:text-white');
                 }
 
                 // Mobile Bottom Nav Button
                 const mbBtn = document.getElementById('mb-nav-' + id);
                 if (mbBtn) {
-                    mbBtn.classList.remove('text-amber-400');
-                    mbBtn.classList.add('text-slate-400');
+                    mbBtn.classList.remove('text-amber-400', 'scale-105', 'font-black');
+                    mbBtn.classList.add('text-slate-400', 'font-bold');
                 }
             });
 
@@ -2231,14 +2331,14 @@
             
             const activeBtn = document.getElementById('btn-tab-' + tabId);
             if (activeBtn) {
-                activeBtn.classList.remove('text-slate-300', 'hover:bg-slate-800');
-                activeBtn.classList.add('bg-amber-400', 'text-slate-950', 'shadow');
+                activeBtn.classList.remove('text-slate-300', 'font-semibold', 'hover:bg-slate-800', 'hover:text-white');
+                activeBtn.classList.add('bg-gradient-to-r', 'from-amber-400', 'to-yellow-400', 'text-slate-950', 'font-extrabold', 'shadow-[0_2px_12px_rgba(245,158,11,0.35)]');
             }
 
             const activeMbBtn = document.getElementById('mb-nav-' + tabId);
             if (activeMbBtn) {
-                activeMbBtn.classList.remove('text-slate-400');
-                activeMbBtn.classList.add('text-amber-400');
+                activeMbBtn.classList.remove('text-slate-400', 'font-bold');
+                activeMbBtn.classList.add('text-amber-400', 'scale-105', 'font-black');
             }
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
