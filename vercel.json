@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "name": "cau-long-victoria",
+  "cleanUrls": true,
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/Index.html"
+    }
+  ]
+}

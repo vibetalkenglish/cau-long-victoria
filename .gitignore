@@ -1,0 +1,8 @@
+# Google Apps Script clasp credentials
+.clasp.json
+.clasprc.json
+
+# Environment and OS files
+.DS_Store
+*.tmp
+*.bak

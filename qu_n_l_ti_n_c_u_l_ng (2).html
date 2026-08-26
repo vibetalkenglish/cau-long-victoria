@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full bg-slate-50 text-[14px]">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CẦU LÔNG VICTORIA</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Plus Jakarta Sans & Be Vietnam Pro & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['"Plus Jakarta Sans"', '"Be Vietnam Pro"', 'Inter', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace']
+                    },
+                    colors: {
+                        sheet: { greenYes: '#059669', grayNo: '#f1f5f9' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html { font-size: 14px; }
+        @media (min-width: 1024px) {
+            html { font-size: 15px; }
+        }
+        @media (min-width: 1440px) {
+            html { font-size: 15.5px; }
+        }
+        body { 
+            font-size: 14px; 
+            line-height: 1.5; 
+            font-family: 'Plus Jakarta Sans', 'Be Vietnam Pro', sans-serif;
+            color: #1e293b;
+            background-color: #f8fafc;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { height: 7px; width: 7px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .grid-table { border-collapse: separate !important; border-spacing: 0 !important; }
+        .grid-table th, .grid-table td {
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+        
+        /* ĐÓNG BĂNG CỘT 1 (#) và CỘT 2 (TÊN) - TỐI ƯU CẢ MOBILE LẪN DESKTOP RỘNG RÃI */
+        .sticky-col-left-1 { position: sticky; left: 0; z-index: 25; width: 44px; min-width: 44px; max-width: 44px; }
+        .sticky-col-left-2 { position: sticky; left: 44px; z-index: 25; min-width: 125px; max-width: 220px; border-right: 2px solid #cbd5e1 !important; box-shadow: 2px 0 6px -2px rgba(0,0,0,0.08); }
+        
+        /* Freeze Header Rows vertically */
+        .sticky-top-row-1 { position: sticky; top: 0 !important; z-index: 30 !important; }
+        .sticky-top-row-2 { position: sticky; top: 43px !important; z-index: 30 !important; }
+        
+        /* Intersection of frozen rows and columns needs highest z-index */
+        .sticky-top-row-1.sticky-col-left-1, .sticky-top-row-1.sticky-col-left-2 { z-index: 40 !important; }
+        .sticky-top-row-2.sticky-col-left-1, .sticky-top-row-2.sticky-col-left-2 { z-index: 40 !important; }
+        tfoot td.sticky-col-left-1, tfoot td.sticky-col-left-2 { z-index: 30 !important; }
+
+        .currency-input {
+            background: transparent; border: 1px solid transparent;
+            width: 100%; padding: 4px 8px; border-radius: 6px;
+            transition: all 0.2s ease; outline: none;
+            font-size: 14px;
+        }
+        @media (min-width: 1024px) {
+            .currency-input { font-size: 15px; }
+        }
+        .currency-input:hover { background: rgba(255,255,255,0.9); border-color: #cbd5e1; }
+        .currency-input:focus { background: #ffffff; border-color: #059669; box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2); }
+    </style>
+</head>
+<body class="h-full font-sans text-slate-800 flex flex-col relative pb-20 sm:pb-16 bg-slate-50">
+
+    <!-- HEADER -->
+    <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-14 sm:h-16 items-center gap-2">
+                <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-400 text-slate-900 flex items-center justify-center font-bold text-base sm:text-xl shadow">
+                        <i class="fa-solid fa-shuttlecock"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-sm sm:text-lg font-bold leading-tight flex items-center gap-1.5 sm:gap-2">
+                            <span class="truncate max-w-[150px] sm:max-w-none">CẦU LÔNG VICTORIA</span>
+                            <span id="role-badge" class="text-[10px] sm:text-xs font-normal bg-sky-500/20 text-sky-300 px-1.5 sm:px-2 py-0.5 rounded-full border border-sky-500/30 whitespace-nowrap">Thành Viên</span>
+                        </h1>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto custom-scrollbar">
+                    <button id="btn-tab-sheet" onclick="switchTab('sheet')" class="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg bg-amber-400 text-slate-900 transition flex items-center gap-1.5 shadow shrink-0">
+                        <i class="fa-solid fa-table-cells"></i> <span>Bảng Chi Tiết</span>
+                    </button>
+                    <!-- Admin Tabs -->
+                    <div id="admin-tabs" class="hidden flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+                        <button id="btn-tab-ai" onclick="switchTab('ai')" class="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> AI
+                        </button>
+                        <button id="btn-tab-script" onclick="switchTab('script')" class="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-code text-emerald-400"></i> Code
+                        </button>
+                    </div>
+
+                    <!-- Role Toggle -->
+                    <div class="ml-1 pl-1 sm:ml-2 sm:pl-2 border-l border-slate-700 shrink-0">
+                        <button id="btn-toggle-role" onclick="toggleRole()" class="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition flex items-center gap-1.5 shadow">
+                            <i class="fa-brands fa-google text-rose-400"></i> <span id="btn-role-text">Admin</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ADMIN ACTION BAR -->
+    <div id="admin-action-bar" class="hidden bg-white border-b border-slate-200 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 shadow-sm z-40 relative">
+        <div class="max-w-[1720px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 text-xs sm:text-sm">
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <button onclick="openAddSessionModal()" class="px-3 sm:px-4 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition flex items-center gap-1.5 shadow-sm text-xs sm:text-sm">
+                    <i class="fa-solid fa-calendar-plus"></i> + Buổi Chơi
+                </button>
+                <button onclick="openAddMemberModal()" class="px-3 sm:px-4 py-1.5 sm:py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-medium transition flex items-center gap-1.5 shadow-sm text-xs sm:text-sm">
+                    <i class="fa-solid fa-user-plus"></i> + Thành Viên
+                </button>
+                <button onclick="openPriceModal()" class="px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold rounded-xl transition flex items-center gap-1.5 shadow-sm text-xs sm:text-sm">
+                    <i class="fa-solid fa-box-archive"></i> + Lô Cầu
+                </button>
+            </div>
+            <div class="flex items-center justify-between sm:justify-end gap-4 text-slate-700 font-medium bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs sm:text-sm">
+                <span>Tổng chi: <strong id="summary-total-cost" class="text-amber-700 font-bold font-mono">0</strong></span>
+                <span>Đã thu: <strong id="summary-total-paid" class="text-emerald-700 font-bold font-mono">0</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 max-w-[1720px] w-full mx-auto p-3 sm:p-6 lg:p-8 overflow-y-auto space-y-6 lg:space-y-8">
+        
+        <!-- TAB 1: BẢNG CHI TIẾT -->
+        <section id="tab-sheet" class="space-y-6 lg:space-y-8">
+            
+            <div id="member-banner" class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white p-4 sm:p-6 rounded-2xl shadow-sm flex items-start gap-4 sm:gap-5 border border-slate-700">
+                <div class="bg-amber-400 text-slate-900 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center text-xl sm:text-2xl shrink-0 shadow font-bold">
+                    <i class="fa-solid fa-shuttlecock"></i>
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-base sm:text-lg font-bold text-white tracking-wide">CÂU LẠC BỘ CẦU LÔNG VICTORIA</h2>
+                    <p class="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">Hệ thống theo dõi điểm danh, tính tiền cầu và lịch sử đóng tiền tự động. Sắp xếp ưu tiên người nợ lên trước. Bấm vào tên thành viên để xem chi tiết.</p>
+                </div>
+            </div>
+
+            <!-- Main Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative">
+                <div class="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                    <h3 class="text-sm sm:text-base lg:text-lg font-bold text-slate-900 flex items-center gap-2.5">
+                        <i class="fa-solid fa-table-list text-amber-500"></i> BẢNG ĐIỂM DANH & THANH TOÁN CHI TIẾT
+                    </h3>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar max-h-[65vh] sm:max-h-[70vh] lg:max-h-[78vh] min-h-[420px] lg:min-h-[520px] touch-pan-x touch-pan-y">
+                    <table class="grid-table w-full text-sm lg:text-[15px] text-left text-slate-800 border-collapse">
+                        <!-- DOM THEAD TO PREVENT HOISTING BUGS -->
+                        <thead id="sheet-thead" class="select-none text-center">
+                        </thead>
+                        <tbody id="sheet-body" class="divide-y divide-slate-200 font-medium">
+                        </tbody>
+                        <tfoot id="sheet-footer" class="bg-slate-50 border-t-2 border-slate-300">
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- BẢNG NHẬP SỐ TIỀN THÀNH VIÊN ĐÓNG THEO BUỔI -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative">
+                <div class="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                        <h3 class="text-sm sm:text-base lg:text-lg font-bold text-slate-900 flex items-center gap-2.5">
+                            <i class="fa-solid fa-money-check-dollar text-emerald-600"></i> BẢNG NHẬP SỐ TIỀN THÀNH VIÊN ĐÓNG MỖI LẦN (THEO BUỔI)
+                        </h3>
+                        <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                            Hàng ngang: <strong>Tên thành viên</strong> (sắp xếp nợ nhiều nhất lên trước) • Cột dọc: <strong>Tên Buổi</strong> (Cũ ➡️ Mới) • Dưới cùng: <strong>Tổng tiền</strong> & <strong>Dư / Thiếu</strong>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar max-h-[55vh] sm:max-h-[65vh] lg:max-h-[75vh] min-h-[380px] lg:min-h-[480px] touch-pan-x touch-pan-y">
+                    <table class="grid-table w-full text-sm lg:text-[15px] text-left text-slate-800 border-collapse min-w-[700px]">
+                        <thead id="pay-thead" class="select-none text-center">
+                        </thead>
+                        <tbody id="pay-body" class="divide-y divide-slate-200 font-medium">
+                        </tbody>
+                        <tfoot id="pay-footer" class="bg-slate-50 border-t-2 border-slate-300 font-bold">
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                <!-- Shuttlecock Batches Card -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 flex flex-col">
+                    <div class="flex justify-between items-center mb-3 pb-2.5 sm:mb-4 sm:pb-3 border-b border-slate-100">
+                        <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-boxes-stacked text-amber-500"></i> BẢNG GIÁ MUA CẦU (MỚI ➡️ CŨ)
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto flex-1 custom-scrollbar">
+                        <table class="w-full text-sm text-left border-collapse min-w-[460px]">
+                            <thead class="bg-slate-100 text-slate-700 border-b border-slate-200 text-xs sm:text-sm">
+                                <tr>
+                                    <th class="p-2.5 font-semibold text-center w-16">Trạng Thái</th>
+                                    <th class="p-2.5 font-semibold">Tên lô / Đợt mua</th>
+                                    <th class="p-2.5 font-semibold text-center">Số hộp</th>
+                                    <th class="p-2.5 font-semibold text-right">Giá 1 hộp</th>
+                                    <th class="p-2.5 font-semibold text-right text-rose-700 bg-rose-50/50">Tổng tiền mua</th>
+                                    <th class="p-2.5 font-semibold text-right text-emerald-700">Giá 1 trái</th>
+                                    <th class="p-2.5 font-semibold">Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody id="shuttle-batches-body" class="divide-y divide-slate-100">
+                            </tbody>
+                            <tfoot id="shuttle-batches-footer" class="bg-slate-50 font-bold border-t-2 border-slate-200 text-slate-800">
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PAYMENT QR CARD -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 lg:p-6">
+                    <div class="flex justify-between items-center mb-3 pb-2.5 sm:mb-4 sm:pb-3 border-b border-slate-100">
+                        <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-qrcode text-sky-500"></i> THÔNG TIN CHUYỂN KHOẢN (VIETQR)
+                        </h3>
+                        <button id="btn-edit-qr" onclick="openQRModal()" class="hidden text-xs sm:text-sm text-sky-600 hover:underline font-semibold items-center gap-1">
+                            <i class="fa-solid fa-pen"></i> Chỉnh sửa
+                        </button>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-center gap-5 sm:gap-6 justify-center">
+                        <div class="w-[220px] h-[220px] sm:w-[260px] sm:h-[260px] lg:w-[280px] lg:h-[280px] shrink-0">
+                            <img id="display-qr-img" src="" alt="QR Code" class="w-full h-full object-contain mx-auto rounded-2xl shadow border border-slate-200 bg-white p-1.5">
+                        </div>
+                        <div class="space-y-3.5 sm:space-y-4 text-left bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 w-full">
+                            <div>
+                                <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Ngân Hàng</p>
+                                <p id="display-bank-name" class="text-sm sm:text-base font-bold text-slate-900 mt-0.5">MB Bank</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Số Tài Khoản</p>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <p id="display-bank-acc" class="text-lg sm:text-xl font-extrabold text-sky-600 font-mono tracking-wider">1903</p>
+                                    <button onclick="copyAcc()" class="text-slate-400 hover:text-sky-600 transition p-1.5 rounded-lg hover:bg-sky-50" title="Sao chép STK"><i class="fa-regular fa-copy"></i></button>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Chủ Tài Khoản</p>
+                                <p id="display-bank-owner" class="text-sm sm:text-base font-bold text-slate-900 uppercase mt-0.5">NGUYEN VAN A</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: AI ASSISTANT -->
+        <section id="tab-ai" class="hidden space-y-6 h-full">
+            <div class="bg-white rounded-xl shadow-sm border border-purple-200 flex flex-col h-[600px] overflow-hidden">
+                <div class="p-4 border-b border-purple-100 bg-purple-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <h3 class="text-sm font-bold text-purple-900 flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-purple-600"></i> AI Trợ Lý CLB (Gemini)
+                    </h3>
+                    <div class="flex gap-2 flex-wrap">
+                        <button onclick="aiGenerateReminder()" class="px-3 py-1.5 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-lg text-xs font-bold transition shadow-sm border border-rose-200 flex items-center gap-1">
+                            <i class="fa-solid fa-comment-dots"></i> Nhắc nợ
+                        </button>
+                        <button onclick="aiAnalyzeFinances()" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg text-xs font-bold transition shadow-sm border border-emerald-200 flex items-center gap-1">
+                            <i class="fa-solid fa-chart-pie"></i> Phân tích quỹ
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="ai-chat-box" class="flex-1 p-4 overflow-y-auto space-y-5 custom-scrollbar bg-slate-50/50">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                            <i class="fa-solid fa-robot text-xs"></i>
+                        </div>
+                        <div class="bg-white border border-purple-100 p-3 rounded-2xl rounded-tl-none text-sm text-slate-800 max-w-[85%] shadow-sm leading-relaxed">
+                            Chào sếp! Tôi là trợ lý AI của CLB. Sếp hãy bấm các nút phía trên để tự động soạn tin nhắc nợ gửi nhóm Zalo, hoặc gõ yêu cầu vào khung chat bên dưới nhé.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-3 border-t border-slate-200 bg-white flex gap-2">
+                    <input type="text" id="ai-chat-input" onkeydown="if(event.key==='Enter') aiSendCustomMessage()" placeholder="Hỏi AI..." class="flex-1 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm shadow-inner">
+                    <button onclick="aiSendCustomMessage()" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition shadow-md flex items-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> <span class="hidden sm:inline">Gửi</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: APP SCRIPT INFO -->
+        <section id="tab-script" class="hidden space-y-6">
+            <div class="bg-white p-5 rounded-xl border shadow-sm">
+                <h3 class="text-sm font-bold text-slate-900 pb-3 border-b">Tích hợp Google Apps Script</h3>
+                <p class="text-xs text-slate-600 mt-2">Mã nguồn này được tối ưu 100% để chạy trên Apps Script Web App. Hãy chọn <em>"Execute as: User accessing the web app"</em> khi deploy.</p>
+                <p class="text-xs text-sky-600 font-bold mt-2">Cấu hình Email Admin hiện tại:</p>
+                <pre class="mt-2 bg-slate-900 text-emerald-300 p-3 rounded-lg text-[11px] font-mono"><code>const adminEmails = ['sayoonara.htq90@gmail.com'];</code></pre>
+            </div>
+        </section>
+    </main>
+
+    <!-- UNSAVED CHANGES BANNER (GLOBAL SAVE/CANCEL) -->
+    <div id="unsaved-banner" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-4 py-3 rounded-2xl shadow-2xl flex flex-col sm:flex-row items-center gap-3 sm:gap-6 z-[150] transition-all duration-300 translate-y-32 opacity-0 w-[92%] sm:w-auto border border-slate-700 pointer-events-auto">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 animate-pulse">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <span class="text-sm font-medium">Bạn có thay đổi chưa được lưu!</span>
+        </div>
+        <div class="flex gap-2 w-full sm:w-auto">
+            <button onclick="restoreState()" class="flex-1 sm:flex-none px-5 py-2 bg-slate-600 hover:bg-slate-500 rounded-xl text-xs font-bold transition shadow-sm">Hủy bỏ</button>
+            <button id="btn-commit" onclick="commitChanges()" class="flex-1 sm:flex-none px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-900 rounded-xl text-xs font-bold transition shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-center gap-1.5">
+                <i id="icon-commit" class=""></i> <span id="btn-commit-text">Lưu Data</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: GOOGLE LOGIN MOCK -->
+    <div id="modal-google-login" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+            <div class="text-center mb-6">
+                <i class="fa-brands fa-google text-4xl text-rose-500 mb-3"></i>
+                <h3 class="text-xl font-medium text-slate-800">Đăng nhập Admin</h3>
+            </div>
+            <div class="space-y-4">
+                <input type="email" id="google-email" placeholder="Nhập địa chỉ email..." class="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 text-sm outline-none">
+                <p class="text-[11px] text-slate-500">Email quản trị: <strong class="text-slate-800">sayoonara.htq90@gmail.com</strong></p>
+                <div class="flex justify-between items-center mt-6">
+                    <button onclick="closeModal('modal-google-login')" class="text-slate-500 hover:bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium transition">Hủy</button>
+                    <button onclick="verifyGoogleLogin()" class="px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white font-medium text-sm rounded-lg shadow transition">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: MEMBER DETAILS POPUP -->
+    <div id="modal-member-details" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl border border-slate-100 relative overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-amber-400 via-sky-400 to-indigo-500"></div>
+            
+            <div class="flex justify-between items-start mb-3 pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center text-lg sm:text-xl font-bold shadow-sm shrink-0">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-slate-900 leading-tight" id="md-name">Tên Thành Viên</h3>
+                        <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5" id="md-sessions-badge">Thành viên CLB</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('modal-member-details')" class="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full w-8 h-8 flex items-center justify-center transition shrink-0">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto space-y-3.5 custom-scrollbar pr-1">
+                <!-- Session breakdown list -->
+                <div>
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                            <i class="fa-solid fa-list-check text-sky-500"></i> Chi tiết các buổi chơi (Mới ➡️ Cũ)
+                        </span>
+                        <span class="text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md" id="md-sessions-count">0 buổi</span>
+                    </div>
+                    <div id="md-session-list" class="space-y-2 max-h-44 sm:max-h-52 overflow-y-auto custom-scrollbar bg-slate-50 p-2.5 rounded-xl border border-slate-200/70 text-sm">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Financial Summary -->
+                <div class="space-y-2.5 pt-1.5 border-t border-slate-100">
+                    <div class="bg-amber-50/80 p-3 rounded-xl border border-amber-100 flex justify-between items-center text-sm">
+                        <span class="font-semibold text-amber-900 flex items-center gap-2">
+                            <i class="fa-solid fa-money-bill-wave text-amber-500 w-4 text-center"></i> Cần thanh toán:
+                        </span>
+                        <strong class="text-amber-900 text-sm sm:text-base font-bold font-mono" id="md-total">0</strong>
+                    </div>
+                    <div class="bg-emerald-50/80 p-3 rounded-xl border border-emerald-100 flex justify-between items-center text-sm">
+                        <span class="font-semibold text-emerald-900 flex items-center gap-2">
+                            <i class="fa-solid fa-hand-holding-dollar text-emerald-500 w-4 text-center"></i> Đã thanh toán:
+                        </span>
+                        <strong class="text-emerald-700 text-sm sm:text-base font-bold font-mono" id="md-paid">0</strong>
+                    </div>
+                    <div class="p-3.5 rounded-xl border flex justify-between items-center shadow-xs" id="md-remaining-box">
+                        <span class="text-xs sm:text-sm font-bold uppercase tracking-wide flex items-center gap-2" id="md-remaining-label">
+                            Số dư / Nợ:
+                        </span>
+                        <strong class="text-base sm:text-lg font-extrabold font-mono tracking-tight" id="md-remaining">0</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 pt-3 border-t border-slate-100 text-center">
+                <button onclick="closeModal('modal-member-details')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold rounded-xl shadow transition">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD SESSION -->
+    <div id="modal-session" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+            <h3 class="text-base font-bold text-slate-900 mb-4 pb-2 border-b">Thêm Buổi Chơi Mới</h3>
+            <div class="space-y-3.5 text-sm">
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-700">Ngày / Thứ:</label>
+                    <input type="text" id="inp-ss-date" placeholder="VD: Thứ 5 - 20/8" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-700">Số lượng trái cầu dùng:</label>
+                    <input type="number" id="inp-ss-shuttles" value="10" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-bold text-center">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-700">Chọn Lô Cầu (Đơn giá/trái):</label>
+                    <select id="inp-ss-price" class="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                    </select>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2.5 text-sm font-semibold">
+                <button onclick="closeModal('modal-session')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition">Hủy</button>
+                <button onclick="saveNewSession()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow transition">Lưu Buổi Chơi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: QR CONFIG -->
+    <div id="modal-qr" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
+                <h3 class="text-base font-bold text-slate-900">Cấu Hình QR Thanh Toán</h3>
+                <button onclick="closeModal('modal-qr')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-4 text-sm">
+                <div><label class="block font-semibold text-slate-700 mb-1">Tên Ngân hàng:</label><input type="text" id="input-bank-name" class="w-full p-2.5 rounded-xl border border-slate-300 outline-none text-sm"></div>
+                <div><label class="block font-semibold text-slate-700 mb-1">Số tài khoản:</label><input type="text" id="input-bank-acc" class="w-full p-2.5 rounded-xl border border-slate-300 outline-none text-sm font-bold"></div>
+                <div><label class="block font-semibold text-slate-700 mb-1">Chủ tài khoản (Không dấu):</label><input type="text" id="input-bank-owner" class="w-full p-2.5 rounded-xl border border-slate-300 outline-none uppercase text-sm font-bold"></div>
+                <div class="pt-3 border-t border-slate-100 space-y-2">
+                    <label class="block font-bold text-sky-700 text-xs">📤 Tải Ảnh QR Mã Lên (Tự động nén chuẩn sắc nét & nhẹ):</label>
+                    <input type="file" id="input-qr-file" accept="image/*" onchange="handleQRUpload(event)" class="w-full text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 file:cursor-pointer text-xs">
+                    
+                    <div id="qr-preview-container" class="flex flex-col items-center gap-2 pt-2">
+                        <img id="qr-upload-preview" src="" alt="QR Preview" class="w-32 h-32 object-cover rounded-lg border border-slate-200 shadow-sm hidden">
+                        <button type="button" onclick="resetToAutoVietQR()" class="text-xs text-rose-600 hover:underline font-medium flex items-center gap-1">
+                            <i class="fa-solid fa-rotate-left"></i> Dùng mã VietQR tự động
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-5 mt-2 flex justify-end gap-2 text-sm font-medium">
+                <button onclick="closeModal('modal-qr')" class="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-xl transition">Hủy</button>
+                <button onclick="saveQRConfig()" class="px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl shadow transition font-semibold">Lưu Thay Đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: PRICE BATCH CONFIG -->
+    <div id="modal-price-batch" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center pb-3 border-b mb-4">
+                <h3 class="text-base font-bold text-slate-900" id="pb-modal-title">Thêm Lô Cầu Mới</h3>
+                <button onclick="closeModal('modal-price-batch')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3.5 text-sm">
+                <input type="hidden" id="pb-id">
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-700">Tên đợt mua (VD: Đợt 5 - Tháng 8):</label>
+                    <input type="text" id="pb-label" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 outline-none text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block font-semibold mb-1 text-slate-700">Số hộp (ống):</label>
+                        <input type="number" id="pb-quantity" value="1" min="1" onkeyup="calcUnit()" onchange="calcUnit()" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 outline-none font-bold text-center text-sm">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1 text-slate-700">Giá 1 hộp (VNĐ):</label>
+                        <input type="number" id="pb-packprice" onkeyup="calcUnit()" onchange="calcUnit()" placeholder="VD: 260000" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 outline-none font-bold text-right text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1 text-rose-700">Tổng tiền mua cầu (Tự động tính):</label>
+                    <input type="number" id="pb-totalprice" readonly class="w-full p-2.5 rounded-xl border border-rose-200 bg-rose-50/70 text-rose-800 font-bold outline-none text-right font-mono text-sm">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1 text-emerald-700">Đơn giá 1 trái (Tự động chia 12):</label>
+                    <input type="number" id="pb-unitprice" readonly class="w-full p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/70 text-emerald-800 font-bold outline-none text-right font-mono text-sm">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-700">Ghi chú thêm:</label>
+                    <input type="text" id="pb-note" placeholder="Ghi chú thêm..." class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 outline-none text-sm">
+                </div>
+                <div class="flex items-center gap-2 pt-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                    <input type="checkbox" id="pb-depleted" class="w-4 h-4 text-amber-600 rounded">
+                    <label for="pb-depleted" class="font-bold text-slate-700 cursor-pointer text-xs sm:text-sm">Đánh dấu lô cầu này ĐÃ XÀI HẾT</label>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2.5 text-sm font-semibold">
+                <button onclick="closeModal('modal-price-batch')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition">Hủy</button>
+                <button onclick="savePriceBatch()" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl shadow transition">Lưu Lô Cầu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        // ==========================================
+        // 1. DATA STATE & GLOBAL SAVE LOGIC
+        // ==========================================
+        let isAdmin = false;
+        const adminEmails = ['sayoonara.htq90@gmail.com'];
+        
+        let originalState = null;
+        let hasUnsavedChanges = false;
+
+        let qrInfo = { bankName: "MB Bank", bankAcc: "1903", bankOwner: "NGUYEN VAN A", qrUrl: "data:image/jpeg;base64,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" };
+        let sessions = [];
+        let members = [];
+        let shuttleBatches = [];
+        let sessionStats = {}; 
+
+        function backupState() {
+            originalState = JSON.stringify({sessions, members, shuttleBatches, qrInfo});
+            hasUnsavedChanges = false;
+            updateSaveUI();
+        }
+
+        function restoreState() {
+            if (originalState) {
+                const parsed = JSON.parse(originalState);
+                sessions = parsed.sessions;
+                members = parsed.members;
+                shuttleBatches = parsed.shuttleBatches;
+                qrInfo = parsed.qrInfo;
+                hasUnsavedChanges = false;
+                
+                updateQRDisplay();
+                renderAll();
+                updateSaveUI();
+                showToast('Đã hoàn tác toàn bộ thay đổi!', 'info');
+            }
+        }
+
+        function markUnsaved() {
+            hasUnsavedChanges = true;
+            updateSaveUI();
+        }
+
+        function updateSaveUI() {
+            const banner = document.getElementById('unsaved-banner');
+            if (hasUnsavedChanges) {
+                banner.classList.remove('translate-y-32', 'opacity-0');
+                banner.classList.add('translate-y-0', 'opacity-100');
+            } else {
+                banner.classList.remove('translate-y-0', 'opacity-100');
+                banner.classList.add('translate-y-32', 'opacity-0');
+            }
+        }
+
+        function commitChanges() {
+            if (typeof google !== 'undefined' && google.script) {
+                const btnText = document.getElementById('btn-commit-text');
+                const btn = document.getElementById('btn-commit');
+                const icon = document.getElementById('icon-commit');
+                
+                btn.disabled = true;
+                icon.className = "fa-solid fa-spinner fa-spin";
+                btnText.textContent = "Đang lưu...";
+
+                const payload = { sessions, members, qrInfo, shuttleBatches };
+                const payloadString = JSON.stringify(payload);
+
+                google.script.run
+                    .withSuccessHandler(() => {
+                        backupState(); 
+                        showToast('Đã lưu thay đổi vào cơ sở dữ liệu!', 'success');
+                        btn.disabled = false;
+                        icon.className = "";
+                        btnText.textContent = "Lưu Data";
+                    })
+                    .withFailureHandler((err) => {
+                        btn.disabled = false;
+                        icon.className = "";
+                        btnText.textContent = "Lưu Data";
+                        showToast(err.message || 'Có lỗi xảy ra khi lưu!', 'error');
+                    })
+                    .saveToSheets(payloadString);
+            } else {
+                backupState();
+                showToast('Đã lưu thành công (Chế độ Test)', 'success');
+            }
+        }
+
+        function initMockData() {
+            qrInfo.qrUrl = "data:image/jpeg;base64,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";
+            sessions = [
+                { id: "s1", date: "Thứ 5 - 23/7", shuttles: 10, unitPrice: 12917 },
+                { id: "s2", date: "Thứ 3 - 28/7", shuttles: 8, unitPrice: 22791.5 },
+                { id: "s3", date: "Thứ 5 - 30/7", shuttles: 18, unitPrice: 16027.67 },
+                { id: "s4", date: "Thứ 3 - 4/8", shuttles: 3, unitPrice: 26667 },
+                { id: "s5", date: "Thứ 5 - 6/8", shuttles: 9, unitPrice: 26667 }
+            ];
+            members = [
+                { id: 1, name: "A Phương", attendance: { s1: false, s2: false, s3: true, s4: false, s5: true }, paid: 35000, payments: { s3: 35000 } },
+                { id: 2, name: "A Đức", attendance: { s1: false, s2: false, s3: false, s4: true, s5: true }, paid: 0, payments: {} },
+                { id: 3, name: "A Toàn", attendance: { s1: true, s2: true, s3: true, s4: false, s5: true }, paid: 0, payments: {} },
+                { id: 4, name: "Cô Hà", attendance: { s1: false, s2: false, s3: false, s4: false, s5: true }, paid: 0, payments: {} },
+                { id: 5, name: "Song Anh", attendance: { s1: true, s2: true, s3: true, s4: true, s5: false }, paid: 91000, payments: { s1: 91000 } },
+                { id: 6, name: "Lộc", attendance: { s1: false, s2: true, s3: true, s4: true, s5: true }, paid: 0, payments: {} },
+                { id: 7, name: "Lâm", attendance: { s1: false, s2: true, s3: true, s4: false, s5: false }, paid: 70000, payments: { s2: 70000 } },
+                { id: 8, name: "Tài", attendance: { s1: true, s2: false, s3: true, s4: false, s5: true }, paid: 222000, payments: { s1: 222000 } },
+                { id: 9, name: "Nghĩa", attendance: { s1: true, s2: false, s3: true, s4: false, s5: false }, paid: 100000, payments: { s1: 100000 } },
+                { id: 10, name: "Hoàng Anh", attendance: { s1: true, s2: false, s3: true, s4: false, s5: true }, paid: 55000, payments: { s1: 55000 } },
+                { id: 11, name: "Kantan", attendance: { s1: true, s2: true, s3: true, s4: true, s5: true }, paid: 920000, payments: {} }
+            ];
+            shuttleBatches = [
+                { id: "p1", label: "Mua lần 1", packPrice: 155000, unitPrice: 12917, note: "Cầu Hải Yến", isDepleted: true },
+                { id: "p2", label: "Mua lần 2", packPrice: 273500, unitPrice: 22791.5, note: "Cầu Vina", isDepleted: false },
+                { id: "p3", label: "Khuyến mãi", packPrice: 320000, unitPrice: 26667, note: "Yonex", isDepleted: false }
+            ];
+        }
+
+        window.onload = () => {
+            if (typeof google !== 'undefined' && google.script) {
+                // 1. Kiểm tra vai trò Admin từ Server Google Apps Script
+                google.script.run.withSuccessHandler((role) => {
+                    if (role && role.isAdmin) {
+                        isAdmin = true;
+                        showToast(`Chào Admin (${role.email})`, 'success');
+                    }
+                }).getUserRole();
+
+                // 2. Nạp dữ liệu thực tế từ Google Sheets
+                google.script.run
+                    .withSuccessHandler((data) => {
+                        if (data && (data.sessions?.length > 0 || data.members?.length > 0)) {
+                            sessions = data.sessions || [];
+                            members = data.members || [];
+                            if (data.qrInfo && Object.keys(data.qrInfo).length > 0) qrInfo = data.qrInfo;
+                            shuttleBatches = data.shuttleBatches || [];
+                            showToast('Đã tải dữ liệu từ Google Sheets!', 'success');
+                        } else {
+                            initMockData();
+                        }
+                        backupState();
+                        updateQRDisplay();
+                        renderAll();
+                    })
+                    .withFailureHandler(() => {
+                        initMockData();
+                        backupState();
+                        updateQRDisplay();
+                        renderAll();
+                    })
+                    .getFromSheets();
+            } else {
+                initMockData();
+                backupState();
+                updateQRDisplay();
+                renderAll();
+            }
+        };
+
+        // ==========================================
+        // 2. CORE RENDERING ENGINE (DOM Based)
+        // ==========================================
+        function formatVND(num) {
+            if (isNaN(num)) return "0";
+            const rounded = Math.round(num);
+            return (rounded < 0 ? "-" : "") + Math.abs(rounded).toLocaleString('vi-VN');
+        }
+
+        function isKantan(m) {
+            return m && m.name && m.name.trim().toLowerCase() === 'kantan';
+        }
+
+        function calculateSheetMath() {
+            sessionStats = {};
+            sessions.forEach(s => {
+                let count = 0;
+                members.forEach(m => { if (m.attendance && m.attendance[s.id]) count++; });
+                const totalCost = s.shuttles * s.unitPrice;
+                sessionStats[s.id] = { count, totalCost, costPerPerson: count > 0 ? (totalCost / count) : 0 };
+            });
+
+            // TÍNH TOÁN TIỀN ĐÃ THANH TOÁN CỦA KANTAN:
+            // Tiền đã thanh toán của Kantan = Tổng tiền cầu đã mua
+            //   - Tổng tiền các thành viên cần thanh toán (nếu thành viên thanh toán dư/đủ)
+            //   - Tổng tiền các thành viên đã thanh toán (nếu thành viên thanh toán thiếu)
+            const kantanMember = members.find(m => isKantan(m));
+            if (kantanMember) {
+                const totalBoughtShuttles = shuttleBatches.reduce((sum, b) => {
+                    const qty = Number(b.quantity) || 1;
+                    const pack = Number(b.packPrice) || 0;
+                    return sum + (Number(b.totalPrice) || (qty * pack));
+                }, 0);
+
+                let memberDeductions = 0;
+                members.forEach(m => {
+                    if (isKantan(m)) return;
+
+                    let mBill = 0;
+                    sessions.forEach(s => {
+                        if (m.attendance && m.attendance[s.id] && sessionStats[s.id]) {
+                            mBill += sessionStats[s.id].costPerPerson;
+                        }
+                    });
+
+                    const mPaid = Number(m.paid) || 0;
+                    // Nếu thành viên thanh toán dư/đủ (mPaid >= mBill) -> lấy mBill
+                    // Nếu thành viên thanh toán thiếu (mPaid < mBill) -> lấy mPaid
+                    const deduction = mPaid >= mBill ? mBill : mPaid;
+                    memberDeductions += deduction;
+                });
+
+                kantanMember.paid = totalBoughtShuttles - memberDeductions;
+            }
+        }
+
+        function createTH(htmlContent, className) {
+            const th = document.createElement('th');
+            th.className = className;
+            th.innerHTML = htmlContent;
+            return th;
+        }
+
+        function renderAll() {
+            calculateSheetMath();
+            renderSheetGrid();
+            renderPaymentGrid();
+            renderShuttleBatches();
+            updateUIByRole();
+        }
+
+        function renderSheetGrid() {
+            const thead = document.getElementById('sheet-thead');
+            const tbody = document.getElementById('sheet-body');
+            const tfoot = document.getElementById('sheet-footer');
+            if (!thead || !tbody || !tfoot) return;
+
+            // --- SORTING: BY "CÒN LẠI" (ASCENDING) ---
+            let sortedMembers = [...members];
+            const searchVal = document.getElementById('member-search')?.value.toLowerCase() || '';
+            if (searchVal) {
+                sortedMembers = sortedMembers.filter(m => m.name.toLowerCase().includes(searchVal));
+            }
+
+            sortedMembers.sort((a, b) => {
+                let aBill = 0, bBill = 0;
+                sessions.forEach(s => { 
+                    if(a.attendance[s.id]) aBill += sessionStats[s.id].costPerPerson; 
+                    if(b.attendance[s.id]) bBill += sessionStats[s.id].costPerPerson;
+                });
+                return (a.paid - aBill) - (b.paid - bBill);
+            });
+
+            // SẮP XẾP CÁC BUỔI CHƠI: TỪ MỚI NHẤT ĐẾN CŨ NHẤT (Cột 6 trở đi)
+            const displaySessions = [...sessions].reverse();
+
+            // --- BUILD THEAD (PURE DOM) ---
+            thead.innerHTML = '';
+            
+            // Row 1
+            const tr1 = document.createElement('tr');
+            tr1.className = "bg-slate-800 text-white border-b border-slate-700 text-sm lg:text-base";
+            
+            tr1.appendChild(createTH('#', 'p-2.5 sm:p-3 lg:p-3.5 w-10 sm:w-11 lg:w-12 bg-slate-800 text-slate-300 sticky-col-left-1 sticky-top-row-1 border-r border-slate-700 align-middle text-center font-bold'));
+            tr1.appendChild(createTH('THÀNH VIÊN', 'p-2.5 sm:p-3 lg:p-3.5 min-w-[125px] sm:min-w-[155px] lg:min-w-[185px] bg-slate-800 text-white sticky-col-left-2 sticky-top-row-1 text-left px-3 lg:px-4 border-r border-slate-700 align-middle font-bold tracking-wide'));
+            tr1.appendChild(createTH('Cần thanh toán', 'p-2.5 sm:p-3 lg:p-3.5 min-w-[120px] sm:min-w-[135px] lg:min-w-[155px] bg-slate-800 text-amber-300 border-r border-slate-700 align-middle text-right px-3 lg:px-4 sticky-top-row-1 font-bold'));
+            tr1.appendChild(createTH('Đã thanh toán', 'p-2.5 sm:p-3 lg:p-3.5 min-w-[115px] sm:min-w-[130px] lg:min-w-[150px] bg-slate-800 text-emerald-300 border-r border-slate-700 align-middle text-right px-3 lg:px-4 sticky-top-row-1 font-bold'));
+            tr1.appendChild(createTH('Còn lại', 'p-2.5 sm:p-3 lg:p-3.5 min-w-[110px] sm:min-w-[125px] lg:min-w-[145px] bg-slate-800 text-rose-300 border-r border-slate-700 align-middle text-right px-3 lg:px-4 sticky-top-row-1 font-bold'));
+
+            displaySessions.forEach((s, sIdx) => {
+                const isNewest = (sIdx === 0);
+                let actionBtns = '';
+                if (isAdmin) {
+                    actionBtns = `<button onclick="deleteSession('${s.id}')" title="Xóa buổi này" class="text-slate-400 hover:text-rose-400 text-xs ml-1.5 p-0.5"><i class="fa-solid fa-trash-can"></i></button>`;
+                }
+                const newestBadge = isNewest 
+                    ? `<span class="bg-amber-400 text-slate-950 font-black text-[10px] sm:text-xs px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs animate-pulse">Mới nhất</span>` 
+                    : '';
+
+                const thS = document.createElement('th');
+                thS.colSpan = 2;
+                thS.className = `p-2.5 sm:p-3 lg:p-3.5 border-r border-slate-700 font-bold ${isNewest ? 'bg-slate-800 text-amber-300 ring-2 ring-inset ring-amber-400/60' : 'bg-slate-800 text-slate-100'} text-center sticky-top-row-1 whitespace-nowrap text-sm lg:text-base min-w-[170px] lg:min-w-[200px]`;
+                thS.innerHTML = `<div class="flex items-center justify-center gap-1.5">${newestBadge}<span class="font-bold whitespace-nowrap">${s.date}</span>${actionBtns}</div>`;
+                tr1.appendChild(thS);
+            });
+            thead.appendChild(tr1);
+
+            // Row 2
+            const tr2 = document.createElement('tr');
+            tr2.className = "bg-slate-100 text-slate-600 text-xs sm:text-[13px] lg:text-sm font-semibold border-b border-slate-200";
+            
+            tr2.appendChild(createTH('', 'p-1 bg-slate-100 sticky-col-left-1 sticky-top-row-2 border-r border-slate-200'));
+            tr2.appendChild(createTH('', 'p-1 bg-slate-100 sticky-col-left-2 sticky-top-row-2 border-r border-slate-200'));
+            tr2.appendChild(createTH('', 'p-1 bg-slate-100 border-r border-slate-200 sticky-top-row-2'));
+            tr2.appendChild(createTH('', 'p-1 bg-slate-100 border-r border-slate-200 sticky-top-row-2'));
+            tr2.appendChild(createTH('', 'p-1 bg-slate-100 border-r border-slate-200 sticky-top-row-2'));
+
+            displaySessions.forEach((s, sIdx) => {
+                const isNewest = (sIdx === 0);
+                const r2Class = isNewest ? 'bg-amber-100 text-amber-950 font-bold border-b border-amber-300' : 'bg-slate-100 text-slate-600 font-semibold border-b border-slate-200';
+                tr2.appendChild(createTH('Tham gia?', `p-2 border-r border-slate-200 ${r2Class} w-[65px] sm:w-[75px] lg:w-[85px] text-center sticky-top-row-2`));
+                tr2.appendChild(createTH('Tiền cầu', `p-2 border-r border-slate-200 ${r2Class} min-w-[95px] sm:min-w-[110px] lg:min-w-[125px] text-right px-2.5 lg:px-3.5 sticky-top-row-2`));
+            });
+            thead.appendChild(tr2);
+
+            // --- BUILD TBODY ---
+            let bodyHTML = '';
+            let globalCost = 0, globalPaid = 0;
+
+            sortedMembers.forEach((m, idx) => {
+                let memberTotalBill = 0;
+                let sessionCells = '';
+
+                // Tính tổng chi phí dựa trên toàn bộ các buổi chơi
+                sessions.forEach(s => {
+                    if (m.attendance && m.attendance[s.id]) {
+                        memberTotalBill += sessionStats[s.id].costPerPerson;
+                    }
+                });
+
+                // Hiển thị các ô buổi chơi theo thứ tự MỚI ➡️ CŨ
+                displaySessions.forEach((s, sIdx) => {
+                    const isNewest = (sIdx === 0);
+                    const isAttending = m.attendance && m.attendance[s.id] ? true : false;
+                    const cost = isAttending ? sessionStats[s.id].costPerPerson : 0;
+
+                    const bClass = isAttending ? 'bg-emerald-600 text-white shadow-xs hover:bg-emerald-700' : 'bg-slate-100 text-slate-400 hover:bg-slate-200';
+                    const btn = isAdmin 
+                        ? `<button onclick="toggleAtt(${m.id}, '${s.id}')" class="w-10 sm:w-12 lg:w-14 py-1 sm:py-1.5 text-xs lg:text-sm font-bold rounded-lg ${bClass} active:scale-95 transition-all">${isAttending ? 'Yes' : 'No'}</button>`
+                        : `<span class="w-10 sm:w-12 lg:w-14 py-1 sm:py-1.5 text-xs lg:text-sm font-bold rounded-lg inline-block text-center ${bClass}">${isAttending ? 'Yes' : 'No'}</span>`;
+
+                    const cellHighlight = isNewest ? 'bg-amber-50/40' : '';
+
+                    sessionCells += `
+                        <td class="p-2 sm:p-2.5 text-center bg-white border-r border-slate-200 ${cellHighlight}">${btn}</td>
+                        <td class="p-2 sm:p-2.5 lg:p-3 text-right font-mono font-medium text-slate-800 border-r border-slate-200 text-sm lg:text-[15px] px-2.5 lg:px-3.5 ${cellHighlight} ${isAttending?'':'text-slate-400'}">${isAttending ? formatVND(cost) : '0'}</td>
+                    `;
+                });
+
+                const remaining = m.paid - memberTotalBill;
+                globalCost += memberTotalBill;
+                globalPaid += m.paid;
+
+                const remainingColor = remaining < 0 ? 'text-rose-700 font-bold bg-rose-50/70' : (remaining > 0 ? 'text-emerald-700 font-bold bg-emerald-50/70' : 'text-slate-800 font-bold');
+                
+                let paidCellHTML = '';
+                if (isKantan(m)) {
+                    paidCellHTML = `<span class="text-emerald-700 font-extrabold font-mono block text-right px-2 w-full text-sm lg:text-[15px]" title="Tự động tính = Tổng tiền cầu đã mua - Tiền thu từ các thành viên">${formatVND(m.paid)}</span>`;
+                } else if (isAdmin) {
+                    paidCellHTML = `<input type="text" value="${formatVND(m.paid)}" onfocus="this.value=${m.paid}; this.select();" onblur="updatePaid(${m.id}, this.value)" onkeydown="if(event.key==='Enter') this.blur();" class="currency-input text-emerald-700 font-bold font-mono text-right w-full text-sm lg:text-[15px]">`;
+                } else {
+                    paidCellHTML = `<span class="text-emerald-700 font-bold font-mono block text-right px-2 w-full text-sm lg:text-[15px]">${formatVND(m.paid)}</span>`;
+                }
+
+                const nameHtml = `<span onclick="openMemberDetails(${m.id})" class="cursor-pointer hover:text-sky-600 transition text-sky-700 flex items-center gap-1.5 truncate text-sm lg:text-[15px]" title="Xem chi tiết ${m.name}"><i class="fa-solid fa-circle-info text-xs text-sky-400 shrink-0"></i> <span class="truncate font-semibold">${m.name}</span></span>`;
+
+                bodyHTML += `
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="p-2.5 sm:p-3 text-center text-slate-500 font-mono text-sm lg:text-base bg-slate-50 sticky-col-left-1 border-r border-slate-200">${idx + 1}</td>
+                        <td class="p-2.5 sm:p-3 font-bold text-slate-900 bg-white sticky-col-left-2 border-r border-slate-200 text-sm lg:text-[15px] px-3 lg:px-4">${nameHtml}</td>
+                        <td class="p-2.5 sm:p-3 text-right font-bold font-mono text-slate-900 bg-amber-50/40 border-r border-slate-200 text-sm lg:text-[15px] px-3 lg:px-4">${formatVND(memberTotalBill)}</td>
+                        <td class="p-2 sm:p-2.5 text-right bg-emerald-50/30 border-r border-slate-200 text-sm lg:text-[15px] px-3 lg:px-4">${paidCellHTML}</td>
+                        <td class="p-2.5 sm:p-3 text-right font-mono border-r border-slate-200 text-sm lg:text-[15px] px-3 lg:px-4 ${remainingColor}">${formatVND(remaining)}</td>
+                        ${sessionCells}
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = bodyHTML;
+
+            // --- BUILD TFOOT ---
+            let fHtml = `
+                <tr class="bg-slate-100 text-slate-800 border-t-2 border-slate-300 text-sm lg:text-base">
+                    <td class="p-3 lg:p-3.5 sticky-col-left-1 border-r border-slate-200 bg-slate-200 text-center font-bold">#</td>
+                    <td class="p-3 lg:p-3.5 sticky-col-left-2 border-r border-slate-200 bg-slate-200 text-slate-900 font-extrabold uppercase text-xs sm:text-sm tracking-wide truncate px-3 lg:px-4">Tổng Cộng</td>
+                    <td class="p-3 lg:p-3.5 border-r border-slate-200 text-right font-extrabold font-mono bg-amber-100/70 text-slate-900 text-sm lg:text-base px-3 lg:px-4">${formatVND(globalCost)}</td>
+                    <td class="p-3 lg:p-3.5 border-r border-slate-200 text-right text-emerald-700 font-extrabold font-mono bg-emerald-100/70 text-sm lg:text-base px-3 lg:px-4">${formatVND(globalPaid)}</td>
+                    <td class="p-3 lg:p-3.5 border-r border-slate-200 text-right font-extrabold font-mono text-sm lg:text-base px-3 lg:px-4 ${globalPaid - globalCost < 0 ? 'text-rose-700 bg-rose-100/70' : 'text-emerald-700 bg-emerald-100/70'}">${formatVND(globalPaid - globalCost)}</td>
+            `;
+            displaySessions.forEach((s, sIdx) => {
+                const isNewest = (sIdx === 0);
+                const sessionTotal = sessionStats[s.id]?.totalCost || 0;
+                const footBg = isNewest ? 'bg-amber-100/90 text-amber-950 font-black' : 'bg-slate-100 text-slate-800 font-extrabold';
+                fHtml += `
+                    <td class="p-2.5 lg:p-3 text-center ${footBg} border-r border-slate-200 text-sm lg:text-base" title="Tổng số người tham gia: ${sessionStats[s.id]?.count || 0}">${sessionStats[s.id]?.count || 0}</td>
+                    <td class="p-3 lg:p-3.5 text-right font-mono ${footBg} border-r border-slate-200 whitespace-nowrap text-sm lg:text-base px-2.5 lg:px-3.5" title="${s.shuttles} trái cầu • Tổng tiền buổi ${s.date}: ${formatVND(sessionTotal)}">${s.shuttles} - ${formatVND(sessionTotal)}</td>
+                `;
+            });
+            fHtml += `</tr>`;
+            tfoot.innerHTML = fHtml;
+
+            document.getElementById('summary-total-cost').textContent = formatVND(globalCost);
+            document.getElementById('summary-total-paid').textContent = formatVND(globalPaid);
+        }
+
+        // ==========================================
+        // 2.2 PAYMENT MATRIX RENDERING ENGINE
+        // ==========================================
+        function renderPaymentGrid() {
+            const thead = document.getElementById('pay-thead');
+            const tbody = document.getElementById('pay-body');
+            const tfoot = document.getElementById('pay-footer');
+            if (!thead || !tbody || !tfoot) return;
+
+            // 1. SẮP XẾP THÀNH VIÊN: NỢ NHIỀU NHẤT LÊN TRƯỚC (Từ trái sang phải)
+            const sortedMembers = [...members].sort((a, b) => {
+                let aBill = 0, bBill = 0;
+                sessions.forEach(s => { 
+                    if (a.attendance && a.attendance[s.id] && sessionStats[s.id]) aBill += sessionStats[s.id].costPerPerson; 
+                    if (b.attendance && b.attendance[s.id] && sessionStats[s.id]) bBill += sessionStats[s.id].costPerPerson;
+                });
+                return (a.paid - aBill) - (b.paid - bBill);
+            });
+
+            // 2. SẮP XẾP CÁC BUỔI CHƠI: TỪ CŨ TỚI MỚI (Tăng dần theo thời gian)
+            const displaySessions = [...sessions];
+
+            // 3. BUILD THEAD
+            thead.innerHTML = '';
+            
+            // Row 1: Header Tên thành viên
+            const tr1 = document.createElement('tr');
+            tr1.className = "bg-slate-900 text-white border-b border-slate-700 text-sm lg:text-base";
+            tr1.appendChild(createTH('#', 'p-2.5 sm:p-3 lg:p-3.5 w-10 sm:w-11 lg:w-12 bg-slate-900 text-slate-400 sticky-col-left-1 sticky-top-row-1 border-r border-slate-700 align-middle text-center font-bold'));
+            tr1.appendChild(createTH('BUỔI CHƠI (CŨ ➡️ MỚI)', 'p-2.5 sm:p-3 lg:p-3.5 min-w-[125px] sm:min-w-[155px] lg:min-w-[185px] bg-slate-900 text-white sticky-col-left-2 sticky-top-row-1 text-left px-3 lg:px-4 border-r border-slate-700 align-middle font-bold text-xs sm:text-sm lg:text-base tracking-wide'));
+
+            sortedMembers.forEach(m => {
+                const thM = document.createElement('th');
+                thM.colSpan = 2;
+                thM.className = "p-2.5 sm:p-3 lg:p-3.5 border-r border-slate-700 font-bold bg-slate-800 text-emerald-300 text-center sticky-top-row-1 whitespace-nowrap min-w-[180px] lg:min-w-[220px] text-sm lg:text-base";
+                thM.textContent = m.name;
+                tr1.appendChild(thM);
+            });
+            thead.appendChild(tr1);
+
+            // Row 2: 2 cột con Tiền Cầu & Tiền Đóng
+            const tr2 = document.createElement('tr');
+            tr2.className = "bg-slate-100 text-slate-600 text-xs sm:text-[13px] lg:text-sm font-semibold border-b border-slate-200";
+            tr2.appendChild(createTH('', 'p-1 bg-slate-100 sticky-col-left-1 sticky-top-row-2 border-r border-slate-200'));
+            tr2.appendChild(createTH('', 'p-1 bg-slate-100 sticky-col-left-2 sticky-top-row-2 border-r border-slate-200'));
+
+            sortedMembers.forEach(() => {
+                tr2.appendChild(createTH('Tiền Cầu', 'p-2 border-r border-slate-200 font-semibold bg-amber-50 text-amber-900 text-center w-[90px] sm:w-[100px] lg:w-[110px] sticky-top-row-2'));
+                tr2.appendChild(createTH('Tiền Đóng', 'p-2 border-r border-slate-200 font-semibold bg-emerald-50 text-emerald-900 text-center w-[90px] sm:w-[100px] lg:w-[110px] sticky-top-row-2'));
+            });
+            thead.appendChild(tr2);
+
+            // 4. BUILD TBODY (Các dòng là từng buổi chơi từ Cũ ➡️ Mới)
+            let bodyHTML = '';
+            displaySessions.forEach((s, idx) => {
+                const isNewest = (idx === displaySessions.length - 1);
+                let rowCells = '';
+                sortedMembers.forEach(m => {
+                    const isAttending = m.attendance && m.attendance[s.id] ? true : false;
+                    const cost = isAttending ? (sessionStats[s.id] ? sessionStats[s.id].costPerPerson : 0) : 0;
+                    const payVal = (m.payments && m.payments[s.id]) ? Number(m.payments[s.id]) : 0;
+
+                    let payInputHTML = '';
+                    if (isAdmin) {
+                        payInputHTML = `<input type="text" value="${formatVND(payVal)}" onfocus="this.value=${payVal}; this.select();" onblur="updateSessionPayment(${m.id}, '${s.id}', this.value)" onkeydown="if(event.key==='Enter') this.blur();" class="currency-input text-emerald-700 font-bold font-mono text-right w-full text-sm lg:text-[15px]">`;
+                    } else {
+                        payInputHTML = `<span class="text-emerald-700 font-bold font-mono block text-right px-2 w-full text-sm lg:text-[15px] ${payVal > 0 ? '' : 'text-slate-300'}">${formatVND(payVal)}</span>`;
+                    }
+
+                    rowCells += `
+                        <td class="p-2.5 sm:p-3 text-right font-mono font-medium border-r border-slate-200 text-sm lg:text-[15px] px-3 lg:px-4 ${isAttending ? 'text-amber-900 bg-amber-50/30 font-semibold' : 'text-slate-400'}">${isAttending ? formatVND(cost) : '0'}</td>
+                        <td class="p-2 sm:p-2.5 lg:p-3 text-right bg-emerald-50/20 border-r border-slate-200 text-sm lg:text-[15px] px-2 lg:px-3">${payInputHTML}</td>
+                    `;
+                });
+
+                const newestBadge = isNewest 
+                    ? `<span class="bg-amber-400 text-slate-950 font-black text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs animate-pulse">Mới nhất</span>` 
+                    : '';
+                const rowHighlight = isNewest ? 'bg-amber-50/60 font-semibold border-y-2 border-amber-400/80' : 'hover:bg-slate-50/80';
+                const dateBg = isNewest ? 'bg-amber-100/80 font-bold text-amber-950' : 'bg-white font-bold text-slate-900';
+
+                bodyHTML += `
+                    <tr class="${rowHighlight} transition-colors">
+                        <td class="p-2.5 sm:p-3 text-center text-slate-500 font-mono text-sm lg:text-base bg-slate-50 sticky-col-left-1 border-r border-slate-200">${idx + 1}</td>
+                        <td class="p-2.5 sm:p-3 ${dateBg} sticky-col-left-2 border-r border-slate-200 whitespace-nowrap text-sm lg:text-[15px] px-3 lg:px-4">
+                            <div class="flex items-center gap-1.5">
+                                <span class="truncate">${s.date}</span>
+                                ${newestBadge}
+                            </div>
+                        </td>
+                        ${rowCells}
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = bodyHTML;
+
+            // 5. BUILD TFOOT (Hàng Tổng tiền & Hàng Dư / Thiếu)
+            // Hàng 1: Tổng tiền cầu & Tổng tiền đóng
+            let fHtml = `
+                <tr class="bg-slate-100 text-slate-800 border-t-2 border-slate-300 text-sm lg:text-base">
+                    <td class="p-3 lg:p-3.5 sticky-col-left-1 border-r border-slate-200 bg-slate-200 text-center font-bold">#</td>
+                    <td class="p-3 lg:p-3.5 sticky-col-left-2 border-r border-slate-200 bg-slate-200 text-slate-900 font-extrabold uppercase text-xs sm:text-sm tracking-wide truncate px-3 lg:px-4">Tổng Cộng</td>
+            `;
+
+            sortedMembers.forEach(m => {
+                let mTotalCost = 0;
+                let mTotalPaid = 0;
+                sessions.forEach(s => {
+                    if (m.attendance && m.attendance[s.id] && sessionStats[s.id]) {
+                        mTotalCost += sessionStats[s.id].costPerPerson;
+                    }
+                    if (m.payments && m.payments[s.id]) {
+                        mTotalPaid += Number(m.payments[s.id]) || 0;
+                    }
+                });
+
+                const displayPaid = isKantan(m) ? m.paid : (mTotalPaid > 0 ? mTotalPaid : m.paid);
+
+                fHtml += `
+                    <td class="p-3 lg:p-3.5 border-r border-slate-200 text-right font-extrabold font-mono bg-amber-50 text-amber-900 whitespace-nowrap text-sm lg:text-base px-3 lg:px-4" title="Tổng tiền cầu của ${m.name}: ${formatVND(mTotalCost)}">${formatVND(mTotalCost)}</td>
+                    <td class="p-3 lg:p-3.5 border-r border-slate-200 text-right font-extrabold font-mono bg-emerald-50 text-emerald-800 whitespace-nowrap text-sm lg:text-base px-3 lg:px-4" title="Tổng tiền đóng của ${m.name}: ${formatVND(displayPaid)}">${formatVND(displayPaid)}</td>
+                `;
+            });
+            fHtml += `</tr>`;
+
+            // Hàng 2: DƯ / THIẾU
+            fHtml += `
+                <tr class="bg-slate-200 text-slate-800 border-t border-slate-300 text-sm lg:text-base">
+                    <td class="p-3 lg:p-3.5 sticky-col-left-1 border-r border-slate-300 bg-slate-300 text-center font-bold">#</td>
+                    <td class="p-3 lg:p-3.5 sticky-col-left-2 border-r border-slate-300 bg-slate-300 text-rose-800 font-extrabold uppercase text-xs sm:text-sm tracking-wide truncate px-3 lg:px-4">Dư / Thiếu</td>
+            `;
+
+            sortedMembers.forEach(m => {
+                let mTotalCost = 0;
+                let mTotalPaid = 0;
+                sessions.forEach(s => {
+                    if (m.attendance && m.attendance[s.id] && sessionStats[s.id]) {
+                        mTotalCost += sessionStats[s.id].costPerPerson;
+                    }
+                    if (m.payments && m.payments[s.id]) {
+                        mTotalPaid += Number(m.payments[s.id]) || 0;
+                    }
+                });
+
+                const displayPaid = isKantan(m) ? m.paid : (mTotalPaid > 0 ? mTotalPaid : m.paid);
+                const rem = displayPaid - mTotalCost;
+
+                let cellContent = '';
+                if (rem < 0) {
+                    cellContent = `<span class="text-rose-700 font-extrabold font-mono flex items-center justify-center gap-1.5 text-sm lg:text-base"><i class="fa-solid fa-triangle-exclamation text-rose-500 text-xs"></i> Thiếu: ${formatVND(Math.abs(rem))}</span>`;
+                } else if (rem > 0) {
+                    cellContent = `<span class="text-emerald-700 font-extrabold font-mono flex items-center justify-center gap-1.5 text-sm lg:text-base"><i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i> Dư: +${formatVND(rem)}</span>`;
+                } else {
+                    cellContent = `<span class="text-slate-600 font-bold flex items-center justify-center gap-1.5 text-sm lg:text-base"><i class="fa-solid fa-check text-slate-400 text-xs"></i> Đã đủ</span>`;
+                }
+
+                const cellBg = rem < 0 ? 'bg-rose-50' : (rem > 0 ? 'bg-emerald-50' : 'bg-slate-100');
+
+                fHtml += `
+                    <td colspan="2" class="p-3 lg:p-3.5 border-r border-slate-300 text-center ${cellBg} whitespace-nowrap text-sm lg:text-base" title="${m.name}: ${rem < 0 ? 'Cần đóng thêm ' + formatVND(Math.abs(rem)) : (rem > 0 ? 'Đang dư ' + formatVND(rem) : 'Đã thanh toán đủ')}">${cellContent}</td>
+                `;
+            });
+            fHtml += `</tr>`;
+
+            tfoot.innerHTML = fHtml;
+        }
+
+        function renderShuttleBatches() {
+            const tbody = document.getElementById('shuttle-batches-body');
+            const tfoot = document.getElementById('shuttle-batches-footer');
+            if (!tbody) return;
+            let html = '';
+            let grandTotalPacks = 0;
+            let grandTotalMoney = 0;
+
+            // SẮP XẾP BẢNG GIÁ CẦU: TỪ MỚI NHẤT ĐẾN CŨ NHẤT
+            const displayBatches = [...shuttleBatches].reverse();
+            displayBatches.forEach(b => {
+                const qty = Number(b.quantity) || 1;
+                const packPrice = Number(b.packPrice) || 0;
+                const total = Number(b.totalPrice) || (qty * packPrice);
+                const unit = Number(b.unitPrice) || Math.round(packPrice / 12);
+
+                grandTotalPacks += qty;
+                grandTotalMoney += total;
+
+                const statusBadge = b.isDepleted 
+                    ? `<span class="px-2 py-0.5 bg-slate-100 text-slate-500 border border-slate-200 rounded-md text-xs font-bold uppercase tracking-wider whitespace-nowrap">Đã Hết</span>`
+                    : `<span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md text-xs font-bold uppercase tracking-wider whitespace-nowrap">Còn Cầu</span>`;
+                
+                let editBtn = isAdmin 
+                    ? `<button onclick="openPriceModal('${b.id}')" class="ml-2 text-sky-600 hover:text-sky-800 text-xs p-0.5" title="Sửa lô này"><i class="fa-solid fa-pen"></i></button>`
+                    : ``;
+
+                html += `
+                    <tr class="hover:bg-slate-50/80 transition-colors text-sm lg:text-[15px]">
+                        <td class="p-3 lg:p-3.5 text-center border-r border-slate-100">${statusBadge}</td>
+                        <td class="p-3 lg:p-3.5 font-bold text-slate-900 border-r border-slate-100">${b.label} ${editBtn}</td>
+                        <td class="p-3 lg:p-3.5 text-center text-slate-700 font-semibold border-r border-slate-100">${qty}</td>
+                        <td class="p-3 lg:p-3.5 text-right font-mono text-slate-600 border-r border-slate-100 whitespace-nowrap">${formatVND(packPrice)}</td>
+                        <td class="p-3 lg:p-3.5 text-right font-mono text-rose-700 font-bold border-r border-slate-100 whitespace-nowrap bg-rose-50/30">${formatVND(total)}</td>
+                        <td class="p-3 lg:p-3.5 text-right font-mono text-emerald-700 font-bold border-r border-slate-100 whitespace-nowrap">${formatVND(unit)}</td>
+                        <td class="p-3 lg:p-3.5 text-slate-500 italic text-xs lg:text-sm">${b.note || '-'}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+
+            if (tfoot) {
+                tfoot.innerHTML = `
+                    <tr class="text-sm lg:text-base bg-slate-100 text-slate-800 border-t-2 border-slate-200 font-bold">
+                        <td colspan="2" class="p-3 lg:p-3.5 text-center uppercase text-xs sm:text-sm tracking-wider text-slate-700 font-bold border-r border-slate-200">Tổng Cộng</td>
+                        <td class="p-3 lg:p-3.5 text-center text-slate-900 font-extrabold border-r border-slate-200">${grandTotalPacks}</td>
+                        <td class="p-3 lg:p-3.5 border-r border-slate-200"></td>
+                        <td class="p-3 lg:p-3.5 text-right font-mono text-rose-700 font-extrabold border-r border-slate-200 whitespace-nowrap bg-rose-100/40">${formatVND(grandTotalMoney)}</td>
+                        <td colspan="2" class="p-3 lg:p-3.5"></td>
+                    </tr>
+                `;
+            }
+        }
+
+        // ==========================================
+        // 3. INTERACTION & DATA MUTATION
+        // ==========================================
+        function toggleAtt(mId, sId) {
+            if (!isAdmin) return;
+            const m = members.find(x => x.id === mId);
+            if (m) { 
+                m.attendance[sId] = !m.attendance[sId]; 
+                renderAll(); 
+                markUnsaved(); 
+            }
+        }
+
+        function updatePaid(mId, val) {
+            if (!isAdmin) return;
+            const m = members.find(x => x.id === mId);
+            if (m) {
+                if (isKantan(m)) return; // Tiền của Kantan được hệ thống tự động tính toán
+                const clean = typeof val === 'string' ? val.replace(/[^\d-]/g, '') : val;
+                m.paid = Number(clean) || 0;
+                renderAll();
+                markUnsaved();
+            }
+        }
+
+        function updateSessionPayment(mId, sId, val) {
+            if (!isAdmin) return;
+            const m = members.find(x => x.id === mId);
+            if (m) {
+                m.payments = m.payments || {};
+                const clean = typeof val === 'string' ? val.replace(/[^\d-]/g, '') : val;
+                m.payments[sId] = Number(clean) || 0;
+
+                // Tự động tính tổng tiền m.paid cho thành viên thông thường
+                if (!isKantan(m)) {
+                    let total = 0;
+                    sessions.forEach(s => {
+                        total += Number(m.payments[s.id]) || 0;
+                    });
+                    m.paid = total;
+                }
+
+                renderAll();
+                markUnsaved();
+            }
+        }
+
+        function deleteSession(sId) {
+            if (confirm('Sếp có chắc muốn xóa buổi đánh này? Dữ liệu điểm danh và tiền đóng sẽ bị mất.')) {
+                sessions = sessions.filter(s => s.id !== sId);
+                members.forEach(m => {
+                    delete m.attendance[sId];
+                    if (m.payments) delete m.payments[sId];
+                });
+                renderAll();
+                markUnsaved();
+                showToast('Đã xóa buổi chơi tạm thời. Bấm LƯU DATA để xác nhận.', 'info');
+            }
+        }
+
+        function openAddSessionModal() {
+            const sel = document.getElementById('inp-ss-price');
+            sel.innerHTML = '';
+            let count = 0;
+            // Hiển thị các lô cầu mới nhất lên đầu danh sách chọn
+            const displayBatches = [...shuttleBatches].reverse();
+            displayBatches.forEach(b => {
+                if (!b.isDepleted) {
+                    sel.innerHTML += `<option value="${b.unitPrice}">${b.label} (${formatVND(b.unitPrice)}/trái)</option>`;
+                    count++;
+                }
+            });
+            if (count === 0) sel.innerHTML = `<option value="0">Chưa có lô cầu nào CÒN HÀNG</option>`;
+            
+            document.getElementById('inp-ss-date').value = '';
+            document.getElementById('inp-ss-shuttles').value = '10';
+            document.getElementById('modal-session').classList.remove('hidden');
+        }
+
+        function saveNewSession() {
+            const dateStr = document.getElementById('inp-ss-date').value.trim();
+            const shuttles = Number(document.getElementById('inp-ss-shuttles').value) || 0;
+            const price = Number(document.getElementById('inp-ss-price').value) || 0;
+            if (!dateStr) return showToast('Vui lòng nhập Ngày/Thứ!', 'error');
+
+            const newId = 's' + new Date().getTime();
+            sessions.push({ id: newId, date: dateStr, shuttles: shuttles, unitPrice: price });
+            members.forEach(m => {
+                m.attendance[newId] = false;
+                if (!m.payments) m.payments = {};
+                m.payments[newId] = 0;
+            });
+            
+            closeModal('modal-session');
+            renderAll();
+            markUnsaved();
+            showToast('Đã tạm thêm buổi chơi (Hãy bấm LƯU DATA để ghi vào máy chủ)', 'info');
+        }
+
+        function openAddMemberModal() {
+            const name = prompt("Nhập tên thành viên mới:");
+            if (name) {
+                const newId = new Date().getTime();
+                const att = {};
+                const pay = {};
+                sessions.forEach(s => {
+                    att[s.id] = false;
+                    pay[s.id] = 0;
+                });
+                members.push({ id: newId, name: name.trim(), paid: 0, attendance: att, payments: pay });
+                renderAll();
+                markUnsaved();
+                showToast('Đã thêm thành viên tạm thời.', 'info');
+            }
+        }
+
+        function calcUnit() {
+            const qty = Number(document.getElementById('pb-quantity').value) || 1;
+            const pack = Number(document.getElementById('pb-packprice').value) || 0;
+            document.getElementById('pb-totalprice').value = qty * pack;
+            document.getElementById('pb-unitprice').value = Math.round(pack / 12);
+        }
+
+        function openPriceModal(id = null) {
+            const modal = document.getElementById('modal-price-batch');
+            const title = document.getElementById('pb-modal-title');
+            if (id) {
+                title.textContent = "Sửa Thông Tin Lô Cầu";
+                const b = shuttleBatches.find(x => x.id === id);
+                document.getElementById('pb-id').value = b.id;
+                document.getElementById('pb-label').value = b.label || '';
+                document.getElementById('pb-quantity').value = b.quantity || 1;
+                document.getElementById('pb-packprice').value = b.packPrice || '';
+                document.getElementById('pb-totalprice').value = b.totalPrice || ((b.quantity || 1) * (b.packPrice || 0));
+                document.getElementById('pb-unitprice').value = b.unitPrice || (b.packPrice ? Math.round(b.packPrice / 12) : '');
+                document.getElementById('pb-note').value = b.note || '';
+                document.getElementById('pb-depleted').checked = b.isDepleted || false;
+            } else {
+                title.textContent = "Thêm Lô Cầu Mới";
+                document.getElementById('pb-id').value = '';
+                document.getElementById('pb-label').value = '';
+                document.getElementById('pb-quantity').value = '1';
+                document.getElementById('pb-packprice').value = '';
+                document.getElementById('pb-totalprice').value = '';
+                document.getElementById('pb-unitprice').value = '';
+                document.getElementById('pb-note').value = '';
+                document.getElementById('pb-depleted').checked = false;
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function savePriceBatch() {
+            const id = document.getElementById('pb-id').value;
+            const label = document.getElementById('pb-label').value.trim();
+            const quantity = Number(document.getElementById('pb-quantity').value) || 1;
+            const packPrice = Number(document.getElementById('pb-packprice').value) || 0;
+            const totalPrice = Number(document.getElementById('pb-totalprice').value) || (quantity * packPrice);
+            const note = document.getElementById('pb-note').value.trim();
+            const isDepleted = document.getElementById('pb-depleted').checked;
+            const unitPrice = Math.round(packPrice / 12);
+
+            if (!label) return showToast('Vui lòng nhập tên lô!', 'error');
+
+            if (id) {
+                const b = shuttleBatches.find(x => x.id === id);
+                if (b) {
+                    b.label = label;
+                    b.quantity = quantity;
+                    b.packPrice = packPrice;
+                    b.totalPrice = totalPrice;
+                    b.unitPrice = unitPrice;
+                    b.note = note;
+                    b.isDepleted = isDepleted;
+                }
+            } else {
+                shuttleBatches.push({
+                    id: 'p' + new Date().getTime(),
+                    label,
+                    quantity,
+                    packPrice,
+                    totalPrice,
+                    unitPrice,
+                    note,
+                    isDepleted
+                });
+            }
+
+            closeModal('modal-price-batch');
+            renderAll();
+            markUnsaved();
+            showToast('Đã lưu bảng giá tạm thời! Bấm LƯU DATA để xác nhận.', 'info');
+        }
+
+        // ==========================================
+        // 4. MEMBER DETAILS & QR
+        // ==========================================
+        function openMemberDetails(memberId) {
+            const m = members.find(x => x.id === memberId);
+            if (!m) return;
+
+            let attendedSessions = 0;
+            let memberTotalBill = 0;
+            let sessionListHTML = '';
+
+            // Sắp xếp các buổi chơi từ MỚI NHẤT -> CŨ NHẤT
+            const displaySessions = [...sessions].reverse();
+
+            displaySessions.forEach(s => {
+                const isAttending = m.attendance && m.attendance[s.id] ? true : false;
+                const payVal = (m.payments && m.payments[s.id]) ? Number(m.payments[s.id]) : 0;
+                if (isAttending || payVal > 0) {
+                    if (isAttending) attendedSessions++;
+                    const cost = (isAttending && sessionStats[s.id]) ? sessionStats[s.id].costPerPerson : 0;
+                    memberTotalBill += cost;
+
+                    let payBadge = payVal > 0 
+                        ? `<span class="text-xs bg-emerald-100 text-emerald-800 font-bold font-mono px-2 py-0.5 rounded-md ml-1.5 shrink-0">Đã đóng: ${formatVND(payVal)}</span>`
+                        : ``;
+
+                    sessionListHTML += `
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-xs hover:border-sky-300 transition-colors text-sm">
+                            <div class="flex items-center gap-2.5 truncate pr-2">
+                                <span class="w-2.5 h-2.5 rounded-full ${isAttending ? 'bg-emerald-500' : 'bg-slate-300'} shrink-0"></span>
+                                <span class="font-bold text-slate-800 truncate">${s.date}</span>
+                                ${isAttending ? `<span class="text-xs text-slate-500 shrink-0">(${s.shuttles} trái / ${sessionStats[s.id]?.count || 1} ng)</span>` : `<span class="text-xs text-slate-400 italic shrink-0">Không đánh</span>`}
+                                ${payBadge}
+                            </div>
+                            <span class="font-bold ${isAttending ? 'text-sky-700' : 'text-slate-400'} font-mono text-sm whitespace-nowrap">${formatVND(cost)}</span>
+                        </div>
+                    `;
+                }
+            });
+
+            if (attendedSessions === 0) {
+                sessionListHTML = `
+                    <div class="text-center py-5 text-slate-400 italic text-sm">
+                        <i class="fa-regular fa-calendar-xmark text-xl mb-1.5 block text-slate-300"></i>
+                        Thành viên chưa tham gia buổi chơi nào
+                    </div>
+                `;
+            }
+
+            const remaining = m.paid - memberTotalBill;
+
+            document.getElementById('md-name').textContent = m.name;
+            document.getElementById('md-sessions-badge').textContent = `Thành viên CLB • Đã tham gia ${attendedSessions} buổi`;
+            document.getElementById('md-sessions-count').textContent = `${attendedSessions} buổi`;
+            document.getElementById('md-session-list').innerHTML = sessionListHTML;
+            document.getElementById('md-total').textContent = formatVND(memberTotalBill);
+            document.getElementById('md-paid').textContent = formatVND(m.paid);
+            
+            const remBox = document.getElementById('md-remaining-box');
+            const remLabel = document.getElementById('md-remaining-label');
+            const remValue = document.getElementById('md-remaining');
+            
+            if (remaining < 0) {
+                remBox.className = "p-3 rounded-xl border flex justify-between items-center shadow-sm bg-rose-50 border-rose-200 text-rose-700";
+                remLabel.innerHTML = '<span class="flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation text-rose-500"></i> Cần đóng thêm:</span>';
+                remValue.textContent = formatVND(Math.abs(remaining));
+            } else if (remaining > 0) {
+                remBox.className = "p-3 rounded-xl border flex justify-between items-center shadow-sm bg-emerald-50 border-emerald-200 text-emerald-700";
+                remLabel.innerHTML = '<span class="flex items-center gap-1"><i class="fa-solid fa-circle-check text-emerald-500"></i> Đang đóng dư:</span>';
+                remValue.textContent = `+${formatVND(remaining)}`;
+            } else {
+                remBox.className = "p-3 rounded-xl border flex justify-between items-center shadow-sm bg-slate-50 border-slate-200 text-slate-700";
+                remLabel.innerHTML = '<span class="flex items-center gap-1"><i class="fa-solid fa-check text-slate-500"></i> Tình trạng:</span>';
+                remValue.textContent = "Đã thanh toán đủ (0)";
+            }
+
+            document.getElementById('modal-member-details').classList.remove('hidden');
+        }
+
+        let pendingQRUrl = null;
+
+        function updateQRDisplay() {
+            document.getElementById('display-bank-name').textContent = qrInfo.bankName || "Chưa chọn";
+            document.getElementById('display-bank-acc').textContent = qrInfo.bankAcc || "Chưa chọn";
+            document.getElementById('display-bank-owner').textContent = qrInfo.bankOwner || "Chưa chọn";
+            let renderUrl = qrInfo.qrUrl;
+            if (!renderUrl) {
+                const bName = (qrInfo.bankName || '').replace(/ /g, '');
+                renderUrl = `https://img.vietqr.io/image/${bName}-${qrInfo.bankAcc}-compact.png?accountName=${encodeURIComponent(qrInfo.bankOwner || '')}`;
+            }
+            document.getElementById('display-qr-img').src = renderUrl;
+        }
+
+        function openQRModal() {
+            pendingQRUrl = null;
+            document.getElementById('input-bank-name').value = qrInfo.bankName || '';
+            document.getElementById('input-bank-acc').value = qrInfo.bankAcc || '';
+            document.getElementById('input-bank-owner').value = qrInfo.bankOwner || '';
+            document.getElementById('input-qr-file').value = '';
+            
+            const preview = document.getElementById('qr-upload-preview');
+            if (qrInfo.qrUrl) {
+                preview.src = qrInfo.qrUrl;
+                preview.classList.remove('hidden');
+            } else {
+                preview.classList.add('hidden');
+            }
+            document.getElementById('modal-qr').classList.remove('hidden');
+        }
+
+        function handleQRUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            showToast('Đang xử lý & nén ảnh QR...', 'info');
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                    // Nén ảnh về kích thước tối đa 400x400 (Dung lượng nhỏ < 25KB, chuẩn giới hạn cell Google Sheets)
+                    const MAX_SIZE = 400;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_SIZE) {
+                            height = Math.round((height * MAX_SIZE) / width);
+                            width = MAX_SIZE;
+                        }
+                    } else {
+                        if (height > MAX_SIZE) {
+                            width = Math.round((width * MAX_SIZE) / height);
+                            height = MAX_SIZE;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Chuyển thành chuỗi Base64 định dạng JPEG chất lượng 0.75
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.75);
+                    pendingQRUrl = compressedBase64;
+
+                    const preview = document.getElementById('qr-upload-preview');
+                    if (preview) {
+                        preview.src = compressedBase64;
+                        preview.classList.remove('hidden');
+                    }
+                    showToast('Đã nén ảnh QR thành công! Hãy bấm "Lưu Thay Đổi"', 'success');
+                };
+                img.onerror = () => {
+                    showToast('Lỗi khi đọc file ảnh!', 'error');
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function resetToAutoVietQR() {
+            pendingQRUrl = "";
+            document.getElementById('input-qr-file').value = "";
+            const preview = document.getElementById('qr-upload-preview');
+            if (preview) preview.classList.add('hidden');
+            showToast('Đã chuyển sang dùng mã VietQR tự động', 'info');
+        }
+
+        function saveQRConfig() {
+            qrInfo.bankName = document.getElementById('input-bank-name').value.trim();
+            qrInfo.bankAcc = document.getElementById('input-bank-acc').value.trim();
+            qrInfo.bankOwner = document.getElementById('input-bank-owner').value.trim();
+
+            if (pendingQRUrl !== null) {
+                qrInfo.qrUrl = pendingQRUrl;
+            }
+
+            updateQRDisplay();
+            closeModal('modal-qr');
+            markUnsaved();
+            showToast('Đã cập nhật thông tin QR! Bấm "LƯU DATA" để lưu vào cơ sở dữ liệu.', 'info');
+        }
+
+        function copyAcc() {
+            navigator.clipboard.writeText(qrInfo.bankAcc).then(() => showToast('Đã sao chép STK!', 'success')).catch(() => {
+                const ta = document.createElement('textarea'); ta.value = qrInfo.bankAcc; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('Đã sao chép STK!', 'success');
+            });
+        }
+
+        // ==========================================
+        // 5. ROLE & AI & HELPERS
+        // ==========================================
+        function toggleRole() {
+            if (isAdmin) {
+                if (hasUnsavedChanges) {
+                    if(!confirm("Bạn đang có thay đổi chưa lưu! Bấm OK để HỦY BỎ các thay đổi này và thoát Admin.")) return;
+                    restoreState(); // revert
+                }
+                isAdmin = false;
+                renderAll();
+                switchTab('sheet');
+                showToast('Đã chuyển sang chế độ Thành Viên', 'info');
+            } else {
+                document.getElementById('google-email').value = '';
+                document.getElementById('modal-google-login').classList.remove('hidden');
+            }
+        }
+
+        function verifyGoogleLogin() {
+            const email = document.getElementById('google-email').value.trim().toLowerCase();
+            if (adminEmails.includes(email)) {
+                isAdmin = true;
+                closeModal('modal-google-login');
+                renderAll();
+                showToast('Đăng nhập Admin thành công!', 'success');
+            } else {
+                showToast('Email không có quyền quản trị!', 'error');
+            }
+        }
+
+        function updateUIByRole() {
+            const badge = document.getElementById('role-badge');
+            const btnToggle = document.getElementById('btn-toggle-role');
+            const btnToggleText = document.getElementById('btn-role-text');
+            
+            if (isAdmin) {
+                badge.textContent = "Quản Trị Viên";
+                badge.className = "text-[10px] uppercase tracking-wider font-bold bg-rose-500/20 text-rose-600 px-2 py-0.5 rounded-full border border-rose-500/30";
+                btnToggle.innerHTML = `<i class="fa-solid fa-right-from-bracket text-slate-500"></i> <span class="hidden sm:inline">Thoát Admin</span>`;
+                btnToggle.className = "px-3.5 py-2 text-xs font-bold rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 transition flex items-center gap-1.5 shadow-sm";
+                
+                document.getElementById('admin-tabs').classList.remove('hidden');
+                document.getElementById('admin-action-bar').classList.remove('hidden');
+                document.getElementById('member-banner').classList.add('hidden');
+                document.getElementById('btn-edit-qr').classList.remove('hidden');
+                document.getElementById('btn-edit-qr').classList.add('flex');
+            } else {
+                badge.textContent = "Thành Viên";
+                badge.className = "text-[10px] uppercase tracking-wider font-bold bg-sky-500/20 text-sky-600 px-2 py-0.5 rounded-full border border-sky-500/30";
+                btnToggle.innerHTML = `<i class="fa-brands fa-google text-rose-400"></i> <span class="hidden sm:inline">Đăng nhập Admin</span>`;
+                btnToggle.className = "px-3.5 py-2 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition flex items-center gap-1.5 shadow-sm";
+                
+                document.getElementById('admin-tabs').classList.add('hidden');
+                document.getElementById('admin-action-bar').classList.add('hidden');
+                document.getElementById('member-banner').classList.remove('hidden');
+                document.getElementById('btn-edit-qr').classList.add('hidden');
+                document.getElementById('btn-edit-qr').classList.remove('flex');
+            }
+        }
+
+        function switchTab(tabId) {
+            ['sheet', 'ai', 'script'].forEach(id => {
+                document.getElementById('tab-' + id)?.classList.add('hidden');
+                document.getElementById('btn-tab-' + id)?.classList.remove('bg-amber-400', 'text-slate-900', 'shadow');
+                document.getElementById('btn-tab-' + id)?.classList.add('text-slate-300');
+            });
+            document.getElementById('tab-' + tabId)?.classList.remove('hidden');
+            const btn = document.getElementById('btn-tab-' + tabId);
+            if (btn) {
+                btn.classList.remove('text-slate-300', 'hover:bg-slate-800');
+                btn.classList.add('bg-amber-400', 'text-slate-900', 'shadow');
+            }
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        
+        function showToast(msg, type='info') {
+            const container = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = `px-4 py-2.5 rounded-xl shadow-xl text-white text-xs font-medium flex items-center gap-2 transform translate-y-2 transition-all ${type==='success'?'bg-emerald-600': type==='error'?'bg-rose-600':'bg-slate-800'}`;
+            t.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${msg}</span>`;
+            container.appendChild(t);
+            setTimeout(() => { t.classList.add('opacity-0', 'translate-y-2'); setTimeout(()=>t.remove(), 300); }, 2500);
+        }
+
+        // ==========================================
+        // 6. GEMINI AI (Không thay đổi)
+        // ==========================================
+        const GEMINI_API_KEY = ""; 
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
+        const AI_SYSTEM_INSTRUCTION = `Bạn là trợ lý AI thông minh, vui vẻ và rất khéo léo dành cho người quản lý CLB Cầu Lông. Xưng là "tôi" và gọi người dùng là "Sếp". Dùng tiếng Việt chuẩn, thêm emoji.`;
+
+        function getClubContextData() {
+            let totalCost = 0, totalPaid = 0, debtList = [], overpaidList = [];
+            members.forEach(m => {
+                let memberTotalBill = 0;
+                sessions.forEach(s => { if (m.attendance[s.id]) memberTotalBill += sessionStats[s.id].costPerPerson; });
+                const remaining = m.paid - memberTotalBill;
+                totalCost += memberTotalBill; totalPaid += m.paid;
+                
+                if (remaining < -1000) debtList.push(`- ${m.name}: Nợ ${formatVND(Math.abs(remaining))}`);
+                else if (remaining > 1000) overpaidList.push(`- ${m.name}: Đang dư ${formatVND(remaining)}`);
+            });
+            return `[DỮ LIỆU CLB]\n- Tổng thành viên: ${members.length}\n- Tổng chi phí: ${formatVND(totalCost)}\n- Đã thu: ${formatVND(totalPaid)}\n- Quỹ dư: ${formatVND(totalPaid - totalCost)}\n- Nợ tiền:\n${debtList.length ? debtList.join('\n') : "Không ai nợ"}\n- Đóng dư:\n${overpaidList.length ? overpaidList.join('\n') : "Không ai dư"}`;
+        }
+
+        function formatMarkdownToHTML(text) { return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/\n/g, '<br>'); }
+
+        function appendAIChatMessage(sender, text) {
+            const chatBox = document.getElementById('ai-chat-box');
+            const msgDiv = document.createElement('div');
+            if (sender === 'user') {
+                msgDiv.className = "flex items-start gap-3 flex-row-reverse";
+                msgDiv.innerHTML = `<div class="w-8 h-8 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center shrink-0 shadow-sm"><i class="fa-solid fa-user-tie text-xs"></i></div><div class="bg-purple-600 text-white p-3 rounded-2xl rounded-tr-none text-sm max-w-[85%] shadow-sm">${text}</div>`;
+            } else {
+                msgDiv.className = "flex items-start gap-3";
+                msgDiv.innerHTML = `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md"><i class="fa-solid fa-robot text-xs"></i></div><div class="bg-white border border-purple-100 p-3 rounded-2xl rounded-tl-none text-sm text-slate-800 max-w-[85%] shadow-sm leading-relaxed">${formatMarkdownToHTML(text)}</div>`;
+            }
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function showAILoading() {
+            const chatBox = document.getElementById('ai-chat-box');
+            const loader = document.createElement('div');
+            loader.id = 'ai-loading-indicator';
+            loader.className = "flex items-start gap-3";
+            loader.innerHTML = `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md"><i class="fa-solid fa-robot text-xs"></i></div><div class="bg-white border border-purple-100 p-3 rounded-2xl rounded-tl-none text-sm text-slate-800 flex gap-1.5 items-center shadow-sm h-[44px]"><span class="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></span><span class="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></span><span class="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></span></div>`;
+            chatBox.appendChild(loader);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function processAIRequest(promptText, displayUserText = null) {
+            if (displayUserText) appendAIChatMessage('user', displayUserText);
+            showAILoading();
+
+            // Nếu đang chạy trong môi trường Google Apps Script, ưu tiên dùng Proxy Server-side
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run
+                    .withSuccessHandler((reply) => {
+                        document.getElementById('ai-loading-indicator')?.remove();
+                        appendAIChatMessage('ai', reply || "Không nhận được phản hồi từ AI.");
+                    })
+                    .withFailureHandler((err) => {
+                        document.getElementById('ai-loading-indicator')?.remove();
+                        appendAIChatMessage('ai', "Lỗi từ Server Apps Script: " + (err.message || err));
+                    })
+                    .callGeminiAI(promptText, getClubContextData());
+                return;
+            }
+
+            // Fallback khi chạy ở môi trường Test Local
+            try {
+                if (!GEMINI_API_KEY) {
+                    document.getElementById('ai-loading-indicator')?.remove();
+                    appendAIChatMessage('ai', "Sếp ơi, trên môi trường Test Local chưa điền GEMINI_API_KEY. Khi triển khai lên Apps Script Web App, AI sẽ tự động hoạt động qua Server nhé!");
+                    return;
+                }
+                const payload = { contents: [{ parts: [{ text: getClubContextData() + '\n\n' + promptText }] }], systemInstruction: { parts: [{ text: AI_SYSTEM_INSTRUCTION }] } };
+                const response = await fetch(GEMINI_API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const result = await response.json();
+                document.getElementById('ai-loading-indicator')?.remove();
+                if (result.candidates && result.candidates[0].content) appendAIChatMessage('ai', result.candidates[0].content.parts[0].text);
+            } catch (error) {
+                document.getElementById('ai-loading-indicator')?.remove();
+                appendAIChatMessage('ai', "Đã xảy ra lỗi kết nối AI.");
+            }
+        }
+
+        function aiGenerateReminder() { processAIRequest("Soạn tin Zalo nhắc nợ", "Soạn tin nhắn nhắc nợ gửi nhóm Zalo."); }
+        function aiAnalyzeFinances() { processAIRequest("Phân tích tình hình quỹ", "Phân tích tình hình quỹ CLB."); }
+        function aiSendCustomMessage() {
+            const inputEl = document.getElementById('ai-chat-input');
+            const text = inputEl.value.trim();
+            if (!text) return;
+            inputEl.value = '';
+            processAIRequest(text, text);
+        }
+    </script>
+</body>
+</html>
