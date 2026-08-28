@@ -1438,59 +1438,171 @@
             return gradients[index];
         }
 
-        // ==========================================
-        // BIỆT DANH HÀI HƯỚC DÀNH CHO THÀNH VIÊN CLB
-        // ==========================================
-        function getMemberNickname(name) {
-            if (!name) return "🏸 Tay Vợt Ẩn Danh";
-            const cleanName = name.trim().toLowerCase();
-            
-            // Biệt danh riêng theo tên thành viên
-            const specialMap = {
-                'kantan': '👑 Thủ Quỹ Quyền Lực',
-                'a đức': '🦅 Thần Điêu Đại Hiệp',
-                'đức': '🦅 Thần Điêu Đại Hiệp',
-                'a phương': '⚡ Chiến Thần Đập Cầu',
-                'phương': '⚡ Chiến Thần Đập Cầu',
-                'a toàn': '💎 Cơ Trưởng Đam Mê',
-                'toàn': '💎 Cơ Trưởng Đam Mê',
-                'cô hà': '🌸 Đại Tỷ Bất Tử',
-                'hà': '🌸 Đại Tỷ Bất Tử',
-                'song anh': '⚔️ Song Kiếm Hợp Bích',
-                'lộc': '🌪️ Thánh Lưới Vô Đối',
-                'lâm': '🔥 Đập Cầu Cháy Sân',
-                'tài': '🎯 Vua Phản Tạt',
-                'nghĩa': '🪄 Phù Thủy Cắt Cầu',
-                'hoàng anh': '✨ Lãng Tử Cầu Lông'
-            };
+        // ==============================================================
+        // CÁC BỘ BIỆT DANH THEO CHỦ ĐỀ (10 BIỆT DANH / BỘ - TỰ ĐỔI MỖI BUỔI)
+        // ==============================================================
+        const NICKNAME_THEME_SETS = [
+            {
+                theme: "⚔️ Võ Lâm Kiếm Hiệp",
+                nicknames: [
+                    "🦅 Thần Điêu Đại Hiệp",
+                    "⚡ Độc Cô Cầu Bại",
+                    "⚔️ Lệnh Hồ Xung Sân Cầu",
+                    "🌪️ Giáng Long Thập Bát Chưởng",
+                    "🐉 Cửu Âm Chân Kinh",
+                    "🥷 Lục Mạch Thần Kiếm",
+                    "🛡️ Kim Cang Bất Hoại",
+                    "🌸 Di Hoa Tiếp Ngọc",
+                    "👑 Minh Chủ Võ Lâm",
+                    "🪄 Lăng Ba Vi Bộ"
+                ]
+            },
+            {
+                theme: "🦸 Siêu Anh Hùng Vũ Trụ",
+                nicknames: [
+                    "⚡ Thor Sấm Sét",
+                    "🛡️ Captain Phòng Thủ",
+                    "🦾 Iron Man Đập Cầu",
+                    "🏹 Hawkeye Bắt Bài",
+                    "🕷️ Spider-Man Bay Lượn",
+                    "🌪️ Flash Bứt Tốc",
+                    "💥 Hulk Đập Sàn",
+                    "🥷 Batman Ảo Thuật",
+                    "🔥 Doctor Strange Cắt Cầu",
+                    "🎯 Black Panther Phản Tạt"
+                ]
+            },
+            {
+                theme: "🔥 Chiến Thần Sân Cầu & Hài Hước",
+                nicknames: [
+                    "🔥 Chiến Thần Đập Cầu Cháy Sân",
+                    "🌪️ Cơn Lốc Sân Cầu",
+                    "🎯 Vua Phản Tạt Vạch Cuối",
+                    "🚀 Tên Lửa Bọc Đường",
+                    "🪄 Phù Thủy Bỏ Nhỏ",
+                    "🛡️ Bức Tường Thép Bất Tử",
+                    "💎 Cơ Trưởng Đam Mê",
+                    "🦁 Chúa Tể Cuối Sân",
+                    "⚡ Búa Tạ Sấm Sét",
+                    "🎯 Thánh Đè Cầu Lưới"
+                ]
+            },
+            {
+                theme: "👑 Danh Hiệu Hoàng Gia & Thần Thoại",
+                nicknames: [
+                    "👑 Hoàng Đế Cầu Lông",
+                    "💎 Kim Cương Bất Diệt",
+                    "⚡ Phượng Hoàng Tái Sinh",
+                    "🐉 Rồng Lửa Tấn Công",
+                    "🌊 Thần Biển Phòng Ngự",
+                    "🌪️ Thần Gió Bứt Tốc",
+                    "🗡️ Thánh Kiếm Diệt Cầu",
+                    "🌟 Ngôi Sao Sáng Nhất",
+                    "🦅 Đại Bàng Tung Cánh",
+                    "🏆 Huyền Thoại Đôi Nam Nữ"
+                ]
+            },
+            {
+                theme: "🥷 Thế Giới Anime & Ninja",
+                nicknames: [
+                    "⚡ Hokage Sân Cầu",
+                    "👁️ Sharingan Bắt Bài",
+                    "🗡️ Kiếm Sĩ Tam Kiếm Phái",
+                    "🔥 Hỏa Quyền Tung Hoành",
+                    "🌪️ Rasengan Xé Gió",
+                    "🥋 Siêu Saiyan Đập Cầu",
+                    "⚔️ Titan Bất Bại",
+                    "🎯 Xạ Thủ Bách Phát",
+                    "🪄 Ảo Thuật Gia Ninja",
+                    "🐲 Hộ Vệ Long Thần"
+                ]
+            },
+            {
+                theme: "🎨 Nghệ Sĩ Thể Thao & Đỉnh Cao",
+                nicknames: [
+                    "🎩 Ảo Thuật Gia Sân Cầu",
+                    "🎯 Tay Đập Bách Phát Bách Trúng",
+                    "⚡ Tia Chớp Vạch Giữa",
+                    "🛡️ Lá Chắn Thép Vô Địch",
+                    "🔥 Ngọn Lửa Đam Mê",
+                    "🌪️ Vũ Điệu Trên Lưới",
+                    "🏹 Thợ Săn Điểm Số",
+                    "🦁 Mãnh Hổ Tung Hoành",
+                    "🚀 Đạn Pháo Hạng Nặng",
+                    "✨ Nghệ Sĩ Vợt Cầu"
+                ]
+            },
+            {
+                theme: "🦁 Thế Giới Muông Thú Chiến Binh",
+                nicknames: [
+                    "🦁 Sư Tử Vồ Cầu",
+                    "🐅 Cọp Trắng Đập Cầu",
+                    "🐆 Báo Đốm Bứt Tốc",
+                    "🦅 Chim Ưng Săn Mồi",
+                    "🐺 Sói Đầu Đàn",
+                    "🐻 Gấu Bắc Cực Phòng Thủ",
+                    "🦈 Cá Mập Cắn Cầu",
+                    "🐍 Mãng Xà Luồn Lách",
+                    "🦊 Cáo Già Bắt Bài",
+                    "🦏 Tê Giác Húc Sân"
+                ]
+            },
+            {
+                theme: "🍹 Đời Sống & Ẩm Thực Vui Vẻ",
+                nicknames: [
+                    "🧋 Trà Sữa Full Topping",
+                    "☕ Cà Phê Đậm Đặc",
+                    "🌶️ Ớt Hiểm Siêu Cay",
+                    "🍗 Đùi Gà Giòn Rụm",
+                    "🍕 Pizza Gấp Đôi Phô Mai",
+                    "🍔 Burger Siêu To",
+                    "🥑 Bơ Béo Ngậy",
+                    "🥥 Dừa Xiêm Mát Lạnh",
+                    "🍉 Dưa Hấu Ngọt Ngào",
+                    "🥭 Xoài Lắc Muối Ớt"
+                ]
+            }
+        ];
 
-            if (specialMap[cleanName]) return specialMap[cleanName];
+        function getMemberNicknameMap() {
+            // Lọc ra các thành viên thường (Kantan không nhận biệt danh)
+            const regularMembers = members.filter(m => !isKantan(m));
+            const sessionCount = sessions.length;
+            const themeIndex = sessionCount % NICKNAME_THEME_SETS.length;
+            const themeObj = NICKNAME_THEME_SETS[themeIndex];
+            const nicknames = [...themeObj.nicknames];
 
-            // Danh sách biệt danh hài hước ngẫu nhiên có tính nhất quán
-            const funnyNicknames = [
-                '🚀 Tay Vợt Tên Lửa',
-                '🥷 Sát Thủ Bỏ Nhỏ',
-                '🛡️ Bức Tường Phòng Thủ',
-                '⚡ Chiến Thần Phông Cầu',
-                '🎯 Bắt Bài Đối Thủ',
-                '🎩 Ảo Thuật Gia Sân Cầu',
-                '🔥 Thánh Cứu Cầu Bất Tử',
-                '🌪️ Cơn Lốc Đập Cầu',
-                '🦁 Chúa Tể Vạch Cuối',
-                '🏆 Huyền Thoại Đôi Nam Nữ',
-                '💣 Quả Bom Nổ Chậm',
-                '👀 Camera Chạy Bằng Cơm'
-            ];
+            // Seed hoán vị ngẫu nhiên dựa trên số lượng và ID buổi chơi mới nhất
+            let seed = sessionCount * 47 + 101;
+            if (sessions.length > 0) {
+                const latestS = sessions[sessions.length - 1];
+                const sIdStr = (latestS && latestS.id) ? latestS.id.toString() : '';
+                for (let i = 0; i < sIdStr.length; i++) {
+                    seed += sIdStr.charCodeAt(i) * (i + 1);
+                }
+            }
 
-            let hash = 0;
-            for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-            return funnyNicknames[Math.abs(hash) % funnyNicknames.length];
+            // Shuffle Fisher-Yates có tính nhất quán cho từng buổi
+            for (let i = nicknames.length - 1; i > 0; i--) {
+                seed = (seed * 9301 + 49297) % 233280;
+                const rnd = seed / 233280;
+                const j = Math.floor(rnd * (i + 1));
+                [nicknames[i], nicknames[j]] = [nicknames[j], nicknames[i]];
+            }
+
+            const map = {};
+            regularMembers.forEach((m, idx) => {
+                map[m.id] = nicknames[idx % nicknames.length];
+            });
+            return map;
         }
 
         function renderMemberCards() {
             calculateSheetMath();
             const container = document.getElementById('member-cards-container');
             if (!container) return;
+
+            const nicknameMap = getMemberNicknameMap();
 
             let totalClubCost = 0;
             let totalClubPaid = 0;
@@ -1590,7 +1702,7 @@
                 const avatarGrad = getMemberAvatarColors(m.name);
                 const isDebt = item.remaining < -1000;
                 const isSurplus = item.remaining > 1000;
-                const nickname = getMemberNickname(m.name);
+                const nickname = isKantan(m) ? '' : (nicknameMap[m.id] || '');
                 const rankNum = idx + 1;
 
                 let rankBadge = '';
@@ -1618,8 +1730,7 @@
                             </div>
                             <div class="flex items-center gap-1.5 min-w-0 flex-1 truncate">
                                 <h4 class="text-sm font-bold text-slate-900 truncate">${m.name}</h4>
-                                ${isKantan(m) ? '<span class="text-[9px] font-extrabold bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded shadow-2xs shrink-0">👑 Chủ Quỹ</span>' : ''}
-                                <span class="text-xs text-amber-700 font-medium truncate">(${nickname})</span>
+                                ${isKantan(m) ? '<span class="text-[9px] font-extrabold bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded shadow-2xs shrink-0">👑 Chủ Quỹ</span>' : (nickname ? `<span class="text-xs text-amber-700 font-medium truncate">(${nickname})</span>` : '')}
                             </div>
                         </div>
 
