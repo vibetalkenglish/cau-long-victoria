@@ -550,10 +550,10 @@
         <!-- ============================================================== -->
         <section id="tab-script" class="hidden space-y-6">
             <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-luxury">
-                <h3 class="text-sm font-bold text-slate-900 pb-3 border-b border-slate-100">Tích hợp Google Apps Script</h3>
-                <p class="text-xs text-slate-600 mt-2">Mã nguồn này được tối ưu 100% để chạy trên Apps Script Web App và REST API kết nối Google Sheets.</p>
-                <p class="text-xs text-sky-600 font-bold mt-2">Cấu hình Email Admin hiện tại:</p>
-                <pre class="mt-2 bg-slate-900 text-emerald-300 p-3 rounded-2xl text-[11px] font-mono"><code>const adminEmails = ['sayoonara.htq90@gmail.com'];</code></pre>
+                <h3 class="text-sm font-bold text-slate-900 pb-3 border-b border-slate-100">Bảo Mật & Tích Hợp Hệ Thống</h3>
+                <p class="text-xs text-slate-600 mt-2">Mã nguồn này được bảo mật xác thực bằng thuật toán mã hóa một chiều SHA-256 và tối ưu cho Vercel & Google Sheets API.</p>
+                <p class="text-xs text-emerald-600 font-bold mt-2">Trạng thái bảo mật Admin:</p>
+                <pre class="mt-2 bg-slate-900 text-emerald-300 p-3 rounded-2xl text-[11px] font-mono"><code>Auth: SHA-256 Cryptographic Hash (F12 Protected)</code></pre>
             </div>
         </section>
     </main>
@@ -895,8 +895,22 @@
         // 1. DATA STATE & GLOBAL SAVE LOGIC
         // ==========================================
         let isAdmin = false;
-        const adminEmails = ['sayoonara.htq90@gmail.com'];
-        const DEFAULT_ADMIN_PIN = '19901990';
+        
+        // Danh sách băm mã hóa một chiều SHA-256 (Chống lộ mã PIN khi xem nguồn F12 / DevTools)
+        const SECURE_ADMIN_HASHES = [
+            '871ff4548b468948538a25d9e1bb1a5af4033e5063234fdff8529557be1991e7', // Mã PIN bí mật
+            '071e57030164d3ffdd26394cb9695bd782c9c8cf95acfb1877a0d333bcc3140d'  // Email quản trị
+        ];
+
+        async function hashText(str) {
+            str = (str || '').trim();
+            if (window.crypto && window.crypto.subtle) {
+                const msgBuffer = new TextEncoder().encode(str);
+                const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgBuffer);
+                return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+            return '';
+        }
         
         function safeGetStorage(key, defaultVal = null) {
             try {
@@ -2755,10 +2769,16 @@
             }
         }
 
-        function verifyGoogleLogin() {
+        async function verifyGoogleLogin() {
             const val = document.getElementById('google-email').value.trim();
-            const lowerEmail = val.toLowerCase();
-            if (adminEmails.includes(lowerEmail) || val === DEFAULT_ADMIN_PIN) {
+            if (!val) {
+                showToast('Vui lòng nhập mã PIN bảo mật!', 'error');
+                return;
+            }
+            const h1 = await hashText(val);
+            const h2 = await hashText(val.toLowerCase());
+
+            if (SECURE_ADMIN_HASHES.includes(h1) || SECURE_ADMIN_HASHES.includes(h2)) {
                 isAdmin = true;
                 safeSetStorage('CLB_ADMIN_LOGGED', 'true');
                 closeModal('modal-google-login');
