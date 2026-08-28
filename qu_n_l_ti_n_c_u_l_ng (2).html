@@ -913,24 +913,28 @@
             } catch(e) {}
         }
 
-        // URL API Endpoint (Vercel Serverless Function hoặc Google Apps Script)
+        // URL API Endpoint (Vercel Serverless Function)
         const DEFAULT_SCRIPT_API_URL = '/api/data';
-        let GOOGLE_SCRIPT_API_URL = safeGetStorage('CLB_SCRIPT_API_URL', DEFAULT_SCRIPT_API_URL);
+        let savedApiUrl = safeGetStorage('CLB_SCRIPT_API_URL', DEFAULT_SCRIPT_API_URL);
+        if (!savedApiUrl || savedApiUrl.includes('PLACEHOLDER') || savedApiUrl.includes('script.google.com')) {
+            savedApiUrl = DEFAULT_SCRIPT_API_URL;
+            safeSetStorage('CLB_SCRIPT_API_URL', DEFAULT_SCRIPT_API_URL);
+        }
+        let GOOGLE_SCRIPT_API_URL = savedApiUrl;
         
         let originalState = null;
         let hasUnsavedChanges = false;
 
         function openApiConfigModal() {
             document.getElementById('input-api-url').value = GOOGLE_SCRIPT_API_URL;
-            document.getElementById('api-status-text').innerHTML = `<span class="text-slate-600">Đang dùng URL: <code class="font-mono text-xs text-sky-700 break-all">${GOOGLE_SCRIPT_API_URL ? GOOGLE_SCRIPT_API_URL : 'Chưa cấu hình'}</code></span>`;
+            document.getElementById('api-status-text').innerHTML = `<span class="text-slate-600">Đang dùng URL: <code class="font-mono text-xs text-sky-700 break-all">${GOOGLE_SCRIPT_API_URL ? GOOGLE_SCRIPT_API_URL : '/api/data'}</code></span>`;
             document.getElementById('modal-api-config').classList.remove('hidden');
         }
 
         function saveApiUrl() {
-            const val = document.getElementById('input-api-url').value.trim();
-            if (!val) {
-                showToast('Vui lòng nhập API URL hoặc /api/data!', 'error');
-                return;
+            let val = document.getElementById('input-api-url').value.trim();
+            if (!val || val.includes('script.google.com')) {
+                val = '/api/data';
             }
             GOOGLE_SCRIPT_API_URL = val;
             safeSetStorage('CLB_SCRIPT_API_URL', val);
@@ -947,7 +951,7 @@
             btn.disabled = true;
             statusEl.innerHTML = '<span class="text-sky-600 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Đang kết nối tới Google Sheets qua API...</span>';
 
-            const testUrl = val.startsWith('/') ? val : (val + (val.includes('?') ? '&' : '?') + 'action=loadData');
+            const testUrl = val + (val.includes('?') ? '&' : '?') + '_t=' + Date.now();
 
             fetch(testUrl)
                 .then(res => res.json())
@@ -972,11 +976,9 @@
 
         function loadDataFromApi() {
             let url = GOOGLE_SCRIPT_API_URL || '/api/data';
-            if (url.includes('PLACEHOLDER')) url = '/api/data';
+            if (url.includes('PLACEHOLDER') || url.includes('script.google.com')) url = '/api/data';
 
-            const fetchUrl = url.startsWith('/') 
-                ? url 
-                : (url + (url.includes('?') ? '&' : '?') + 'action=loadData');
+            const fetchUrl = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
 
             fetch(fetchUrl)
                 .then(res => res.json())
@@ -995,6 +997,8 @@
                         }
                     } else if (data && data.isConfigRequired) {
                         console.info('Vercel API đang chờ cấu hình biến môi trường Service Account.');
+                    } else if (data && data.error) {
+                        console.warn('Lỗi tải dữ liệu Google Sheets:', data.error);
                     }
                 })
                 .catch(err => {
@@ -1051,58 +1055,48 @@
             const btn = document.getElementById('btn-commit');
             const icon = document.getElementById('icon-commit');
             
-            btn.disabled = true;
-            icon.className = "fa-solid fa-spinner fa-spin";
-            btnText.textContent = "Đang lưu...";
+            if (btn) btn.disabled = true;
+            if (icon) icon.className = "fa-solid fa-spinner fa-spin";
+            if (btnText) btnText.textContent = "Đang lưu...";
 
             const payload = { sessions, members, qrInfo, shuttleBatches };
-            const payloadString = JSON.stringify(payload);
 
-            if (typeof google !== 'undefined' && google.script) {
-                google.script.run
-                    .withSuccessHandler(() => {
-                        backupState(); 
-                        showToast('Đã lưu thay đổi vào cơ sở dữ liệu!', 'success');
-                        btn.disabled = false;
-                        icon.className = "";
-                        btnText.textContent = "Lưu Data";
-                    })
-                    .withFailureHandler((err) => {
-                        btn.disabled = false;
-                        icon.className = "";
-                        btnText.textContent = "Lưu Data";
-                        showToast(err.message || 'Có lỗi xảy ra khi lưu!', 'error');
-                    })
-                    .saveToSheets(payloadString);
-            } else {
-                // Gửi HTTP POST request tới Vercel Serverless Function hoặc API Endpoint
-                const apiUrl = GOOGLE_SCRIPT_API_URL || '/api/data';
-                fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'saveData', payload: payload })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    btn.disabled = false;
-                    icon.className = "";
-                    btnText.textContent = "Lưu Data";
-                    if (data && data.success) {
-                        backupState();
-                        showToast('Đã lưu dữ liệu vào Google Sheets thành công!', 'success');
-                    } else {
-                        backupState();
-                        showToast(data.error || data.message || 'Có lỗi khi lưu vào Google Sheets!', 'error');
-                    }
-                })
-                .catch(err => {
-                    btn.disabled = false;
-                    icon.className = "";
-                    btnText.textContent = "Lưu Data";
+            // Luôn lưu bản sao vào localStorage để dự phòng không bao giờ mất
+            safeSetStorage('CLB_CACHED_DATA', JSON.stringify(payload));
+
+            // Gửi HTTP POST request tới Vercel Serverless Function
+            let apiUrl = GOOGLE_SCRIPT_API_URL || '/api/data';
+            if (apiUrl.includes('PLACEHOLDER') || apiUrl.includes('script.google.com')) apiUrl = '/api/data';
+
+            fetch(apiUrl + (apiUrl.includes('?') ? '&' : '?') + '_t=' + Date.now(), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'saveData', payload: payload })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(j => { throw new Error(j.error || j.message || ('Lỗi ' + res.status)); });
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (btn) btn.disabled = false;
+                if (icon) icon.className = "";
+                if (btnText) btnText.textContent = "Lưu Data";
+                if (data && data.success) {
                     backupState();
-                    showToast('Đã lưu cục bộ (' + err.message + ')', 'info');
-                });
-            }
+                    showToast('Đã lưu dữ liệu vào Google Sheets thành công!', 'success');
+                } else {
+                    showToast(data.error || data.message || 'Có lỗi khi lưu vào Google Sheets!', 'error');
+                }
+            })
+            .catch(err => {
+                if (btn) btn.disabled = false;
+                if (icon) icon.className = "";
+                if (btnText) btnText.textContent = "Lưu Data";
+                showToast('Lỗi lưu Google Sheets: ' + err.message, 'error');
+                console.error('Lỗi khi lưu dữ liệu:', err);
+            });
         }
 
         function initMockData() {

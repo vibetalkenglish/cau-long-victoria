@@ -35,10 +35,35 @@ function getGoogleAuth() {
   });
 }
 
-const DEFAULT_SHEET_ID = process.env.GOOGLE_SHEET_ID || '';
+// 2. TỰ ĐỘNG TẠO CÁC SHEET NẾU BẢNG TÍNH CHƯA CÓ
+async function ensureSheetsExist(sheets, spreadsheetId) {
+  const requiredSheets = ['Sessions', 'Members', 'Config', 'Prices', 'Payments'];
+  try {
+    const meta = await sheets.spreadsheets.get({ spreadsheetId });
+    const existingTitles = (meta.data.sheets || []).map(s => s.properties?.title);
 
-// 2. HÀM ĐỌC DỮ LIỆU TỪ GOOGLE SHEETS (SIÊU TỐC QUA BATCH GET)
+    const sheetsToAdd = requiredSheets.filter(title => !existingTitles.includes(title));
+    if (sheetsToAdd.length > 0) {
+      const requests = sheetsToAdd.map(title => ({
+        addSheet: {
+          properties: { title: title }
+        }
+      }));
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: { requests }
+      });
+      console.log('Đã tự động tạo các sheet còn thiếu:', sheetsToAdd.join(', '));
+    }
+  } catch (err) {
+    console.warn('Cảnh báo khi kiểm tra cấu trúc sheet:', err.message);
+  }
+}
+
+// 3. HÀM ĐỌC DỮ LIỆU TỪ GOOGLE SHEETS (SIÊU TỐC QUA BATCH GET)
 async function getFromSheets(sheets, spreadsheetId) {
+  await ensureSheetsExist(sheets, spreadsheetId);
+
   const ranges = [
     'Sessions!A:D',
     'Members!A:Z',
@@ -55,7 +80,6 @@ async function getFromSheets(sheets, spreadsheetId) {
     });
     valueRanges = res.data.valueRanges || [];
   } catch (err) {
-    // Nếu sheet chưa tồn tại, thử đọc từng sheet cơ bản
     console.error('Lỗi batchGet sheets:', err.message);
     throw err;
   }
@@ -88,9 +112,12 @@ async function getFromSheets(sheets, spreadsheetId) {
       const mId = payValues[i][0];
       if (!mId) continue;
       paymentsMap[mId] = {};
+      paymentsMap[mId.toString()] = {};
       for (let j = 2; j < payHeaders.length; j++) {
         const sId = payHeaders[j];
-        paymentsMap[mId][sId] = Number(payValues[i][j]) || 0;
+        const val = Number(payValues[i][j]) || 0;
+        paymentsMap[mId][sId] = val;
+        paymentsMap[mId.toString()][sId] = val;
       }
     }
   }
@@ -107,12 +134,13 @@ async function getFromSheets(sheets, spreadsheetId) {
         att[headers[j]] = (val === true || val === 'true' || val === 'TRUE' || val === 'Yes');
       }
       const mId = mValues[i][0];
+      const memberPayments = paymentsMap[mId] || paymentsMap[mId.toString()] || paymentsMap[Number(mId)] || {};
       members.push({
         id: Number(mId) || mId,
         name: mValues[i][1] ? mValues[i][1].toString() : '',
         paid: Number(mValues[i][2]) || 0,
         attendance: att,
-        payments: paymentsMap[mId] || {}
+        payments: memberPayments
       });
     }
   }
@@ -169,22 +197,28 @@ async function getFromSheets(sheets, spreadsheetId) {
   return { sessions, members, qrInfo, shuttleBatches };
 }
 
-// 3. HÀM GHI DỮ LIỆU VÀO GOOGLE SHEETS
+// 4. HÀM GHI DỮ LIỆU VÀO GOOGLE SHEETS (SIÊU TỐC VỚI BATCH CLEAR & BATCH UPDATE)
 async function saveToSheets(sheets, spreadsheetId, payload) {
+  await ensureSheetsExist(sheets, spreadsheetId);
+
   const { sessions, members, qrInfo, shuttleBatches } = payload;
 
   // A. Chuẩn bị dữ liệu Sessions
   const sData = [['ID', 'Ngày/Thứ', 'Số Cầu', 'Đơn Giá']];
-  if (sessions) sessions.forEach(s => sData.push([s.id, s.date, s.shuttles, s.unitPrice]));
+  if (sessions && Array.isArray(sessions)) {
+    sessions.forEach(s => sData.push([s.id, s.date, s.shuttles, s.unitPrice]));
+  }
 
   // B. Chuẩn bị dữ liệu Members
   const mHeaders = ['ID', 'Tên', 'Đã Thanh Toán'];
-  if (sessions) sessions.forEach(s => mHeaders.push(s.id));
+  if (sessions && Array.isArray(sessions)) {
+    sessions.forEach(s => mHeaders.push(s.id));
+  }
   const mData = [mHeaders];
-  if (members) {
+  if (members && Array.isArray(members)) {
     members.forEach(m => {
       const row = [m.id, m.name, m.paid];
-      if (sessions) {
+      if (sessions && Array.isArray(sessions)) {
         sessions.forEach(s => {
           row.push(m.attendance && m.attendance[s.id] ? 'Yes' : 'No');
         });
@@ -206,7 +240,7 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
 
   // D. Chuẩn bị dữ liệu Prices
   const pData = [['ID', 'Lần Mua', 'Số Hộp', 'Giá 1 Hộp (12 Trái)', 'Tổng Tiền Mua Cầu', 'Đơn Giá 1 Trái', 'Ghi chú', 'Tình trạng']];
-  if (shuttleBatches && shuttleBatches.length > 0) {
+  if (shuttleBatches && Array.isArray(shuttleBatches)) {
     shuttleBatches.forEach(b => {
       const qty = Number(b.quantity) || 1;
       const pack = Number(b.packPrice) || 0;
@@ -218,12 +252,14 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
 
   // E. Chuẩn bị dữ liệu Payments
   const payHeaders = ['MemberID', 'MemberName'];
-  if (sessions) sessions.forEach(s => payHeaders.push(s.id));
+  if (sessions && Array.isArray(sessions)) {
+    sessions.forEach(s => payHeaders.push(s.id));
+  }
   const payData = [payHeaders];
-  if (members) {
+  if (members && Array.isArray(members)) {
     members.forEach(m => {
       const row = [m.id, m.name];
-      if (sessions) {
+      if (sessions && Array.isArray(sessions)) {
         sessions.forEach(s => {
           const pVal = (m.payments && m.payments[s.id]) ? Number(m.payments[s.id]) : 0;
           row.push(pVal);
@@ -233,38 +269,43 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
     });
   }
 
-  // Xóa nội dung cũ và ghi dữ liệu mới theo từng sheet
-  const sheetsToUpdate = [
-    { range: 'Sessions!A1:Z500', values: sData },
-    { range: 'Members!A1:Z500', values: mData },
-    { range: 'Config!A1:B10', values: cData },
-    { range: 'Prices!A1:H100', values: pData },
-    { range: 'Payments!A1:Z500', values: payData }
-  ];
-
-  for (const item of sheetsToUpdate) {
-    try {
-      // Clear vùng cũ
-      await sheets.spreadsheets.values.clear({
-        spreadsheetId: spreadsheetId,
-        range: item.range
-      });
-      // Ghi vùng mới
-      await sheets.spreadsheets.values.update({
-        spreadsheetId: spreadsheetId,
-        range: item.range.split(':')[0],
-        valueInputOption: 'USER_ENTERED',
-        requestBody: { values: item.values }
-      });
-    } catch (sheetErr) {
-      console.warn(`Lưu sheet ${item.range} có cảnh báo:`, sheetErr.message);
-    }
+  // 1. Xóa sạch vùng cũ qua batchClear (1 request duy nhất)
+  try {
+    await sheets.spreadsheets.values.batchClear({
+      spreadsheetId: spreadsheetId,
+      requestBody: {
+        ranges: [
+          'Sessions!A1:Z500',
+          'Members!A1:Z500',
+          'Config!A1:B20',
+          'Prices!A1:H100',
+          'Payments!A1:Z500'
+        ]
+      }
+    });
+  } catch (clearErr) {
+    console.warn('Cảnh báo batchClear:', clearErr.message);
   }
 
-  return true;
+  // 2. Ghi toàn bộ dữ liệu mới qua batchUpdate (1 request duy nhất, siêu tốc)
+  const updateRes = await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: spreadsheetId,
+    requestBody: {
+      valueInputOption: 'USER_ENTERED',
+      data: [
+        { range: 'Sessions!A1', values: sData },
+        { range: 'Members!A1', values: mData },
+        { range: 'Config!A1', values: cData },
+        { range: 'Prices!A1', values: pData },
+        { range: 'Payments!A1', values: payData }
+      ]
+    }
+  });
+
+  return updateRes.data;
 }
 
-// 4. HÀM GỌI GEMINI AI
+// 5. HÀM GỌI GEMINI AI
 async function callGeminiAI(promptText, clubContext) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -297,7 +338,7 @@ async function callGeminiAI(promptText, clubContext) {
   return 'Không nhận được phản hồi từ Gemini AI.';
 }
 
-// 5. SERVERLESS HANDLER CHO VERCEL
+// 6. SERVERLESS HANDLER CHO VERCEL
 module.exports = async (req, res) => {
   // Bật CORS cho mọi request
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -334,14 +375,17 @@ module.exports = async (req, res) => {
   if (req.method === 'GET') {
     try {
       const data = await getFromSheets(sheets, spreadsheetId);
-      // Cache nhẹ 60 giây ở Vercel Edge CDN để giảm tải và tăng tốc
-      res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120');
+      // Tắt cache hoàn toàn để đảm bảo dữ liệu luôn mới nhất
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       return res.status(200).json({
         success: true,
         data: data,
         timestamp: new Date().toISOString()
       });
     } catch (err) {
+      console.error('Lỗi đọc Google Sheets:', err);
       return res.status(500).json({
         success: false,
         error: 'Lỗi đọc dữ liệu từ Google Sheets: ' + err.message
@@ -379,9 +423,10 @@ module.exports = async (req, res) => {
         error: 'Hành động không hợp lệ (Unknown action)'
       });
     } catch (err) {
+      console.error('Lỗi lưu Google Sheets:', err);
       return res.status(500).json({
         success: false,
-        error: 'Lỗi xử lý POST request: ' + err.message
+        error: 'Lỗi ghi dữ liệu vào Google Sheets: ' + err.message
       });
     }
   }
