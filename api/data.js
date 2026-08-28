@@ -94,6 +94,13 @@ async function getFromSheets(sheets, spreadsheetId) {
   const cValues = (valueRanges[2] && valueRanges[2].values) || [];
   const pValues = (valueRanges[3] && valueRanges[3].values) || [];
   const payValues = (valueRanges[4] && valueRanges[4].values) || [];
+  function parseSafeNumber(val, defaultVal = 0) {
+    if (val === undefined || val === null || val === '') return defaultVal;
+    if (typeof val === 'number') return isNaN(val) ? defaultVal : val;
+    const str = val.toString().trim().replace(/,/g, '.');
+    const num = parseFloat(str);
+    return isNaN(num) ? defaultVal : num;
+  }
 
   // A. Sessions
   const sessions = [];
@@ -103,8 +110,8 @@ async function getFromSheets(sheets, spreadsheetId) {
       sessions.push({
         id: sValues[i][0].toString(),
         date: sValues[i][1] || '',
-        shuttles: Number(sValues[i][2]) || 0,
-        unitPrice: Number(sValues[i][3]) || 0
+        shuttles: parseSafeNumber(sValues[i][2]),
+        unitPrice: parseSafeNumber(sValues[i][3])
       });
     }
   }
@@ -120,7 +127,7 @@ async function getFromSheets(sheets, spreadsheetId) {
       paymentsMap[mId.toString()] = {};
       for (let j = 2; j < payHeaders.length; j++) {
         const sId = payHeaders[j];
-        const val = Number(payValues[i][j]) || 0;
+        const val = parseSafeNumber(payValues[i][j]);
         paymentsMap[mId][sId] = val;
         paymentsMap[mId.toString()][sId] = val;
       }
@@ -143,7 +150,7 @@ async function getFromSheets(sheets, spreadsheetId) {
       members.push({
         id: Number(mId) || mId,
         name: mValues[i][1] ? mValues[i][1].toString() : '',
-        paid: Number(mValues[i][2]) || 0,
+        paid: parseSafeNumber(mValues[i][2]),
         attendance: att,
         payments: memberPayments
       });
@@ -170,18 +177,18 @@ async function getFromSheets(sheets, spreadsheetId) {
       let label, quantity, packPrice, totalPrice, unitPrice, note, valDepleted;
       if (isNewFormat && pValues[i].length >= 8) {
         label = pValues[i][1] || '';
-        quantity = Number(pValues[i][2]) || 1;
-        packPrice = Number(pValues[i][3]) || 0;
-        totalPrice = Number(pValues[i][4]) || (quantity * packPrice);
-        unitPrice = Number(pValues[i][5]) || Math.round(packPrice / 12);
+        quantity = parseSafeNumber(pValues[i][2], 1);
+        packPrice = parseSafeNumber(pValues[i][3]);
+        totalPrice = parseSafeNumber(pValues[i][4], quantity * packPrice);
+        unitPrice = parseSafeNumber(pValues[i][5], Math.round(packPrice / 12));
         note = pValues[i][6] || '';
         valDepleted = pValues[i][7];
       } else {
         label = pValues[i][1] || '';
         quantity = 1;
-        packPrice = Number(pValues[i][2]) || 0;
+        packPrice = parseSafeNumber(pValues[i][2]);
         totalPrice = packPrice;
-        unitPrice = Number(pValues[i][3]) || Math.round(packPrice / 12);
+        unitPrice = parseSafeNumber(pValues[i][3], Math.round(packPrice / 12));
         note = pValues[i][4] || '';
         valDepleted = pValues[i][5];
       }
@@ -194,7 +201,7 @@ async function getFromSheets(sheets, spreadsheetId) {
         totalPrice: totalPrice,
         unitPrice: unitPrice,
         note: note,
-        isDepleted: (valDepleted === true || valDepleted === 'true' || valDepleted === 'TRUE' || valDepleted === 'Hết')
+        isDepleted: (valDepleted === true || valDepleted === 'true' || valDepleted === 'Hết' || valDepleted === 'Đã hết')
       });
     }
   }
