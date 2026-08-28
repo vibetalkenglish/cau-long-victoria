@@ -294,11 +294,16 @@
                 </div>
             </div>
 
+            <!-- TOP 3 PODIUM BẢNG XẾP HẠNG SỔ NỢ -->
+            <div id="leaderboard-podium-container" class="mb-4">
+                <!-- Rendered dynamically by renderMemberCards() -->
+            </div>
+
             <!-- SEARCH & QUICK FILTER CONTROLS -->
             <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/90 shadow-luxury flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div class="relative flex-1 max-w-md">
                     <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
-                    <input type="text" id="member-card-search" oninput="renderMemberCards()" placeholder="🔍 Tìm nhanh thành viên theo tên..." class="w-full pl-11 pr-4 py-3 text-sm sm:text-base bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-amber-400 focus:outline-none transition shadow-inner font-medium">
+                    <input type="text" id="member-card-search" oninput="renderMemberCards()" placeholder="🔍 Tìm tên thành viên trong bảng xếp hạng..." class="w-full pl-11 pr-4 py-3 text-sm sm:text-base bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-amber-400 focus:outline-none transition shadow-inner font-medium">
                 </div>
                 
                 <!-- Filter Pills -->
@@ -315,8 +320,8 @@
                 </div>
             </div>
 
-            <!-- MEMBER CARDS CONTAINER (VIP MEMBERSHIP CARDS) -->
-            <div id="member-cards-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+            <!-- LEADERBOARD RANKING LIST CONTAINER -->
+            <div id="member-cards-container" class="space-y-3 sm:space-y-4">
                 <!-- Rendered dynamically by renderMemberCards() -->
             </div>
         </section>
@@ -1417,10 +1422,103 @@
             if (elCountDebt) elCountDebt.textContent = debtCount;
             if (elCountPaid) elCountPaid.textContent = paidCount;
 
-            // Sắp xếp: Nợ nhiều nhất lên đầu
+            // Sắp xếp: Nợ nhiều nhất lên đầu (Số âm nhỏ nhất -> đứng #1)
             memberStats.sort((a, b) => a.remaining - b.remaining);
 
-            // Tìm kiếm & Lọc
+            // RENDER BỤC VINH DANH TOP 3 NỢ (PODIUM)
+            const podiumContainer = document.getElementById('leaderboard-podium-container');
+            if (podiumContainer) {
+                const debtors = memberStats.filter(item => item.remaining < -1000);
+                if (debtors.length > 0) {
+                    const top1 = debtors[0];
+                    const top2 = debtors[1] || null;
+                    const top3 = debtors[2] || null;
+
+                    const renderPodiumItem = (item, rank, title, crown, gradBorder, bgPodium, heightClass) => {
+                        if (!item) {
+                            return `
+                                <div class="flex-1 flex flex-col items-center justify-end opacity-40">
+                                    <div class="w-full bg-slate-100 rounded-3xl p-3 text-center border border-dashed border-slate-300 py-6">
+                                        <p class="text-xs font-bold text-slate-400">Trống</p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        const m = item.member;
+                        const initials = m.name.split(' ').map(w => w[0]).slice(-2).join('').toUpperCase();
+                        const avatarGrad = getMemberAvatarColors(m.name);
+                        const nickname = getMemberNickname(m.name);
+                        const isRank1 = rank === 1;
+
+                        return `
+                            <div class="flex-1 flex flex-col items-center justify-end ${isRank1 ? 'order-1 sm:order-2 z-10 scale-105 sm:scale-110 -translate-y-2' : (rank === 2 ? 'order-2 sm:order-1' : 'order-3')} cursor-pointer transition hover:-translate-y-1" onclick="openMemberDetails(${m.id})">
+                                <!-- Avatar & Crown -->
+                                <div class="relative flex flex-col items-center mb-2">
+                                    ${crown ? `<div class="text-2xl sm:text-3xl text-amber-400 drop-shadow-md animate-bounce mb-0.5">${crown}</div>` : ''}
+                                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${avatarGrad} flex items-center justify-center font-black text-lg text-slate-900 shadow-xl border-2 ${gradBorder}">
+                                        ${initials}
+                                    </div>
+                                    <span class="absolute -bottom-2 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider ${isRank1 ? 'bg-amber-400 text-slate-950 shadow-md' : (rank === 2 ? 'bg-slate-300 text-slate-900' : 'bg-amber-700 text-amber-100')}">
+                                        #${rank}
+                                    </span>
+                                </div>
+
+                                <!-- Podium Block -->
+                                <div class="w-full ${bgPodium} rounded-3xl p-3 sm:p-4 text-center border ${gradBorder} shadow-luxury flex flex-col items-center justify-between ${heightClass}">
+                                    <div>
+                                        <h4 class="text-xs sm:text-sm font-black text-slate-900 truncate max-w-[120px] sm:max-w-[150px] leading-tight">${m.name}</h4>
+                                        <p class="text-[10px] sm:text-xs text-amber-700 font-extrabold truncate max-w-[120px] mt-0.5">${nickname}</p>
+                                    </div>
+
+                                    <div class="my-2 w-full">
+                                        <div class="bg-rose-500 text-white font-black font-mono text-xs sm:text-sm py-1 px-2 rounded-xl shadow-xs">
+                                            ${formatVND(item.remaining)}đ
+                                        </div>
+                                        <p class="text-[10px] text-slate-500 font-medium mt-1">${title}</p>
+                                    </div>
+
+                                    <button onclick="event.stopPropagation(); openPersonalQR(${m.id})" class="w-full py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 font-black text-[11px] sm:text-xs flex items-center justify-center gap-1 shadow-xs transition active:scale-95">
+                                        <i class="fa-solid fa-qrcode text-amber-400"></i> Trả nợ
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    };
+
+                    podiumContainer.innerHTML = `
+                        <div class="bg-gradient-to-b from-amber-500/10 via-white to-white rounded-3xl border border-amber-300/80 p-4 sm:p-6 shadow-luxury">
+                            <div class="flex items-center justify-between mb-5 pb-3 border-b border-amber-200/60">
+                                <div>
+                                    <h3 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+                                        <i class="fa-solid fa-trophy text-amber-500 text-lg"></i> BẢNG PHONG THẦN NỢ (TOP 3 CẦN NHẮC)
+                                    </h3>
+                                    <p class="text-xs text-slate-500 mt-0.5">Vinh danh các thành viên có đóng góp nợ lớn nhất cho quỹ CLB</p>
+                                </div>
+                                <span class="bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-full text-xs font-bold shrink-0">
+                                    🔴 ${debtors.length} người nợ
+                                </span>
+                            </div>
+
+                            <!-- 3 PODIUM COLUMNS -->
+                            <div class="flex items-end justify-center gap-2.5 sm:gap-4 pt-4 pb-2 px-1 sm:px-4">
+                                ${renderPodiumItem(top2, 2, 'Á Quân Nợ', '🥈', 'border-slate-300', 'bg-gradient-to-t from-slate-100 to-white', 'min-h-[160px] sm:min-h-[175px]')}
+                                ${renderPodiumItem(top1, 1, 'Chúa Tể Nợ Cầu', '👑', 'border-amber-400', 'bg-gradient-to-t from-amber-50/80 to-white', 'min-h-[185px] sm:min-h-[200px]')}
+                                ${renderPodiumItem(top3, 3, 'Quý Quân Nợ', '🥉', 'border-amber-600/50', 'bg-gradient-to-t from-amber-50/40 to-white', 'min-h-[150px] sm:min-h-[165px]')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    podiumContainer.innerHTML = `
+                        <div class="bg-emerald-500/10 rounded-3xl border border-emerald-300/80 p-5 text-center shadow-luxury">
+                            <div class="text-3xl mb-1.5">🎉 🏸 🏆</div>
+                            <h3 class="text-base sm:text-lg font-black text-emerald-800">CLB ĐÃ ĐÓNG ĐỦ 100% TIỀN!</h3>
+                            <p class="text-xs sm:text-sm text-emerald-700 font-medium mt-1">Toàn bộ thành viên đều đã thanh toán đủ hoặc đang có số dư trong quỹ. Tuyệt vời!</p>
+                        </div>
+                    `;
+                }
+            }
+
+            // Tìm kiếm & Lọc cho danh sách bảng xếp hạng bên dưới
             const searchVal = document.getElementById('member-card-search')?.value.toLowerCase().trim() || '';
             const filtered = memberStats.filter(item => {
                 const matchSearch = !searchVal || item.member.name.toLowerCase().includes(searchVal);
@@ -1444,7 +1542,7 @@
             }
 
             container.innerHTML = '';
-            filtered.forEach(item => {
+            filtered.forEach((item, idx) => {
                 const m = item.member;
                 const initials = m.name.split(' ').map(w => w[0]).slice(-2).join('').toUpperCase();
                 const avatarGrad = getMemberAvatarColors(m.name);
@@ -1452,64 +1550,69 @@
                 const isSurplus = item.remaining > 1000;
                 const attPct = sessions.length > 0 ? Math.round((item.attendedSessions / sessions.length) * 100) : 0;
                 const nickname = getMemberNickname(m.name);
+                const rankNum = idx + 1;
+
+                let rankBadge = '';
+                if (rankNum === 1) {
+                    rankBadge = `<div class="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 font-black flex items-center justify-center text-xs sm:text-sm shadow-md shrink-0 border border-amber-300">#1 👑</div>`;
+                } else if (rankNum === 2) {
+                    rankBadge = `<div class="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-slate-200 to-slate-400 text-slate-900 font-black flex items-center justify-center text-xs sm:text-sm shadow-md shrink-0 border border-slate-300">#2 🥈</div>`;
+                } else if (rankNum === 3) {
+                    rankBadge = `<div class="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-amber-700 to-amber-900 text-amber-100 font-black flex items-center justify-center text-xs sm:text-sm shadow-md shrink-0 border border-amber-600">#3 🥉</div>`;
+                } else {
+                    rankBadge = `<div class="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-slate-100 border border-slate-200 text-slate-700 font-black flex items-center justify-center text-xs sm:text-sm shrink-0">#${rankNum}</div>`;
+                }
 
                 let statusBadge = '';
                 if (isDebt) {
-                    statusBadge = `<span class="bg-rose-500/10 text-rose-600 border border-rose-500/30 px-3 py-1 rounded-2xl text-xs font-black font-mono flex items-center gap-1.5 shadow-sm shrink-0">
-                        <i class="fa-solid fa-triangle-exclamation text-[11px] text-rose-500 animate-pulse"></i> Nợ: ${formatVND(item.remaining)}đ
+                    statusBadge = `<span class="bg-rose-500 text-white px-3 py-1.5 rounded-2xl text-xs sm:text-sm font-black font-mono flex items-center gap-1.5 shadow-sm shrink-0">
+                        <i class="fa-solid fa-triangle-exclamation text-[11px] text-rose-200 animate-pulse"></i> Nợ: ${formatVND(item.remaining)}đ
                     </span>`;
                 } else if (isSurplus) {
-                    statusBadge = `<span class="bg-sky-500/10 text-sky-600 border border-sky-500/30 px-3 py-1 rounded-2xl text-xs font-black font-mono flex items-center gap-1.5 shadow-sm shrink-0">
+                    statusBadge = `<span class="bg-sky-500/10 text-sky-700 border border-sky-500/30 px-3 py-1.5 rounded-2xl text-xs sm:text-sm font-black font-mono flex items-center gap-1.5 shadow-sm shrink-0">
                         <i class="fa-solid fa-star text-[11px] text-sky-500"></i> Dư: +${formatVND(item.remaining)}đ
                     </span>`;
                 } else {
-                    statusBadge = `<span class="bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 px-3 py-1 rounded-2xl text-xs font-black font-mono flex items-center gap-1.5 shadow-sm shrink-0">
-                        <i class="fa-solid fa-circle-check text-[11px] text-emerald-500"></i> Đã đủ
+                    statusBadge = `<span class="bg-emerald-500/10 text-emerald-700 border border-emerald-500/30 px-3 py-1.5 rounded-2xl text-xs sm:text-sm font-black font-mono flex items-center gap-1.5 shadow-sm shrink-0">
+                        <i class="fa-solid fa-circle-check text-[11px] text-emerald-500"></i> Đã đủ (0đ)
                     </span>`;
                 }
 
                 const card = document.createElement('div');
-                card.className = `bg-white rounded-3xl border ${isDebt ? 'border-rose-200/90 shadow-luxury hover:border-rose-300' : 'border-slate-200/90 shadow-luxury hover:border-slate-300'} p-5 sm:p-6 transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden group cursor-pointer active:scale-[0.99]`;
+                card.className = `bg-white rounded-3xl border ${isDebt ? 'border-rose-200/90 shadow-luxury hover:border-rose-300' : 'border-slate-200/90 shadow-luxury hover:border-slate-300'} p-4 sm:p-5 transition-all duration-300 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:-translate-y-0.5 hover:shadow-xl relative overflow-hidden group cursor-pointer active:scale-[0.99]`;
                 card.onclick = () => openMemberDetails(m.id);
 
                 card.innerHTML = `
-                    ${isDebt ? '<div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 via-rose-400 to-amber-400"></div>' : ''}
-                    <div>
-                        <!-- Header & Avatar -->
-                        <div class="flex items-start justify-between gap-3 mb-4">
-                            <div class="flex items-center gap-3.5 min-w-0">
-                                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${avatarGrad} flex items-center justify-center font-black text-base shrink-0 shadow-md">
-                                    ${initials}
-                                </div>
-                                <div class="min-w-0">
-                                    <h4 class="text-base sm:text-lg font-black text-slate-900 truncate leading-snug flex items-center gap-2">
-                                        <span class="truncate">${m.name}</span>
-                                        ${isKantan(m) ? '<span class="text-xs font-black bg-amber-400 text-slate-950 px-2 py-0.5 rounded-lg shadow-sm shrink-0">👑 Chủ Quỹ</span>' : ''}
-                                    </h4>
-                                    <p class="text-xs sm:text-sm text-slate-500 font-medium mt-1"><span class="text-amber-700 font-extrabold">${nickname}</span> • <strong class="text-slate-800 font-bold">${item.attendedSessions}/${sessions.length}</strong> buổi</p>
-                                </div>
-                            </div>
-                            <div>
-                                ${statusBadge}
-                            </div>
+                    ${isDebt ? '<div class="absolute top-0 left-0 bottom-0 w-1.5 bg-gradient-to-b from-rose-500 to-amber-500"></div>' : ''}
+                    
+                    <!-- Left: Rank, Avatar & Info -->
+                    <div class="flex items-center gap-3.5 min-w-0 flex-1">
+                        ${rankBadge}
+                        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${avatarGrad} flex items-center justify-center font-black text-base text-slate-900 shrink-0 shadow-md">
+                            ${initials}
                         </div>
-
-                        <!-- Attendance Progress Indicator -->
-                        <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
-                            <div class="flex justify-between items-center text-xs sm:text-sm font-bold text-slate-600 mb-1.5">
-                                <span>Tần suất ra sân</span>
-                                <span class="text-slate-900 font-black">${attPct}%</span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h4 class="text-base sm:text-lg font-black text-slate-900 truncate leading-snug">${m.name}</h4>
+                                ${isKantan(m) ? '<span class="text-[10px] sm:text-xs font-black bg-amber-400 text-slate-950 px-2 py-0.5 rounded-lg shadow-xs shrink-0">👑 Chủ Quỹ</span>' : ''}
+                                <span class="text-xs text-amber-700 font-extrabold shrink-0">• ${nickname}</span>
                             </div>
-                            <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                                <div class="h-full ${isDebt ? 'bg-gradient-to-r from-rose-500 to-amber-500' : 'bg-gradient-to-r from-emerald-500 to-teal-400'} rounded-full transition-all duration-500" style="width: ${attPct}%;"></div>
+                            <div class="flex items-center gap-3 text-xs sm:text-sm text-slate-500 mt-1 flex-wrap font-medium">
+                                <span>🏸 Đánh <strong class="text-slate-800 font-bold">${item.attendedSessions}/${sessions.length}</strong> buổi (${attPct}%)</span>
+                                <span>•</span>
+                                <span>Phát sinh: <strong class="text-slate-800 font-bold font-mono">${formatVND(item.bill)}đ</strong></span>
+                                <span>•</span>
+                                <span>Đã nộp: <strong class="text-emerald-700 font-bold font-mono">${formatVND(m.paid)}đ</strong></span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Subtle Click-to-view hint -->
-                    <div class="flex items-center justify-between pt-3.5 mt-3 border-t border-slate-100 text-xs sm:text-sm text-slate-500 font-semibold group-hover:text-amber-600 transition">
-                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-receipt text-amber-500"></i> Chạm xem chi tiết & đóng tiền</span>
-                        <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-1 transition-transform"></i>
+                    <!-- Right: Status Badge & Quick Action -->
+                    <div class="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 shrink-0">
+                        ${statusBadge}
+                        <button onclick="event.stopPropagation(); openPersonalQR(${m.id})" class="px-3.5 py-2 bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs sm:text-sm rounded-2xl shadow-sm flex items-center gap-1.5 active:scale-95 transition shrink-0" title="Quét mã VietQR nộp tiền">
+                            <i class="fa-solid fa-qrcode"></i> <span class="hidden sm:inline">Quét</span> QR
+                        </button>
                     </div>
                 `;
 
