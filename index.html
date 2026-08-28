@@ -1360,14 +1360,16 @@
             });
 
             // TÍNH TOÁN TIỀN ĐÃ THANH TOÁN CỦA KANTAN:
-            // Tiền đã nộp của Kantan = Tổng tiền cầu
+            // Tiền đã nộp của Kantan = Tổng tiền cầu đã mua (vì Kantan là chủ quỹ)
             //   - Tổng tiền của thành viên đã đóng (nếu thành viên đó đóng thiếu)
             //   - Tổng tiền cần thanh toán của các thành viên (nếu thành viên đó đóng dư/đủ)
             const kantanMember = members.find(m => isKantan(m));
             if (kantanMember) {
-                // 1. Tổng tiền cầu (Tổng chi phí các buổi chơi thực tế)
-                const totalSessionShuttleCost = sessions.reduce((sum, s) => {
-                    return sum + ((Number(s.shuttles) || 0) * (Number(s.unitPrice) || 0));
+                // 1. Tổng tiền cầu đã mua (Tổng các lô cầu trong bảng Giá cầu)
+                const totalBoughtShuttles = shuttleBatches.reduce((sum, b) => {
+                    const qty = Number(b.quantity) || 1;
+                    const pack = Number(b.packPrice) || 0;
+                    return sum + (Number(b.totalPrice) || (qty * pack));
                 }, 0);
 
                 // 2. Tổng tiền khấu trừ từ các thành viên khác
@@ -1389,7 +1391,7 @@
                     memberDeductions += deduction;
                 });
 
-                kantanMember.paid = totalSessionShuttleCost - memberDeductions;
+                kantanMember.paid = totalBoughtShuttles - memberDeductions;
             }
         }
 
