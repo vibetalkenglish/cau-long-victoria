@@ -74,18 +74,53 @@
             white-space: nowrap;
         }
         
-        /* ĐÓNG BĂNG CỘT 1 (#) và CỘT 2 (TÊN) */
-        .sticky-col-left-1 { position: sticky; left: 0; z-index: 25; width: 48px; min-width: 48px; max-width: 48px; }
-        .sticky-col-left-2 { position: sticky; left: 48px; z-index: 25; min-width: 135px; max-width: 230px; border-right: 2px solid #cbd5e1 !important; box-shadow: 2px 0 6px -2px rgba(0,0,0,0.08); }
+        /* ĐÓNG BĂNG CỘT 1 (#) và CỘT 2 (TÊN THÀNH VIÊN) */
+        .sticky-col-left-1 { 
+            position: sticky; left: 0; z-index: 25; 
+            width: 44px; min-width: 44px; max-width: 44px; 
+        }
+        .sticky-col-left-2 { 
+            position: sticky; left: 44px; z-index: 25; 
+            min-width: 140px; max-width: 220px; 
+            border-right: 2px solid #cbd5e1 !important; 
+            box-shadow: 4px 0 8px -3px rgba(15, 23, 42, 0.12); 
+        }
         
-        /* Freeze Header Rows vertically */
+        /* ĐÓNG BĂNG HÀNG TIÊU ĐỀ (HEADER ROWS) */
         .sticky-top-row-1 { position: sticky; top: 0 !important; z-index: 30 !important; }
-        .sticky-top-row-2 { position: sticky; top: 46px !important; z-index: 30 !important; }
+        .sticky-top-row-2 { position: sticky; top: 48px !important; z-index: 30 !important; }
         
-        /* Intersection of frozen rows and columns */
-        .sticky-top-row-1.sticky-col-left-1, .sticky-top-row-1.sticky-col-left-2 { z-index: 40 !important; }
-        .sticky-top-row-2.sticky-col-left-1, .sticky-top-row-2.sticky-col-left-2 { z-index: 40 !important; }
-        tfoot td.sticky-col-left-1, tfoot td.sticky-col-left-2 { z-index: 30 !important; }
+        /* GIAO ĐIỂM CỦA HÀNG VÀ CỘT ĐÓNG BĂNG (CORNER CELLS) */
+        .sticky-top-row-1.sticky-col-left-1, .sticky-top-row-1.sticky-col-left-2 { z-index: 45 !important; }
+        .sticky-top-row-2.sticky-col-left-1, .sticky-top-row-2.sticky-col-left-2 { z-index: 45 !important; }
+        
+        /* ĐÓNG BĂNG HÀNG CHÂN TRANG (STICKY TFOOT) */
+        .grid-table tfoot { position: sticky; bottom: 0; z-index: 32; }
+        .grid-table tfoot tr { box-shadow: 0 -4px 8px -3px rgba(15, 23, 42, 0.12); }
+        .grid-table tfoot td.sticky-col-left-1, .grid-table tfoot td.sticky-col-left-2 { z-index: 46 !important; }
+
+        /* NÚT BẤM ĐIỂM DANH YES / NO TOUCH-FRIENDLY */
+        .btn-att-yes {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: #ffffff !important;
+            font-weight: 800;
+            border: 1px solid rgba(5, 150, 105, 0.5);
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
+        }
+        .btn-att-yes:hover {
+            background: linear-gradient(135deg, #047857 0%, #059669 100%);
+            transform: scale(1.04);
+        }
+        .btn-att-no {
+            background: #f1f5f9;
+            color: #64748b !important;
+            font-weight: 700;
+            border: 1px solid #e2e8f0;
+        }
+        .btn-att-no:hover {
+            background: #e2e8f0;
+            color: #1e293b !important;
+        }
 
         .currency-input {
             background: transparent; border: 1px solid transparent;
@@ -286,16 +321,50 @@
         <!-- ============================================================== -->
         <!-- TAB 2: 📋 BẢNG ĐIỂM DANH CHI TIẾT (ATTENDANCE SHEET GRID) -->
         <!-- ============================================================== -->
-        <section id="tab-sheet" class="hidden space-y-6">
+        <section id="tab-sheet" class="hidden space-y-4 sm:space-y-6">
             <div class="bg-white rounded-3xl shadow-luxury border border-slate-200/90 overflow-hidden relative">
-                <div class="p-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <!-- Main Banner Header -->
+                <div class="p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div>
                         <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2.5">
                             <i class="fa-solid fa-calendar-check text-amber-400"></i> BẢNG ĐIỂM DANH & TÍNH TIỀN THEO BUỔI
                         </h3>
-                        <p class="text-xs text-slate-300 mt-0.5">Sắp xếp ưu tiên người nợ lên trước. Cột buổi chơi xếp từ mới nhất ➡️ cũ nhất.</p>
+                        <p class="text-xs text-slate-300 mt-0.5">Sắp xếp ưu tiên người nợ lên trước • Buổi chơi xếp từ mới nhất ➡️ cũ nhất</p>
+                    </div>
+
+                    <!-- Quick Info Badge of Latest Session -->
+                    <div id="sheet-latest-summary" class="flex flex-wrap items-center gap-2 text-xs">
+                        <!-- Rendered dynamically by JS -->
                     </div>
                 </div>
+
+                <!-- Secondary Toolbar: Search + View Modes + Quick Action -->
+                <div class="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs sm:text-sm">
+                    <!-- Search box -->
+                    <div class="relative flex-1 max-w-xs">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="sheet-search-input" oninput="renderSheetGrid()" placeholder="Tìm tên thành viên trong bảng..." class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition">
+                    </div>
+
+                    <!-- View Mode and Actions -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="flex items-center bg-slate-200/80 p-0.5 rounded-xl text-xs font-bold text-slate-700">
+                            <button id="btn-view-full" onclick="setSheetViewMode('full')" class="px-2.5 py-1 rounded-lg bg-white shadow-xs text-slate-900 transition">📋 Đầy đủ</button>
+                            <button id="btn-view-compact" onclick="setSheetViewMode('compact')" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition" title="Ẩn cột tài chính để điểm danh nhanh">⚡ Rút gọn</button>
+                        </div>
+
+                        <!-- Admin Fast Attendance Buttons for Newest Session -->
+                        <div id="sheet-admin-quick-actions" class="hidden items-center gap-1.5">
+                            <button onclick="quickMarkAttendance(true)" title="Đánh dấu tất cả có mặt ở buổi mới nhất" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1 shadow-xs transition">
+                                <i class="fa-solid fa-check-double"></i> Chọn hết
+                            </button>
+                            <button onclick="quickMarkAttendance(false)" title="Bỏ chọn tất cả ở buổi mới nhất" class="px-2.5 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs flex items-center gap-1 transition">
+                                <i class="fa-solid fa-xmark"></i> Bỏ hết
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="overflow-x-auto custom-scrollbar max-h-[65vh] sm:max-h-[72vh] min-h-[420px] touch-pan-x touch-pan-y">
                     <table class="grid-table w-full text-sm lg:text-[15px] text-left text-slate-800 border-collapse">
                         <thead id="sheet-thead" class="select-none text-center"></thead>
@@ -309,17 +378,29 @@
         <!-- ============================================================== -->
         <!-- TAB 3: 💰 LỊCH SỬ ĐÓNG TIỀN (PAYMENT MATRIX GRID) -->
         <!-- ============================================================== -->
-        <section id="tab-payments" class="hidden space-y-6">
+        <section id="tab-payments" class="hidden space-y-4 sm:space-y-6">
             <div class="bg-white rounded-3xl shadow-luxury border border-slate-200/90 overflow-hidden relative">
-                <div class="p-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <!-- Main Banner Header -->
+                <div class="p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
                         <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2.5">
-                            <i class="fa-solid fa-money-check-dollar text-emerald-400"></i> BẢNG GHI NHẬN TIỀN THÀNH VIÊN ĐÓNG MỖI LẦN
+                            <i class="fa-solid fa-money-check-dollar text-emerald-400"></i> BẢNG GHI NHẬN TIỀN ĐÓNG THEO BUỔI
                         </h3>
-                        <p class="text-xs text-slate-300 mt-1">
-                            Hàng ngang: <strong>Tên thành viên</strong> • Cột dọc: <strong>Tên Buổi</strong> (Cũ ➡️ Mới) • Dưới cùng: <strong>Tổng tiền & Dư / Thiếu</strong>
+                        <p class="text-xs text-slate-300 mt-0.5">
+                            Cột dọc: <strong>Tên thành viên</strong> (Ưu tiên người nợ) • Hàng ngang: <strong>Buổi chơi</strong> (Cũ ➡️ Mới)
                         </p>
                     </div>
+                </div>
+
+                <!-- Secondary Toolbar: Search box -->
+                <div class="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs sm:text-sm">
+                    <div class="relative flex-1 max-w-xs">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="pay-search-input" oninput="renderPaymentGrid()" placeholder="Tìm tên thành viên..." class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                    </div>
+                    <p class="text-xs text-slate-500 italic">
+                        💡 Nhấp vào tên thành viên để xem chi tiết sao kê và nộp tiền nhanh.
+                    </p>
                 </div>
 
                 <div class="overflow-x-auto custom-scrollbar max-h-[60vh] sm:max-h-[70vh] min-h-[380px] touch-pan-x touch-pan-y">
@@ -1497,6 +1578,43 @@
             });
         }
 
+        let sheetViewMode = 'full'; // 'full' or 'compact'
+
+        function setSheetViewMode(mode) {
+            sheetViewMode = mode;
+            const btnFull = document.getElementById('btn-view-full');
+            const btnCompact = document.getElementById('btn-view-compact');
+            if (btnFull && btnCompact) {
+                if (mode === 'full') {
+                    btnFull.className = "px-2.5 py-1 rounded-lg bg-white shadow-xs text-slate-900 font-bold transition";
+                    btnCompact.className = "px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 font-bold transition";
+                } else {
+                    btnCompact.className = "px-2.5 py-1 rounded-lg bg-white shadow-xs text-slate-900 font-bold transition";
+                    btnFull.className = "px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 font-bold transition";
+                }
+            }
+            renderSheetGrid();
+        }
+
+        function quickMarkAttendance(status) {
+            if (!isAdmin) {
+                showAdminLoginModal();
+                return;
+            }
+            if (sessions.length === 0) {
+                showToast('Chưa có buổi chơi nào được tạo!', 'warning');
+                return;
+            }
+            const latestS = sessions[sessions.length - 1];
+            members.forEach(m => {
+                m.attendance = m.attendance || {};
+                m.attendance[latestS.id] = status;
+            });
+            renderAll();
+            markUnsaved();
+            showToast(status ? `Đã chọn CÓ MẶT tất cả cho buổi ${latestS.date}` : `Đã BỎ CHỌN tất cả cho buổi ${latestS.date}`, 'success');
+        }
+
         function renderAll() {
             calculateSheetMath();
             renderMemberCards();
@@ -1512,9 +1630,38 @@
             const tfoot = document.getElementById('sheet-footer');
             if (!thead || !tbody || !tfoot) return;
 
+            // --- LATEST SESSION SUMMARY PILL ---
+            const summaryEl = document.getElementById('sheet-latest-summary');
+            if (summaryEl) {
+                if (sessions.length > 0) {
+                    const latestS = sessions[sessions.length - 1];
+                    const attCount = sessionStats[latestS.id]?.count || 0;
+                    const costP = sessionStats[latestS.id]?.costPerPerson || 0;
+                    summaryEl.innerHTML = `
+                        <div class="bg-amber-400/20 text-amber-300 px-3 py-1 rounded-full font-bold flex items-center gap-2 border border-amber-400/30">
+                            <i class="fa-solid fa-fire text-amber-400"></i> Buổi ${latestS.date}: <span class="text-white">${attCount}/${members.length} người</span> • <span class="text-amber-300 font-mono">${formatVND(costP)}đ/người</span>
+                        </div>
+                    `;
+                } else {
+                    summaryEl.innerHTML = '';
+                }
+            }
+
+            // --- ADMIN QUICK ACTION BAR ---
+            const adminActionsEl = document.getElementById('sheet-admin-quick-actions');
+            if (adminActionsEl) {
+                if (isAdmin && sessions.length > 0) {
+                    adminActionsEl.classList.remove('hidden');
+                    adminActionsEl.classList.add('flex');
+                } else {
+                    adminActionsEl.classList.add('hidden');
+                    adminActionsEl.classList.remove('flex');
+                }
+            }
+
             // --- SORTING: BY "CÒN LẠI" (ASCENDING) ---
             let sortedMembers = [...members];
-            const searchVal = document.getElementById('member-search')?.value.toLowerCase() || '';
+            const searchVal = document.getElementById('sheet-search-input')?.value.toLowerCase() || '';
             if (searchVal) {
                 sortedMembers = sortedMembers.filter(m => m.name.toLowerCase().includes(searchVal));
             }
@@ -1522,14 +1669,15 @@
             sortedMembers.sort((a, b) => {
                 let aBill = 0, bBill = 0;
                 sessions.forEach(s => { 
-                    if(a.attendance[s.id]) aBill += sessionStats[s.id].costPerPerson; 
-                    if(b.attendance[s.id]) bBill += sessionStats[s.id].costPerPerson;
+                    if(a.attendance && a.attendance[s.id] && sessionStats[s.id]) aBill += sessionStats[s.id].costPerPerson; 
+                    if(b.attendance && b.attendance[s.id] && sessionStats[s.id]) bBill += sessionStats[s.id].costPerPerson;
                 });
                 return (a.paid - aBill) - (b.paid - bBill);
             });
 
-            // SẮP XẾP CÁC BUỔI CHƠI: TỪ MỚI NHẤT ĐẾN CŨ NHẤT (Cột 6 trở đi)
+            // SẮP XẾP CÁC BUỔI CHƠI: TỪ MỚI NHẤT ĐẾN CŨ NHẤT (Cột sau thông tin thành viên)
             const displaySessions = [...sessions].reverse();
+            const isFull = (sheetViewMode === 'full');
 
             // --- BUILD THEAD (PURE DOM) ---
             thead.innerHTML = '';
@@ -1538,11 +1686,14 @@
             const tr1 = document.createElement('tr');
             tr1.className = "bg-slate-800 text-white border-b border-slate-700 text-sm lg:text-base";
             
-            tr1.appendChild(createTH('#', 'p-2.5 sm:p-3 lg:p-3.5 w-10 sm:w-11 lg:w-12 bg-slate-800 text-slate-300 sticky-col-left-1 sticky-top-row-1 border-r border-slate-700 align-middle text-center font-bold'));
-            tr1.appendChild(createTH('THÀNH VIÊN', 'p-2.5 sm:p-3 lg:p-3.5 min-w-[125px] sm:min-w-[155px] lg:min-w-[185px] bg-slate-800 text-white sticky-col-left-2 sticky-top-row-1 text-left px-3 lg:px-4 border-r border-slate-700 align-middle font-bold tracking-wide'));
-            tr1.appendChild(createTH('Cần thanh toán', 'p-2.5 sm:p-3 lg:p-3.5 min-w-[120px] sm:min-w-[135px] lg:min-w-[155px] bg-slate-800 text-amber-300 border-r border-slate-700 align-middle text-right px-3 lg:px-4 sticky-top-row-1 font-bold'));
-            tr1.appendChild(createTH('Đã thanh toán', 'p-2.5 sm:p-3 lg:p-3.5 min-w-[115px] sm:min-w-[130px] lg:min-w-[150px] bg-slate-800 text-emerald-300 border-r border-slate-700 align-middle text-right px-3 lg:px-4 sticky-top-row-1 font-bold'));
-            tr1.appendChild(createTH('Còn lại', 'p-2.5 sm:p-3 lg:p-3.5 min-w-[110px] sm:min-w-[125px] lg:min-w-[145px] bg-slate-800 text-rose-300 border-r border-slate-700 align-middle text-right px-3 lg:px-4 sticky-top-row-1 font-bold'));
+            tr1.appendChild(createTH('#', 'p-2.5 sm:p-3 w-10 sm:w-11 bg-slate-800 text-slate-400 sticky-col-left-1 sticky-top-row-1 border-r border-slate-700 align-middle text-center font-bold'));
+            tr1.appendChild(createTH('THÀNH VIÊN', 'p-2.5 sm:p-3 min-w-[130px] sm:min-w-[160px] bg-slate-800 text-white sticky-col-left-2 sticky-top-row-1 text-left px-3 lg:px-4 border-r border-slate-700 align-middle font-bold tracking-wide'));
+            
+            if (isFull) {
+                tr1.appendChild(createTH('Cần thanh toán', 'p-2.5 sm:p-3 min-w-[120px] sm:min-w-[140px] bg-slate-800 text-amber-300 border-r border-slate-700 align-middle text-right px-3 sticky-top-row-1 font-bold'));
+                tr1.appendChild(createTH('Đã thanh toán', 'p-2.5 sm:p-3 min-w-[115px] sm:min-w-[135px] bg-slate-800 text-emerald-300 border-r border-slate-700 align-middle text-right px-3 sticky-top-row-1 font-bold'));
+                tr1.appendChild(createTH('Còn lại', 'p-2.5 sm:p-3 min-w-[110px] sm:min-w-[130px] bg-slate-800 text-rose-300 border-r border-slate-700 align-middle text-right px-3 sticky-top-row-1 font-bold'));
+            }
 
             displaySessions.forEach((s, sIdx) => {
                 const isNewest = (sIdx === 0);
@@ -1551,12 +1702,12 @@
                     actionBtns = `<button onclick="deleteSession('${s.id}')" title="Xóa buổi này" class="text-slate-400 hover:text-rose-400 text-xs ml-1.5 p-0.5"><i class="fa-solid fa-trash-can"></i></button>`;
                 }
                 const newestBadge = isNewest 
-                    ? `<span class="bg-amber-400 text-slate-950 font-black text-[10px] sm:text-xs px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm animate-pulse">Mới nhất</span>` 
+                    ? `<span class="bg-amber-400 text-slate-950 font-black text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm animate-pulse">Mới</span>` 
                     : '';
 
                 const thS = document.createElement('th');
                 thS.colSpan = 2;
-                thS.className = `p-2.5 sm:p-3 lg:p-3.5 border-r border-slate-700 font-bold ${isNewest ? 'bg-slate-800 text-amber-300 ring-2 ring-inset ring-amber-400/60' : 'bg-slate-800 text-slate-100'} text-center sticky-top-row-1 whitespace-nowrap text-sm lg:text-base min-w-[170px] lg:min-w-[200px]`;
+                thS.className = `p-2.5 sm:p-3 border-r border-slate-700 font-bold ${isNewest ? 'bg-slate-800 text-amber-300 ring-2 ring-inset ring-amber-400/70' : 'bg-slate-800 text-slate-100'} text-center sticky-top-row-1 whitespace-nowrap text-sm min-w-[160px] lg:min-w-[190px]`;
                 thS.innerHTML = `<div class="flex items-center justify-center gap-1.5">${newestBadge}<span class="font-bold whitespace-nowrap">${s.date}</span>${actionBtns}</div>`;
                 tr1.appendChild(thS);
             });
@@ -1564,19 +1715,22 @@
 
             // Row 2
             const tr2 = document.createElement('tr');
-            tr2.className = "bg-slate-100 text-slate-600 text-xs sm:text-[13px] lg:text-sm font-semibold border-b border-slate-200";
+            tr2.className = "bg-slate-100 text-slate-600 text-xs sm:text-[13px] font-semibold border-b border-slate-200";
             
             tr2.appendChild(createTH('', 'p-1 bg-slate-100 sticky-col-left-1 sticky-top-row-2 border-r border-slate-200'));
             tr2.appendChild(createTH('', 'p-1 bg-slate-100 sticky-col-left-2 sticky-top-row-2 border-r border-slate-200'));
-            tr2.appendChild(createTH('', 'p-1 bg-slate-100 border-r border-slate-200 sticky-top-row-2'));
-            tr2.appendChild(createTH('', 'p-1 bg-slate-100 border-r border-slate-200 sticky-top-row-2'));
-            tr2.appendChild(createTH('', 'p-1 bg-slate-100 border-r border-slate-200 sticky-top-row-2'));
+            
+            if (isFull) {
+                tr2.appendChild(createTH('', 'p-1 bg-slate-100 border-r border-slate-200 sticky-top-row-2'));
+                tr2.appendChild(createTH('', 'p-1 bg-slate-100 border-r border-slate-200 sticky-top-row-2'));
+                tr2.appendChild(createTH('', 'p-1 bg-slate-100 border-r border-slate-200 sticky-top-row-2'));
+            }
 
             displaySessions.forEach((s, sIdx) => {
                 const isNewest = (sIdx === 0);
                 const r2Class = isNewest ? 'bg-amber-100 text-amber-950 font-bold border-b border-amber-300' : 'bg-slate-100 text-slate-600 font-semibold border-b border-slate-200';
-                tr2.appendChild(createTH('Tham gia?', `p-2 border-r border-slate-200 ${r2Class} w-[65px] sm:w-[75px] lg:w-[85px] text-center sticky-top-row-2`));
-                tr2.appendChild(createTH('Tiền cầu', `p-2 border-r border-slate-200 ${r2Class} min-w-[95px] sm:min-w-[110px] lg:min-w-[125px] text-right px-2.5 lg:px-3.5 sticky-top-row-2`));
+                tr2.appendChild(createTH('Tham gia?', `p-2 border-r border-slate-200 ${r2Class} w-[75px] sm:w-[85px] text-center sticky-top-row-2`));
+                tr2.appendChild(createTH('Tiền cầu', `p-2 border-r border-slate-200 ${r2Class} min-w-[95px] sm:min-w-[110px] text-right px-2.5 sticky-top-row-2`));
             });
             thead.appendChild(tr2);
 
@@ -1590,7 +1744,7 @@
 
                 // Tính tổng chi phí dựa trên toàn bộ các buổi chơi
                 sessions.forEach(s => {
-                    if (m.attendance && m.attendance[s.id]) {
+                    if (m.attendance && m.attendance[s.id] && sessionStats[s.id]) {
                         memberTotalBill += sessionStats[s.id].costPerPerson;
                     }
                 });
@@ -1599,18 +1753,19 @@
                 displaySessions.forEach((s, sIdx) => {
                     const isNewest = (sIdx === 0);
                     const isAttending = m.attendance && m.attendance[s.id] ? true : false;
-                    const cost = isAttending ? sessionStats[s.id].costPerPerson : 0;
+                    const cost = isAttending && sessionStats[s.id] ? sessionStats[s.id].costPerPerson : 0;
 
-                    const bClass = isAttending ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700' : 'bg-slate-100 text-slate-400 hover:bg-slate-200';
+                    const bClass = isAttending ? 'btn-att-yes' : 'btn-att-no';
+                    const label = isAttending ? '<i class="fa-solid fa-check mr-1 text-[11px]"></i> Có' : '<span class="text-slate-400 text-xs">- Vắng</span>';
                     const btn = isAdmin 
-                        ? `<button onclick="toggleAtt(${m.id}, '${s.id}')" class="w-10 sm:w-12 lg:w-14 py-1 sm:py-1.5 text-xs lg:text-sm font-bold rounded-lg ${bClass} active:scale-95 transition-all">${isAttending ? 'Yes' : 'No'}</button>`
-                        : `<span class="w-10 sm:w-12 lg:w-14 py-1 sm:py-1.5 text-xs lg:text-sm font-bold rounded-lg inline-block text-center ${bClass}">${isAttending ? 'Yes' : 'No'}</span>`;
+                        ? `<button onclick="toggleAtt(${m.id}, '${s.id}')" class="min-w-[56px] sm:min-w-[64px] py-1.5 px-2 text-xs font-bold rounded-xl ${bClass} active:scale-95 transition-all shadow-xs flex items-center justify-center mx-auto">${label}</button>`
+                        : `<span class="min-w-[56px] sm:min-w-[64px] py-1.5 px-2 text-xs font-bold rounded-xl inline-flex items-center justify-center mx-auto ${bClass}">${label}</span>`;
 
                     const cellHighlight = isNewest ? 'bg-amber-50/40' : '';
 
                     sessionCells += `
                         <td class="p-2 sm:p-2.5 text-center bg-white border-r border-slate-200 ${cellHighlight}">${btn}</td>
-                        <td class="p-2 sm:p-2.5 lg:p-3 text-right font-mono font-medium text-slate-800 border-r border-slate-200 text-sm lg:text-[15px] px-2.5 lg:px-3.5 ${cellHighlight} ${isAttending?'':'text-slate-400'}">${isAttending ? formatVND(cost) : '0'}</td>
+                        <td class="p-2 sm:p-2.5 text-right font-mono font-medium text-slate-800 border-r border-slate-200 text-sm px-2.5 ${cellHighlight} ${isAttending?'':'text-slate-400'}">${isAttending ? formatVND(cost) : '0'}</td>
                     `;
                 });
 
@@ -1622,22 +1777,29 @@
                 
                 let paidCellHTML = '';
                 if (isKantan(m)) {
-                    paidCellHTML = `<span class="text-emerald-700 font-extrabold font-mono block text-right px-2 w-full text-sm lg:text-[15px]" title="Tự động tính = Tổng tiền cầu đã mua - Tiền thu từ các thành viên">${formatVND(m.paid)}</span>`;
+                    paidCellHTML = `<span class="text-emerald-700 font-extrabold font-mono block text-right px-2 w-full text-sm" title="Tự động tính = Tổng tiền cầu đã mua - Tiền thu từ các thành viên">${formatVND(m.paid)}</span>`;
                 } else if (isAdmin) {
-                    paidCellHTML = `<input type="text" value="${formatVND(m.paid)}" onfocus="this.value=${m.paid}; this.select();" onblur="updatePaid(${m.id}, this.value)" onkeydown="if(event.key==='Enter') this.blur();" class="currency-input text-emerald-700 font-bold font-mono text-right w-full text-sm lg:text-[15px]">`;
+                    paidCellHTML = `<input type="text" value="${formatVND(m.paid)}" onfocus="this.value=${m.paid}; this.select();" onblur="updatePaid(${m.id}, this.value)" onkeydown="if(event.key==='Enter') this.blur();" class="currency-input text-emerald-700 font-bold font-mono text-right w-full text-sm">`;
                 } else {
-                    paidCellHTML = `<span class="text-emerald-700 font-bold font-mono block text-right px-2 w-full text-sm lg:text-[15px]">${formatVND(m.paid)}</span>`;
+                    paidCellHTML = `<span class="text-emerald-700 font-bold font-mono block text-right px-2 w-full text-sm">${formatVND(m.paid)}</span>`;
                 }
 
-                const nameHtml = `<span onclick="openMemberDetails(${m.id})" class="cursor-pointer hover:text-sky-600 transition text-sky-700 flex items-center gap-1.5 truncate text-sm lg:text-[15px]" title="Xem chi tiết ${m.name}"><i class="fa-solid fa-circle-info text-xs text-sky-400 shrink-0"></i> <span class="truncate font-semibold">${m.name}</span></span>`;
+                const nameHtml = `<span onclick="openMemberDetails(${m.id})" class="cursor-pointer hover:text-sky-600 transition text-sky-700 flex items-center gap-1.5 truncate text-sm" title="Xem chi tiết ${m.name}"><i class="fa-solid fa-circle-info text-xs text-sky-400 shrink-0"></i> <span class="truncate font-semibold">${m.name}</span></span>`;
+
+                let financialCells = '';
+                if (isFull) {
+                    financialCells = `
+                        <td class="p-2.5 sm:p-3 text-right font-bold font-mono text-slate-900 bg-amber-50/40 border-r border-slate-200 text-sm px-3">${formatVND(memberTotalBill)}</td>
+                        <td class="p-2 sm:p-2.5 text-right bg-emerald-50/30 border-r border-slate-200 text-sm px-3">${paidCellHTML}</td>
+                        <td class="p-2.5 sm:p-3 text-right font-mono border-r border-slate-200 text-sm px-3 ${remainingColor}">${formatVND(remaining)}</td>
+                    `;
+                }
 
                 bodyHTML += `
-                    <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="p-2.5 sm:p-3 text-center text-slate-500 font-mono text-sm lg:text-base bg-slate-50 sticky-col-left-1 border-r border-slate-200">${idx + 1}</td>
-                        <td class="p-2.5 sm:p-3 font-bold text-slate-900 bg-white sticky-col-left-2 border-r border-slate-200 text-sm lg:text-[15px] px-3 lg:px-4">${nameHtml}</td>
-                        <td class="p-2.5 sm:p-3 text-right font-bold font-mono text-slate-900 bg-amber-50/40 border-r border-slate-200 text-sm lg:text-[15px] px-3 lg:px-4">${formatVND(memberTotalBill)}</td>
-                        <td class="p-2 sm:p-2.5 text-right bg-emerald-50/30 border-r border-slate-200 text-sm lg:text-[15px] px-3 lg:px-4">${paidCellHTML}</td>
-                        <td class="p-2.5 sm:p-3 text-right font-mono border-r border-slate-200 text-sm lg:text-[15px] px-3 lg:px-4 ${remainingColor}">${formatVND(remaining)}</td>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-2.5 sm:p-3 text-center text-slate-500 font-mono text-sm bg-slate-50 sticky-col-left-1 border-r border-slate-200">${idx + 1}</td>
+                        <td class="p-2.5 sm:p-3 font-bold text-slate-900 bg-white sticky-col-left-2 border-r border-slate-200 text-sm px-3">${nameHtml}</td>
+                        ${financialCells}
                         ${sessionCells}
                     </tr>
                 `;
@@ -1646,20 +1808,24 @@
 
             // --- BUILD TFOOT ---
             let fHtml = `
-                <tr class="bg-slate-100 text-slate-800 border-t-2 border-slate-300 text-sm lg:text-base">
-                    <td class="p-3 lg:p-3.5 sticky-col-left-1 border-r border-slate-200 bg-slate-200 text-center font-bold">#</td>
-                    <td class="p-3 lg:p-3.5 sticky-col-left-2 border-r border-slate-200 bg-slate-200 text-slate-900 font-extrabold uppercase text-xs sm:text-sm tracking-wide truncate px-3 lg:px-4">Tổng Cộng</td>
-                    <td class="p-3 lg:p-3.5 border-r border-slate-200 text-right font-extrabold font-mono bg-amber-100/70 text-slate-900 text-sm lg:text-base px-3 lg:px-4">${formatVND(globalCost)}</td>
-                    <td class="p-3 lg:p-3.5 border-r border-slate-200 text-right text-emerald-700 font-extrabold font-mono bg-emerald-100/70 text-sm lg:text-base px-3 lg:px-4">${formatVND(globalPaid)}</td>
-                    <td class="p-3 lg:p-3.5 border-r border-slate-200 text-right font-extrabold font-mono text-sm lg:text-base px-3 lg:px-4 ${globalPaid - globalCost < 0 ? 'text-rose-700 bg-rose-100/70' : 'text-emerald-700 bg-emerald-100/70'}">${formatVND(globalPaid - globalCost)}</td>
+                <tr class="bg-slate-100 text-slate-800 border-t-2 border-slate-300 text-sm">
+                    <td class="p-3 sticky-col-left-1 border-r border-slate-200 bg-slate-200 text-center font-bold">#</td>
+                    <td class="p-3 sticky-col-left-2 border-r border-slate-200 bg-slate-200 text-slate-900 font-extrabold uppercase text-xs tracking-wide truncate px-3">Tổng Cộng</td>
             `;
+            if (isFull) {
+                fHtml += `
+                    <td class="p-3 border-r border-slate-200 text-right font-extrabold font-mono bg-amber-100/70 text-slate-900 text-sm px-3">${formatVND(globalCost)}</td>
+                    <td class="p-3 border-r border-slate-200 text-right text-emerald-700 font-extrabold font-mono bg-emerald-100/70 text-sm px-3">${formatVND(globalPaid)}</td>
+                    <td class="p-3 border-r border-slate-200 text-right font-extrabold font-mono text-sm px-3 ${globalPaid - globalCost < 0 ? 'text-rose-700 bg-rose-100/70' : 'text-emerald-700 bg-emerald-100/70'}">${formatVND(globalPaid - globalCost)}</td>
+                `;
+            }
             displaySessions.forEach((s, sIdx) => {
                 const isNewest = (sIdx === 0);
                 const sessionTotal = sessionStats[s.id]?.totalCost || 0;
                 const footBg = isNewest ? 'bg-amber-100/90 text-amber-950 font-black' : 'bg-slate-100 text-slate-800 font-extrabold';
                 fHtml += `
-                    <td class="p-2.5 lg:p-3 text-center ${footBg} border-r border-slate-200 text-sm lg:text-base" title="Tổng số người tham gia: ${sessionStats[s.id]?.count || 0}">${sessionStats[s.id]?.count || 0}</td>
-                    <td class="p-3 lg:p-3.5 text-right font-mono ${footBg} border-r border-slate-200 whitespace-nowrap text-sm lg:text-base px-2.5 lg:px-3.5" title="${s.shuttles} trái cầu • Tổng tiền buổi ${s.date}: ${formatVND(sessionTotal)}">${s.shuttles} - ${formatVND(sessionTotal)}</td>
+                    <td class="p-2.5 text-center ${footBg} border-r border-slate-200 text-sm" title="Tổng số người tham gia: ${sessionStats[s.id]?.count || 0}">${sessionStats[s.id]?.count || 0}</td>
+                    <td class="p-3 text-right font-mono ${footBg} border-r border-slate-200 whitespace-nowrap text-sm px-2.5" title="${s.shuttles} trái cầu • Tổng tiền buổi ${s.date}: ${formatVND(sessionTotal)}">${s.shuttles} - ${formatVND(sessionTotal)}</td>
                 `;
             });
             fHtml += `</tr>`;
@@ -1679,7 +1845,13 @@
             if (!thead || !tbody || !tfoot) return;
 
             // 1. SẮP XẾP THÀNH VIÊN: NỢ NHIỀU NHẤT LÊN TRƯỚC (Từ trái sang phải)
-            const sortedMembers = [...members].sort((a, b) => {
+            let sortedMembers = [...members];
+            const paySearchVal = document.getElementById('pay-search-input')?.value.toLowerCase() || '';
+            if (paySearchVal) {
+                sortedMembers = sortedMembers.filter(m => m.name.toLowerCase().includes(paySearchVal));
+            }
+
+            sortedMembers.sort((a, b) => {
                 let aBill = 0, bBill = 0;
                 sessions.forEach(s => { 
                     if (a.attendance && a.attendance[s.id] && sessionStats[s.id]) aBill += sessionStats[s.id].costPerPerson; 
@@ -1697,27 +1869,27 @@
             // Row 1: Header Tên thành viên
             const tr1 = document.createElement('tr');
             tr1.className = "bg-slate-900 text-white border-b border-slate-700 text-sm lg:text-base";
-            tr1.appendChild(createTH('#', 'p-2.5 sm:p-3 lg:p-3.5 w-10 sm:w-11 lg:w-12 bg-slate-900 text-slate-400 sticky-col-left-1 sticky-top-row-1 border-r border-slate-700 align-middle text-center font-bold'));
-            tr1.appendChild(createTH('BUỔI CHƠI (CŨ ➡️ MỚI)', 'p-2.5 sm:p-3 lg:p-3.5 min-w-[125px] sm:min-w-[155px] lg:min-w-[185px] bg-slate-900 text-white sticky-col-left-2 sticky-top-row-1 text-left px-3 lg:px-4 border-r border-slate-700 align-middle font-bold text-xs sm:text-sm lg:text-base tracking-wide'));
+            tr1.appendChild(createTH('#', 'p-2.5 sm:p-3 w-10 sm:w-11 bg-slate-900 text-slate-400 sticky-col-left-1 sticky-top-row-1 border-r border-slate-700 align-middle text-center font-bold'));
+            tr1.appendChild(createTH('BUỔI CHƠI (CŨ ➡️ MỚI)', 'p-2.5 sm:p-3 min-w-[130px] sm:min-w-[160px] bg-slate-900 text-white sticky-col-left-2 sticky-top-row-1 text-left px-3 border-r border-slate-700 align-middle font-bold text-xs sm:text-sm tracking-wide'));
 
             sortedMembers.forEach(m => {
                 const thM = document.createElement('th');
                 thM.colSpan = 2;
-                thM.className = "p-2.5 sm:p-3 lg:p-3.5 border-r border-slate-700 font-bold bg-slate-800 text-emerald-300 text-center sticky-top-row-1 whitespace-nowrap min-w-[180px] lg:min-w-[220px] text-sm lg:text-base";
-                thM.textContent = m.name;
+                thM.className = "p-2.5 sm:p-3 border-r border-slate-700 font-bold bg-slate-800 text-emerald-300 text-center sticky-top-row-1 whitespace-nowrap min-w-[170px] lg:min-w-[210px] text-sm";
+                thM.innerHTML = `<span onclick="openMemberDetails(${m.id})" class="cursor-pointer hover:text-emerald-100 transition flex items-center justify-center gap-1.5" title="Xem chi tiết sao kê & QR ${m.name}"><i class="fa-solid fa-circle-user text-xs text-emerald-400"></i> ${m.name}</span>`;
                 tr1.appendChild(thM);
             });
             thead.appendChild(tr1);
 
             // Row 2: 2 cột con Tiền Cầu & Tiền Đóng
             const tr2 = document.createElement('tr');
-            tr2.className = "bg-slate-100 text-slate-600 text-xs sm:text-[13px] lg:text-sm font-semibold border-b border-slate-200";
+            tr2.className = "bg-slate-100 text-slate-600 text-xs sm:text-[13px] font-semibold border-b border-slate-200";
             tr2.appendChild(createTH('', 'p-1 bg-slate-100 sticky-col-left-1 sticky-top-row-2 border-r border-slate-200'));
             tr2.appendChild(createTH('', 'p-1 bg-slate-100 sticky-col-left-2 sticky-top-row-2 border-r border-slate-200'));
 
             sortedMembers.forEach(() => {
-                tr2.appendChild(createTH('Tiền Cầu', 'p-2 border-r border-slate-200 font-semibold bg-amber-50 text-amber-900 text-center w-[90px] sm:w-[100px] lg:w-[110px] sticky-top-row-2'));
-                tr2.appendChild(createTH('Tiền Đóng', 'p-2 border-r border-slate-200 font-semibold bg-emerald-50 text-emerald-900 text-center w-[90px] sm:w-[100px] lg:w-[110px] sticky-top-row-2'));
+                tr2.appendChild(createTH('Tiền Cầu', 'p-2 border-r border-slate-200 font-semibold bg-amber-50 text-amber-900 text-center w-[85px] sm:w-[95px] sticky-top-row-2'));
+                tr2.appendChild(createTH('Tiền Đóng', 'p-2 border-r border-slate-200 font-semibold bg-emerald-50 text-emerald-900 text-center w-[85px] sm:w-[95px] sticky-top-row-2'));
             });
             thead.appendChild(tr2);
 
@@ -1733,27 +1905,27 @@
 
                     let payInputHTML = '';
                     if (isAdmin) {
-                        payInputHTML = `<input type="text" value="${formatVND(payVal)}" onfocus="this.value=${payVal}; this.select();" onblur="updateSessionPayment(${m.id}, '${s.id}', this.value)" onkeydown="if(event.key==='Enter') this.blur();" class="currency-input text-emerald-700 font-bold font-mono text-right w-full text-sm lg:text-[15px]">`;
+                        payInputHTML = `<input type="text" value="${formatVND(payVal)}" onfocus="this.value=${payVal}; this.select();" onblur="updateSessionPayment(${m.id}, '${s.id}', this.value)" onkeydown="if(event.key==='Enter') this.blur();" class="currency-input text-emerald-700 font-bold font-mono text-right w-full text-sm">`;
                     } else {
-                        payInputHTML = `<span class="text-emerald-700 font-bold font-mono block text-right px-2 w-full text-sm lg:text-[15px] ${payVal > 0 ? '' : 'text-slate-300'}">${formatVND(payVal)}</span>`;
+                        payInputHTML = `<span class="text-emerald-700 font-bold font-mono block text-right px-2 w-full text-sm ${payVal > 0 ? '' : 'text-slate-300'}">${formatVND(payVal)}</span>`;
                     }
 
                     rowCells += `
-                        <td class="p-2.5 sm:p-3 text-right font-mono font-medium border-r border-slate-200 text-sm lg:text-[15px] px-3 lg:px-4 ${isAttending ? 'text-amber-900 bg-amber-50/30 font-semibold' : 'text-slate-400'}">${isAttending ? formatVND(cost) : '0'}</td>
-                        <td class="p-2 sm:p-2.5 lg:p-3 text-right bg-emerald-50/20 border-r border-slate-200 text-sm lg:text-[15px] px-2 lg:px-3">${payInputHTML}</td>
+                        <td class="p-2.5 sm:p-3 text-right font-mono font-medium border-r border-slate-200 text-sm px-3 ${isAttending ? 'text-amber-900 bg-amber-50/30 font-semibold' : 'text-slate-400'}">${isAttending ? formatVND(cost) : '0'}</td>
+                        <td class="p-2 sm:p-2.5 text-right bg-emerald-50/20 border-r border-slate-200 text-sm px-2">${payInputHTML}</td>
                     `;
                 });
 
                 const newestBadge = isNewest 
-                    ? `<span class="bg-amber-400 text-slate-950 font-black text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm animate-pulse">Mới nhất</span>` 
+                    ? `<span class="bg-amber-400 text-slate-950 font-black text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm animate-pulse">Mới</span>` 
                     : '';
-                const rowHighlight = isNewest ? 'bg-amber-50/60 font-semibold border-y-2 border-amber-400/80' : 'hover:bg-slate-50/80';
+                const rowHighlight = isNewest ? 'bg-amber-50/60 font-semibold border-y-2 border-amber-400/80' : 'hover:bg-slate-50';
                 const dateBg = isNewest ? 'bg-amber-100/80 font-bold text-amber-950' : 'bg-white font-bold text-slate-900';
 
                 bodyHTML += `
                     <tr class="${rowHighlight} transition-colors">
-                        <td class="p-2.5 sm:p-3 text-center text-slate-500 font-mono text-sm lg:text-base bg-slate-50 sticky-col-left-1 border-r border-slate-200">${idx + 1}</td>
-                        <td class="p-2.5 sm:p-3 ${dateBg} sticky-col-left-2 border-r border-slate-200 whitespace-nowrap text-sm lg:text-[15px] px-3 lg:px-4">
+                        <td class="p-2.5 sm:p-3 text-center text-slate-500 font-mono text-sm bg-slate-50 sticky-col-left-1 border-r border-slate-200">${idx + 1}</td>
+                        <td class="p-2.5 sm:p-3 ${dateBg} sticky-col-left-2 border-r border-slate-200 whitespace-nowrap text-sm px-3">
                             <div class="flex items-center gap-1.5">
                                 <span class="truncate">${s.date}</span>
                                 ${newestBadge}
@@ -1766,11 +1938,10 @@
             tbody.innerHTML = bodyHTML;
 
             // 5. BUILD TFOOT (Hàng Tổng tiền & Hàng Dư / Thiếu)
-            // Hàng 1: Tổng tiền cầu & Tổng tiền đóng
             let fHtml = `
-                <tr class="bg-slate-100 text-slate-800 border-t-2 border-slate-300 text-sm lg:text-base">
-                    <td class="p-3 lg:p-3.5 sticky-col-left-1 border-r border-slate-200 bg-slate-200 text-center font-bold">#</td>
-                    <td class="p-3 lg:p-3.5 sticky-col-left-2 border-r border-slate-200 bg-slate-200 text-slate-900 font-extrabold uppercase text-xs sm:text-sm tracking-wide truncate px-3 lg:px-4">Tổng Cộng</td>
+                <tr class="bg-slate-100 text-slate-800 border-t-2 border-slate-300 text-sm">
+                    <td class="p-3 sticky-col-left-1 border-r border-slate-200 bg-slate-200 text-center font-bold">#</td>
+                    <td class="p-3 sticky-col-left-2 border-r border-slate-200 bg-slate-200 text-slate-900 font-extrabold uppercase text-xs tracking-wide truncate px-3">Tổng Cộng</td>
             `;
 
             sortedMembers.forEach(m => {
@@ -1788,17 +1959,17 @@
                 const displayPaid = isKantan(m) ? m.paid : (mTotalPaid > 0 ? mTotalPaid : m.paid);
 
                 fHtml += `
-                    <td class="p-3 lg:p-3.5 border-r border-slate-200 text-right font-extrabold font-mono bg-amber-50 text-amber-900 whitespace-nowrap text-sm lg:text-base px-3 lg:px-4" title="Tổng tiền cầu của ${m.name}: ${formatVND(mTotalCost)}">${formatVND(mTotalCost)}</td>
-                    <td class="p-3 lg:p-3.5 border-r border-slate-200 text-right font-extrabold font-mono bg-emerald-50 text-emerald-800 whitespace-nowrap text-sm lg:text-base px-3 lg:px-4" title="Tổng tiền đóng của ${m.name}: ${formatVND(displayPaid)}">${formatVND(displayPaid)}</td>
+                    <td class="p-3 border-r border-slate-200 text-right font-extrabold font-mono bg-amber-50 text-amber-900 whitespace-nowrap text-sm px-3" title="Tổng tiền cầu của ${m.name}: ${formatVND(mTotalCost)}">${formatVND(mTotalCost)}</td>
+                    <td class="p-3 border-r border-slate-200 text-right font-extrabold font-mono bg-emerald-50 text-emerald-800 whitespace-nowrap text-sm px-3" title="Tổng tiền đóng của ${m.name}: ${formatVND(displayPaid)}">${formatVND(displayPaid)}</td>
                 `;
             });
             fHtml += `</tr>`;
 
             // Hàng 2: DƯ / THIẾU
             fHtml += `
-                <tr class="bg-slate-200 text-slate-800 border-t border-slate-300 text-sm lg:text-base">
-                    <td class="p-3 lg:p-3.5 sticky-col-left-1 border-r border-slate-300 bg-slate-300 text-center font-bold">#</td>
-                    <td class="p-3 lg:p-3.5 sticky-col-left-2 border-r border-slate-300 bg-slate-300 text-rose-800 font-extrabold uppercase text-xs sm:text-sm tracking-wide truncate px-3 lg:px-4">Dư / Thiếu</td>
+                <tr class="bg-slate-200 text-slate-800 border-t border-slate-300 text-sm">
+                    <td class="p-3 sticky-col-left-1 border-r border-slate-300 bg-slate-300 text-center font-bold">#</td>
+                    <td class="p-3 sticky-col-left-2 border-r border-slate-300 bg-slate-300 text-rose-800 font-extrabold uppercase text-xs tracking-wide truncate px-3">Dư / Thiếu</td>
             `;
 
             sortedMembers.forEach(m => {
@@ -1818,17 +1989,17 @@
 
                 let cellContent = '';
                 if (rem < 0) {
-                    cellContent = `<span class="text-rose-700 font-extrabold font-mono flex items-center justify-center gap-1.5 text-sm lg:text-base"><i class="fa-solid fa-triangle-exclamation text-rose-500 text-xs"></i> Thiếu: ${formatVND(Math.abs(rem))}</span>`;
+                    cellContent = `<span class="text-rose-700 font-extrabold font-mono flex items-center justify-center gap-1 text-sm"><i class="fa-solid fa-triangle-exclamation text-rose-500 text-xs"></i> Thiếu: ${formatVND(Math.abs(rem))}</span>`;
                 } else if (rem > 0) {
-                    cellContent = `<span class="text-emerald-700 font-extrabold font-mono flex items-center justify-center gap-1.5 text-sm lg:text-base"><i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i> Dư: +${formatVND(rem)}</span>`;
+                    cellContent = `<span class="text-emerald-700 font-extrabold font-mono flex items-center justify-center gap-1 text-sm"><i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i> Dư: +${formatVND(rem)}</span>`;
                 } else {
-                    cellContent = `<span class="text-slate-600 font-bold flex items-center justify-center gap-1.5 text-sm lg:text-base"><i class="fa-solid fa-check text-slate-400 text-xs"></i> Đã đủ</span>`;
+                    cellContent = `<span class="text-slate-600 font-bold flex items-center justify-center gap-1 text-sm"><i class="fa-solid fa-check text-slate-400 text-xs"></i> Đã đủ</span>`;
                 }
 
                 const cellBg = rem < 0 ? 'bg-rose-50' : (rem > 0 ? 'bg-emerald-50' : 'bg-slate-100');
 
                 fHtml += `
-                    <td colspan="2" class="p-3 lg:p-3.5 border-r border-slate-300 text-center ${cellBg} whitespace-nowrap text-sm lg:text-base" title="${m.name}: ${rem < 0 ? 'Cần đóng thêm ' + formatVND(Math.abs(rem)) : (rem > 0 ? 'Đang dư ' + formatVND(rem) : 'Đã thanh toán đủ')}">${cellContent}</td>
+                    <td colspan="2" class="p-3 border-r border-slate-300 text-center ${cellBg} whitespace-nowrap text-sm" title="${m.name}: ${rem < 0 ? 'Cần đóng thêm ' + formatVND(Math.abs(rem)) : (rem > 0 ? 'Đang dư ' + formatVND(rem) : 'Đã thanh toán đủ')}">${cellContent}</td>
                 `;
             });
             fHtml += `</tr>`;
@@ -2307,6 +2478,8 @@
                 document.getElementById('admin-action-bar')?.classList.remove('hidden');
                 document.getElementById('btn-edit-qr')?.classList.remove('hidden');
                 document.getElementById('btn-edit-qr')?.classList.add('flex');
+                document.getElementById('sheet-admin-quick-actions')?.classList.remove('hidden');
+                document.getElementById('sheet-admin-quick-actions')?.classList.add('flex');
                 if (mbNavAi) mbNavAi.classList.remove('hidden');
             } else {
                 badge.textContent = "Thành Viên";
@@ -2319,6 +2492,8 @@
                 document.getElementById('admin-action-bar')?.classList.add('hidden');
                 document.getElementById('btn-edit-qr')?.classList.add('hidden');
                 document.getElementById('btn-edit-qr')?.classList.remove('flex');
+                document.getElementById('sheet-admin-quick-actions')?.classList.add('hidden');
+                document.getElementById('sheet-admin-quick-actions')?.classList.remove('flex');
                 if (mbNavAi) mbNavAi.classList.add('hidden');
             }
         }
