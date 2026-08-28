@@ -582,18 +582,18 @@
         </button>
     </nav>
 
-    <!-- UNSAVED CHANGES BANNER (GLOBAL SAVE/CANCEL) -->
+    <!-- UNSAVED CHANGES BANNER (GLOBAL AUTO-SAVE & MANUAL COMMIT) -->
     <div id="unsaved-banner" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-4 py-3 rounded-2xl shadow-2xl flex flex-col sm:flex-row items-center gap-3 sm:gap-6 z-[150] transition-all duration-300 translate-y-32 opacity-0 w-[92%] sm:w-auto border border-slate-700 pointer-events-auto">
         <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 animate-pulse">
-                <i class="fa-solid fa-triangle-exclamation"></i>
+            <div id="unsaved-icon-box" class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 animate-pulse">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
             </div>
-            <span class="text-sm font-medium">Bạn có thay đổi chưa được lưu!</span>
+            <span id="unsaved-banner-msg" class="text-sm font-medium">Có thay đổi mới • Tự động lưu sau 1s...</span>
         </div>
         <div class="flex gap-2 w-full sm:w-auto">
-            <button onclick="restoreState()" class="flex-1 sm:flex-none px-5 py-2 bg-slate-600 hover:bg-slate-500 rounded-xl text-xs font-bold transition shadow-sm">Hủy bỏ</button>
-            <button id="btn-commit" onclick="commitChanges()" class="flex-1 sm:flex-none px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-900 rounded-xl text-xs font-bold transition shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-center gap-1.5">
-                <i id="icon-commit" class=""></i> <span id="btn-commit-text">Lưu Data</span>
+            <button onclick="restoreState()" class="flex-1 sm:flex-none px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-semibold transition shadow-sm text-slate-300">Hủy</button>
+            <button id="btn-commit" onclick="commitChanges(false)" class="flex-1 sm:flex-none px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-900 rounded-xl text-xs font-bold transition shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-center gap-1.5">
+                <i id="icon-commit" class=""></i> <span id="btn-commit-text">Lưu ngay</span>
             </button>
         </div>
     </div>
@@ -913,17 +913,19 @@
             } catch(e) {}
         }
 
-        // URL API Endpoint (Vercel Serverless Function)
+        // URL API Endpoint (Hỗ trợ cả Vercel Serverless Function & Google Apps Script Web App)
         const DEFAULT_SCRIPT_API_URL = '/api/data';
+        const FALLBACK_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtEZgoalXo5UzktFuw0xBMe_0DZRZIYqBGjrWbYigw_qwlxQHeFQe6UUJLym4EtlVhbg/exec';
+        
         let savedApiUrl = safeGetStorage('CLB_SCRIPT_API_URL', DEFAULT_SCRIPT_API_URL);
-        if (!savedApiUrl || savedApiUrl.includes('PLACEHOLDER') || savedApiUrl.includes('script.google.com')) {
+        if (!savedApiUrl || savedApiUrl.includes('PLACEHOLDER')) {
             savedApiUrl = DEFAULT_SCRIPT_API_URL;
-            safeSetStorage('CLB_SCRIPT_API_URL', DEFAULT_SCRIPT_API_URL);
         }
         let GOOGLE_SCRIPT_API_URL = savedApiUrl;
         
         let originalState = null;
         let hasUnsavedChanges = false;
+        let autoSaveTimer = null;
 
         function openApiConfigModal() {
             document.getElementById('input-api-url').value = GOOGLE_SCRIPT_API_URL;
@@ -933,7 +935,7 @@
 
         function saveApiUrl() {
             let val = document.getElementById('input-api-url').value.trim();
-            if (!val || val.includes('script.google.com')) {
+            if (!val) {
                 val = '/api/data';
             }
             GOOGLE_SCRIPT_API_URL = val;
@@ -951,7 +953,8 @@
             btn.disabled = true;
             statusEl.innerHTML = '<span class="text-sky-600 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Đang kết nối tới Google Sheets qua API...</span>';
 
-            const testUrl = val + (val.includes('?') ? '&' : '?') + '_t=' + Date.now();
+            const isGoogleScriptUrl = val.includes('script.google.com');
+            const testUrl = val + (val.includes('?') ? '&' : '?') + (isGoogleScriptUrl ? 'action=loadData&' : '') + '_t=' + Date.now();
 
             fetch(testUrl)
                 .then(res => res.json())
@@ -975,10 +978,31 @@
         }
 
         function loadDataFromApi() {
-            let url = GOOGLE_SCRIPT_API_URL || '/api/data';
-            if (url.includes('PLACEHOLDER') || url.includes('script.google.com')) url = '/api/data';
+            // 1. Nếu đang chạy trong môi trường Google Apps Script Web App
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler((data) => {
+                        if (data && (data.sessions?.length > 0 || data.members?.length > 0)) {
+                            sessions = data.sessions || [];
+                            members = data.members || [];
+                            if (data.qrInfo && Object.keys(data.qrInfo).length > 0) qrInfo = data.qrInfo;
+                            shuttleBatches = data.shuttleBatches || [];
+                            safeSetStorage('CLB_CACHED_DATA', JSON.stringify({ sessions, members, qrInfo, shuttleBatches }));
+                            backupState();
+                            updateQRDisplay();
+                            renderAll();
+                        }
+                    })
+                    .getFromSheets();
+                return;
+            }
 
-            const fetchUrl = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+            // 2. Chạy qua REST API (Vercel hoặc Apps Script)
+            let url = GOOGLE_SCRIPT_API_URL || '/api/data';
+            if (url.includes('PLACEHOLDER')) url = '/api/data';
+
+            const isGoogleScriptUrl = url.includes('script.google.com');
+            const fetchUrl = url + (url.includes('?') ? '&' : '?') + (isGoogleScriptUrl ? 'action=loadData&' : '') + '_t=' + Date.now();
 
             fetch(fetchUrl)
                 .then(res => res.json())
@@ -998,11 +1022,6 @@
                     } else if (data && data.isConfigRequired) {
                         console.info('Vercel API đang chờ cấu hình biến môi trường Service Account.');
                     } else if (data && data.error) {
-                        console.warn('Lỗi tải dữ liệu Google Sheets:', data.error);
-                    }
-                })
-                .catch(err => {
-                    console.warn('API load failed, using active snapshot', err);
                 });
         }
 
@@ -1026,7 +1045,10 @@
                 shuttleBatches = parsed.shuttleBatches;
                 qrInfo = parsed.qrInfo;
                 hasUnsavedChanges = false;
-                
+                if (autoSaveTimer) {
+                    clearTimeout(autoSaveTimer);
+                    autoSaveTimer = null;
+                }
                 updateQRDisplay();
                 renderAll();
                 updateSaveUI();
@@ -1034,13 +1056,29 @@
             }
         }
 
-        function markUnsaved() {
+        function markUnsaved(isImmediate = false) {
             hasUnsavedChanges = true;
             updateSaveUI();
+            
+            if (autoSaveTimer) clearTimeout(autoSaveTimer);
+            if (isImmediate) {
+                commitChanges(true);
+                return;
+            }
+            // Tự động lưu sau 1.2 giây khi người dùng dừng thao tác
+            autoSaveTimer = setTimeout(() => {
+                if (hasUnsavedChanges && isAdmin) {
+                    commitChanges(true);
+                }
+            }, 1200);
         }
 
-        function updateSaveUI() {
+        function updateSaveUI(customMsg = null) {
             const banner = document.getElementById('unsaved-banner');
+            const msgEl = document.getElementById('unsaved-banner-msg');
+            if (msgEl) {
+                msgEl.textContent = customMsg || 'Có thay đổi mới • Tự động lưu sau 1s...';
+            }
             if (hasUnsavedChanges) {
                 banner.classList.remove('translate-y-32', 'opacity-0');
                 banner.classList.add('translate-y-0', 'opacity-100');
@@ -1050,53 +1088,106 @@
             }
         }
 
-        function commitChanges() {
+        function commitChanges(isAutoSave = false) {
+            if (autoSaveTimer) {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = null;
+            }
+
             const btnText = document.getElementById('btn-commit-text');
             const btn = document.getElementById('btn-commit');
             const icon = document.getElementById('icon-commit');
+            const msgEl = document.getElementById('unsaved-banner-msg');
             
             if (btn) btn.disabled = true;
             if (icon) icon.className = "fa-solid fa-spinner fa-spin";
             if (btnText) btnText.textContent = "Đang lưu...";
+            if (msgEl) msgEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-amber-400"></i> Đang lưu vào Google Sheets...`;
 
             const payload = { sessions, members, qrInfo, shuttleBatches };
+            const payloadString = JSON.stringify(payload);
 
             // Luôn lưu bản sao vào localStorage để dự phòng không bao giờ mất
-            safeSetStorage('CLB_CACHED_DATA', JSON.stringify(payload));
+            safeSetStorage('CLB_CACHED_DATA', payloadString);
 
-            // Gửi HTTP POST request tới Vercel Serverless Function
+            function onSaveSuccess(source = '') {
+                backupState();
+                if (btn) btn.disabled = false;
+                if (icon) icon.className = "";
+                if (btnText) btnText.textContent = "Lưu ngay";
+                showToast('Đã lưu dữ liệu vào Google Sheets thành công!' + (source ? ` (${source})` : ''), 'success');
+            }
+
+            function onSaveFailure(errMsg) {
+                if (btn) btn.disabled = false;
+                if (icon) icon.className = "";
+                if (btnText) btnText.textContent = "Lưu ngay";
+                if (msgEl) msgEl.textContent = 'Lỗi lưu: ' + errMsg;
+                showToast('Lỗi lưu Google Sheets: ' + errMsg, 'error');
+                console.error('Lỗi khi lưu dữ liệu:', errMsg);
+            }
+
+            // 1. Môi trường Google Apps Script Web App (chạy trực tiếp trong iframe/script.google.com)
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(() => onSaveSuccess('Apps Script'))
+                    .withFailureHandler((err) => onSaveFailure(err?.message || err))
+                    .saveToSheets(payloadString);
+                return;
+            }
+
+            // 2. Chạy trên Vercel hoặc API Endpoint
             let apiUrl = GOOGLE_SCRIPT_API_URL || '/api/data';
-            if (apiUrl.includes('PLACEHOLDER') || apiUrl.includes('script.google.com')) apiUrl = '/api/data';
+            if (apiUrl.includes('PLACEHOLDER')) apiUrl = '/api/data';
+            const isGoogleScriptUrl = apiUrl.includes('script.google.com');
 
-            fetch(apiUrl + (apiUrl.includes('?') ? '&' : '?') + '_t=' + Date.now(), {
+            const fetchOptions = {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': isGoogleScriptUrl ? 'text/plain;charset=utf-8' : 'application/json'
+                },
                 body: JSON.stringify({ action: 'saveData', payload: payload })
-            })
-            .then(res => {
-                if (!res.ok) {
-                    return res.json().then(j => { throw new Error(j.error || j.message || ('Lỗi ' + res.status)); });
-                }
-                return res.json();
-            })
-            .then(data => {
-                if (btn) btn.disabled = false;
-                if (icon) icon.className = "";
-                if (btnText) btnText.textContent = "Lưu Data";
-                if (data && data.success) {
-                    backupState();
-                    showToast('Đã lưu dữ liệu vào Google Sheets thành công!', 'success');
-                } else {
-                    showToast(data.error || data.message || 'Có lỗi khi lưu vào Google Sheets!', 'error');
-                }
-            })
-            .catch(err => {
-                if (btn) btn.disabled = false;
-                if (icon) icon.className = "";
-                if (btnText) btnText.textContent = "Lưu Data";
-                showToast('Lỗi lưu Google Sheets: ' + err.message, 'error');
-                console.error('Lỗi khi lưu dữ liệu:', err);
-            });
+            };
+
+            const fetchUrl = apiUrl + (apiUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+
+            fetch(fetchUrl, fetchOptions)
+                .then(res => {
+                    if (!res.ok && !isGoogleScriptUrl) {
+                        return res.json().then(j => { throw new Error(j.error || j.message || ('Lỗi ' + res.status)); });
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        onSaveSuccess(isGoogleScriptUrl ? 'Google API' : 'Vercel API');
+                    } else {
+                        throw new Error(data.error || data.message || 'Lỗi từ chối lưu');
+                    }
+                })
+                .catch(err => {
+                    // Fallback sang Google Apps Script URL nếu Vercel API gặp sự cố
+                    if (apiUrl !== FALLBACK_APPS_SCRIPT_URL && !isGoogleScriptUrl) {
+                        console.warn('API chính thất bại, đang thử fallback qua Google Apps Script Web App...', err);
+                        fetch(FALLBACK_APPS_SCRIPT_URL + '?_t=' + Date.now(), {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({ action: 'saveData', payload: payload })
+                        })
+                        .then(res => res.json())
+                        .then(fbData => {
+                            if (fbData && fbData.success) {
+                                onSaveSuccess('Fallback Google API');
+                            } else {
+                                onSaveFailure(fbData.error || fbData.message || 'Có lỗi xảy ra');
+                            }
+                        })
+                        .catch(fbErr => onSaveFailure(err.message || fbErr.message));
+                        return;
+                    }
+
+                    onSaveFailure(err.message);
+                });
         }
 
         function initMockData() {

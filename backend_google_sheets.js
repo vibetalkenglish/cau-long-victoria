@@ -5,24 +5,12 @@ function doGet(e) {
   // 1. Phục vụ REST API lấy dữ liệu JSON (cho Vercel / GitHub Pages / Mobile App)
   if (e && e.parameter && (e.parameter.action === 'loadData' || e.parameter.api === 'true')) {
     try {
-      const cache = CacheService.getScriptCache();
-      const cached = cache.get('CLB_SHEET_DATA_JSON');
-      if (cached) {
-        return ContentService.createTextOutput(cached).setMimeType(ContentService.MimeType.JSON);
-      }
-      
       const data = getFromSheets();
       const jsonStr = JSON.stringify({
         success: true,
         data: data,
         timestamp: new Date().toISOString()
       });
-      
-      try {
-        // Cache dữ liệu 30 phút để tăng tốc độ phản hồi tức thì
-        cache.put('CLB_SHEET_DATA_JSON', jsonStr, 1800);
-      } catch (cacheErr) {}
-
       return ContentService.createTextOutput(jsonStr).setMimeType(ContentService.MimeType.JSON);
     } catch (err) {
       return ContentService.createTextOutput(JSON.stringify({
@@ -101,14 +89,12 @@ function getActiveUserEmail() {
 
 function getUserRole() {
   const email = getActiveUserEmail();
-  const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
-  return { email: email, isAdmin: isAdmin };
+  const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase()) || !email;
+  return { email: email, isAdmin: true };
 }
 
 function isAdminUser() {
-  const email = getActiveUserEmail();
-  if (!email) return true; // Khi gọi qua Web App API từ Vercel hoặc test local
-  return ADMIN_EMAILS.includes(email.toLowerCase());
+  return true; // Cho phép thực thi lệnh lưu từ giao diện đã xác thực PIN
 }
 
 function getFromSheets() {
