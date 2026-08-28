@@ -607,17 +607,12 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5">Mã PIN Admin hoặc Email:</label>
                     <div class="relative flex items-center">
-                        <input type="password" id="google-email" placeholder="Nhập mã PIN (123456)..." onkeydown="if(event.key==='Enter') verifyGoogleLogin();" class="w-full p-3 pr-10 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 text-sm outline-none font-medium">
+                        <input type="password" id="google-email" placeholder="Nhập mã PIN bảo mật..." onkeydown="if(event.key==='Enter') verifyGoogleLogin();" class="w-full p-3 pr-10 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 text-sm outline-none font-medium">
                         <button type="button" onclick="togglePinVisibility()" class="absolute right-3 text-slate-400 hover:text-slate-700 text-sm">
                             <i id="pin-eye-icon" class="fa-solid fa-eye"></i>
                         </button>
                     </div>
                 </div>
-
-                <!-- 1-Click Quick Login Button -->
-                <button type="button" onclick="quickLoginAdmin()" class="w-full py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-xl text-xs font-bold border border-amber-300/80 transition flex items-center justify-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-bolt text-amber-500"></i> Bật Admin Nhanh (Mã PIN: 123456)
-                </button>
 
                 <div class="flex justify-between items-center mt-4 pt-3 border-t border-slate-100">
                     <button onclick="closeModal('modal-google-login')" class="text-slate-500 hover:bg-slate-100 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition">Hủy</button>
@@ -2760,16 +2755,10 @@
             }
         }
 
-        function quickLoginAdmin() {
-            const inp = document.getElementById('google-email');
-            if (inp) inp.value = '123456';
-            verifyGoogleLogin();
-        }
-
         function verifyGoogleLogin() {
             const val = document.getElementById('google-email').value.trim();
             const lowerEmail = val.toLowerCase();
-            if (adminEmails.includes(lowerEmail) || val === DEFAULT_ADMIN_PIN || val === '123456' || lowerEmail === 'admin' || !val) {
+            if (adminEmails.includes(lowerEmail) || val === DEFAULT_ADMIN_PIN || val === '123456' || lowerEmail === 'admin') {
                 isAdmin = true;
                 safeSetStorage('CLB_ADMIN_LOGGED', 'true');
                 closeModal('modal-google-login');
@@ -2777,7 +2766,7 @@
                 renderAll();
                 showToast('Đăng nhập Admin thành công!', 'success');
             } else {
-                showToast('Mã PIN hoặc Email quản trị không chính xác! (Mặc định: 123456)', 'error');
+                showToast('Mã PIN hoặc Email quản trị không chính xác!', 'error');
             }
         }
 
