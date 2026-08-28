@@ -1013,7 +1013,13 @@
             const fetchUrl = url + (url.includes('?') ? '&' : '?') + (isGoogleScriptUrl ? 'action=loadData&' : '') + '_t=' + Date.now();
 
             fetch(fetchUrl)
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok && url !== FALLBACK_APPS_SCRIPT_URL) {
+                        console.warn('API chính không phản hồi, thử qua Fallback URL...');
+                        return fetch(FALLBACK_APPS_SCRIPT_URL + '?action=loadData&_t=' + Date.now()).then(r => r.json());
+                    }
+                    return res.json();
+                })
                 .then(data => {
                     if (data && data.success && data.data) {
                         const d = data.data;
@@ -1026,10 +1032,34 @@
                             backupState();
                             updateQRDisplay();
                             renderAll();
+                            console.log('Đã nạp dữ liệu thành công từ Google Sheets:', sessions.length, 'buổi,', members.length, 'thành viên');
                         }
                     } else if (data && data.isConfigRequired) {
-                        console.info('Vercel API đang chờ cấu hình biến môi trường Service Account.');
+                        console.info('Vercel API đang chờ cấu hình.');
                     } else if (data && data.error) {
+                        console.warn('API Error:', data.error);
+                    }
+                })
+                .catch(err => {
+                    console.error('Lỗi khi fetch API:', err);
+                    // Thử fallback 1 lần cuối
+                    if (url !== FALLBACK_APPS_SCRIPT_URL) {
+                        fetch(FALLBACK_APPS_SCRIPT_URL + '?action=loadData&_t=' + Date.now())
+                            .then(r => r.json())
+                            .then(data => {
+                                if (data && data.success && data.data) {
+                                    const d = data.data;
+                                    sessions = d.sessions || [];
+                                    members = d.members || [];
+                                    if (d.qrInfo && Object.keys(d.qrInfo).length > 0) qrInfo = d.qrInfo;
+                                    shuttleBatches = d.shuttleBatches || [];
+                                    backupState();
+                                    updateQRDisplay();
+                                    renderAll();
+                                }
+                            })
+                            .catch(e => console.error('Fallback error:', e));
+                    }
                 });
         }
 
