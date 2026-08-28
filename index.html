@@ -2319,11 +2319,19 @@
             }
         }
 
+        function cleanNumberInput(val, defaultVal = 0) {
+            if (val === undefined || val === null || val === '') return defaultVal;
+            if (typeof val === 'number') return isNaN(val) ? defaultVal : val;
+            const clean = val.toString().replace(/[^\d.-]/g, '');
+            const num = parseFloat(clean);
+            return isNaN(num) ? defaultVal : num;
+        }
+
         function calcUnit() {
-            const qty = Number(document.getElementById('pb-quantity').value) || 1;
-            const pack = Number(document.getElementById('pb-packprice').value) || 0;
+            const qty = cleanNumberInput(document.getElementById('pb-quantity').value, 1);
+            const pack = cleanNumberInput(document.getElementById('pb-packprice').value, 0);
             document.getElementById('pb-totalprice').value = qty * pack;
-            document.getElementById('pb-unitprice').value = Math.round(pack / 12);
+            document.getElementById('pb-unitprice').value = pack > 0 ? Math.round(pack / 12) : 0;
         }
 
         function openPriceModal(id = null) {
@@ -2331,12 +2339,14 @@
             if (id) {
                 title.textContent = "Sửa Thông Tin Lô Cầu";
                 const b = shuttleBatches.find(x => x.id === id);
+                const qty = cleanNumberInput(b.quantity, 1);
+                const pack = cleanNumberInput(b.packPrice, 0);
                 document.getElementById('pb-id').value = b.id;
                 document.getElementById('pb-label').value = b.label || '';
-                document.getElementById('pb-quantity').value = b.quantity || 1;
-                document.getElementById('pb-packprice').value = b.packPrice || '';
-                document.getElementById('pb-totalprice').value = b.totalPrice || ((b.quantity || 1) * (b.packPrice || 0));
-                document.getElementById('pb-unitprice').value = b.unitPrice || (b.packPrice ? Math.round(b.packPrice / 12) : '');
+                document.getElementById('pb-quantity').value = qty;
+                document.getElementById('pb-packprice').value = pack;
+                document.getElementById('pb-totalprice').value = qty * pack;
+                document.getElementById('pb-unitprice').value = pack > 0 ? Math.round(pack / 12) : 0;
                 document.getElementById('pb-note').value = b.note || '';
                 document.getElementById('pb-depleted').checked = b.isDepleted || false;
             } else {
@@ -2356,12 +2366,12 @@
         function savePriceBatch() {
             const id = document.getElementById('pb-id').value;
             const label = document.getElementById('pb-label').value.trim();
-            const quantity = Number(document.getElementById('pb-quantity').value) || 1;
-            const packPrice = Number(document.getElementById('pb-packprice').value) || 0;
-            const totalPrice = Number(document.getElementById('pb-totalprice').value) || (quantity * packPrice);
+            const quantity = cleanNumberInput(document.getElementById('pb-quantity').value, 1);
+            const packPrice = cleanNumberInput(document.getElementById('pb-packprice').value, 0);
+            const totalPrice = quantity * packPrice;
             const note = document.getElementById('pb-note').value.trim();
             const isDepleted = document.getElementById('pb-depleted').checked;
-            const unitPrice = Math.round(packPrice / 12);
+            const unitPrice = packPrice > 0 ? Math.round(packPrice / 12) : 0;
 
             if (!label) return showToast('Vui lòng nhập tên lô!', 'error');
 
