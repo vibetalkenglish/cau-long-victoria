@@ -2758,7 +2758,7 @@
         function verifyGoogleLogin() {
             const val = document.getElementById('google-email').value.trim();
             const lowerEmail = val.toLowerCase();
-            if (adminEmails.includes(lowerEmail) || val === DEFAULT_ADMIN_PIN || val === '123456' || lowerEmail === 'admin') {
+            if (adminEmails.includes(lowerEmail) || val === DEFAULT_ADMIN_PIN) {
                 isAdmin = true;
                 safeSetStorage('CLB_ADMIN_LOGGED', 'true');
                 closeModal('modal-google-login');
