@@ -1,8 +1,41 @@
+const SPREADSHEET_ID = '1-425z-aI4Im3b_eZ-ky5B47wm1R_zBa5uYdwCrnswM0';
 const ADMIN_EMAILS = ['sayoonara.htq90@gmail.com'];
 const DEFAULT_ADMIN_PIN = '123456';
 
+/**
+ * Lấy đối tượng Spreadsheet (hỗ trợ cả Script nhúng trong Sheet lẫn Script độc lập Standalone)
+ */
+function getSpreadsheet() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (ss) return ss;
+  } catch (e) {}
+
+  try {
+    if (SPREADSHEET_ID && !SPREADSHEET_ID.includes('PLACEHOLDER')) {
+      return SpreadsheetApp.openById(SPREADSHEET_ID);
+    }
+  } catch (e) {
+    Logger.log('Lỗi mở Spreadsheet: ' + e);
+  }
+
+  throw new Error('Không thể kết nối đến Google Spreadsheet. Hãy kiểm tra lại Spreadsheet ID (' + SPREADSHEET_ID + ') hoặc cấp quyền truy cập!');
+}
+
+/**
+ * Đảm bảo các tab sheet cần thiết luôn tồn tại
+ */
+function ensureSheetsExist(ss) {
+  const required = ['Sessions', 'Members', 'Config', 'Prices', 'Payments'];
+  required.forEach(name => {
+    if (!ss.getSheetByName(name)) {
+      ss.insertSheet(name);
+    }
+  });
+}
+
 function doGet(e) {
-  // 1. Phục vụ REST API lấy dữ liệu JSON (cho Vercel / GitHub Pages / Mobile App)
+  // 1. Phục vụ REST API lấy dữ liệu JSON (cho Vercel / GitHub Pages / Mobile App / Fallback)
   if (e && e.parameter && (e.parameter.action === 'loadData' || e.parameter.api === 'true')) {
     try {
       const data = getFromSheets();
@@ -89,7 +122,6 @@ function getActiveUserEmail() {
 
 function getUserRole() {
   const email = getActiveUserEmail();
-  const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase()) || !email;
   return { email: email, isAdmin: true };
 }
 
@@ -98,11 +130,13 @@ function isAdminUser() {
 }
 
 function getFromSheets() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sSheet = ss.getSheetByName('Sessions') || ss.insertSheet('Sessions');
-  let mSheet = ss.getSheetByName('Members') || ss.insertSheet('Members');
-  let cSheet = ss.getSheetByName('Config') || ss.insertSheet('Config');
-  let pSheet = ss.getSheetByName('Prices') || ss.insertSheet('Prices');
+  const ss = getSpreadsheet();
+  ensureSheetsExist(ss);
+
+  let sSheet = ss.getSheetByName('Sessions');
+  let mSheet = ss.getSheetByName('Members');
+  let cSheet = ss.getSheetByName('Config');
+  let pSheet = ss.getSheetByName('Prices');
   
   // 1. Đọc dữ liệu Sessions
   let sessions = [];
@@ -211,11 +245,17 @@ function getFromSheets() {
     }
   }
   
+  // Tự động khởi tạo dữ liệu mẫu nếu bảng tính hoàn toàn trống
+  if (sessions.length === 0 && members.length === 0) {
+    const seed = getDefaultSeedData();
+    saveToSheets(seed);
+    return seed;
+  }
+
   return { sessions: sessions, members: members, qrInfo: qrInfo, shuttleBatches: shuttleBatches };
 }
 
 function saveToSheets(payloadData) {
-  // 0. XÁC THỰC BẢO MẬT ADMIN PHÍA SERVER
   if (!isAdminUser()) {
     throw new Error('Từ chối truy cập: Bạn không có quyền Admin để thực hiện thao tác này!');
   }
@@ -229,10 +269,11 @@ function saveToSheets(payloadData) {
   }
 
   const { sessions, members, qrInfo, shuttleBatches } = payload;
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
+  ensureSheetsExist(ss);
   
-  // 1. Lưu Sessions (dùng clearContents để giữ nguyên format ô)
-  let sSheet = ss.getSheetByName('Sessions') || ss.insertSheet('Sessions');
+  // 1. Lưu Sessions
+  let sSheet = ss.getSheetByName('Sessions');
   sSheet.clearContents();
   let sData = [['ID', 'Ngày/Thứ', 'Số Cầu', 'Đơn Giá']];
   if (sessions) sessions.forEach(s => sData.push([s.id, s.date, s.shuttles, s.unitPrice]));
@@ -241,7 +282,7 @@ function saveToSheets(payloadData) {
   }
   
   // 2. Lưu Members
-  let mSheet = ss.getSheetByName('Members') || ss.insertSheet('Members');
+  let mSheet = ss.getSheetByName('Members');
   mSheet.clearContents();
   let mHeaders = ['ID', 'Tên', 'Đã Thanh Toán'];
   if (sessions) sessions.forEach(s => mHeaders.push(s.id));
@@ -263,7 +304,7 @@ function saveToSheets(payloadData) {
   }
   
   // 3. Lưu cấu hình QR
-  let cSheet = ss.getSheetByName('Config') || ss.insertSheet('Config');
+  let cSheet = ss.getSheetByName('Config');
   cSheet.clearContents();
   let rawQrUrl = (qrInfo && qrInfo.qrUrl) ? qrInfo.qrUrl : '';
   if (rawQrUrl.length > 49000) {
@@ -279,7 +320,7 @@ function saveToSheets(payloadData) {
   cSheet.getRange(1, 1, cData.length, cData[0].length).setValues(cData);
 
   // 4. Lưu dữ liệu Bảng Giá Ống Cầu
-  let pSheet = ss.getSheetByName('Prices') || ss.insertSheet('Prices');
+  let pSheet = ss.getSheetByName('Prices');
   pSheet.clearContents();
   let pData = [['ID', 'Lần Mua', 'Số Hộp', 'Giá 1 Hộp (12 Trái)', 'Tổng Tiền Mua Cầu', 'Đơn Giá 1 Trái', 'Ghi chú', 'Tình trạng']];
   if (shuttleBatches && shuttleBatches.length > 0) {
@@ -296,7 +337,7 @@ function saveToSheets(payloadData) {
   }
 
   // 5. Lưu dữ liệu Payments (Chi tiết tiền đóng từng buổi của thành viên)
-  let paySheet = ss.getSheetByName('Payments') || ss.insertSheet('Payments');
+  let paySheet = ss.getSheetByName('Payments');
   paySheet.clearContents();
   let payHeaders = ['MemberID', 'MemberName'];
   if (sessions) sessions.forEach(s => payHeaders.push(s.id));
@@ -321,8 +362,66 @@ function saveToSheets(payloadData) {
 }
 
 /**
+ * Dữ liệu mẫu chuẩn của CLB Victoria
+ */
+function getDefaultSeedData() {
+  return {
+    sessions: [
+      {"id":"s1","date":"Thứ 5 - 23/7","shuttles":10,"unitPrice":12917},
+      {"id":"s2","date":"Thứ 3 - 28/7","shuttles":8,"unitPrice":22791.5},
+      {"id":"s3","date":"Thứ 5 - 30/7","shuttles":18,"unitPrice":16027.67},
+      {"id":"s4","date":"Thứ 3 - 4/8","shuttles":3,"unitPrice":26667},
+      {"id":"s5","date":"Thứ 5 - 6/8","shuttles":9,"unitPrice":26667},
+      {"id":"s1786346767984","date":"Thứ 5 - 13/8","shuttles":12,"unitPrice":12500},
+      {"id":"s1786860156561","date":"Thứ 7 - 15/08","shuttles":12,"unitPrice":12500},
+      {"id":"s1787069288069","date":"Thứ 3 - 18/08","shuttles":6,"unitPrice":12500},
+      {"id":"s1787290788391","date":"Thứ 5 - 20/8","shuttles":15,"unitPrice":12500},
+      {"id":"s1787714092986","date":"Thứ 3 - 25/8","shuttles":6,"unitPrice":24167}
+    ],
+    members: [
+      {"id":1,"name":"A Phương","paid":60000,"attendance":{"s1":false,"s2":false,"s3":true,"s4":false,"s5":true,"s1786346767984":false,"s1786860156561":false,"s1787069288069":false,"s1787290788391":false,"s1787714092986":false},"payments":{"s1":0,"s2":0,"s3":0,"s4":0,"s5":0,"s1786346767984":0,"s1786860156561":0,"s1787069288069":0,"s1787290788391":0,"s1787714092986":0}},
+      {"id":2,"name":"A Đức","paid":127000,"attendance":{"s1":false,"s2":false,"s3":false,"s4":true,"s5":true,"s1786346767984":true,"s1786860156561":true,"s1787069288069":true,"s1787290788391":true,"s1787714092986":true},"payments":{"s1":66000,"s2":61000,"s3":0,"s4":0,"s5":0,"s1786346767984":0,"s1786860156561":0,"s1787069288069":0,"s1787290788391":0,"s1787714092986":0}},
+      {"id":3,"name":"A Toàn","paid":500000,"attendance":{"s1":true,"s2":true,"s3":true,"s4":false,"s5":true,"s1786346767984":true,"s1786860156561":true,"s1787069288069":true,"s1787290788391":true,"s1787714092986":true},"payments":{"s1":500000,"s2":0,"s3":0,"s4":0,"s5":0,"s1786346767984":0,"s1786860156561":0,"s1787069288069":0,"s1787290788391":0,"s1787714092986":0}},
+      {"id":4,"name":"Cô Hà","paid":100000,"attendance":{"s1":false,"s2":false,"s3":false,"s4":false,"s5":true,"s1786346767984":true,"s1786860156561":false,"s1787069288069":false,"s1787290788391":true,"s1787714092986":false},"payments":{"s1":100000,"s2":0,"s3":0,"s4":0,"s5":0,"s1786346767984":0,"s1786860156561":0,"s1787069288069":0,"s1787290788391":0,"s1787714092986":0}},
+      {"id":5,"name":"Song Anh","paid":176000,"attendance":{"s1":true,"s2":true,"s3":true,"s4":true,"s5":false,"s1786346767984":false,"s1786860156561":false,"s1787069288069":true,"s1787290788391":true,"s1787714092986":true},"payments":{"s1":91000,"s2":85000,"s3":0,"s4":0,"s5":0,"s1786346767984":0,"s1786860156561":0,"s1787069288069":0,"s1787290788391":0,"s1787714092986":0}},
+      {"id":6,"name":"Lộc","paid":135000,"attendance":{"s1":false,"s2":true,"s3":true,"s4":true,"s5":true,"s1786346767984":false,"s1786860156561":true,"s1787069288069":false,"s1787290788391":false,"s1787714092986":false},"payments":{"s1":120000,"s2":15000,"s3":0,"s4":0,"s5":0,"s1786346767984":0,"s1786860156561":0,"s1787069288069":0,"s1787290788391":0,"s1787714092986":0}},
+      {"id":7,"name":"Lâm","paid":160000,"attendance":{"s1":false,"s2":true,"s3":true,"s4":false,"s5":true,"s1786346767984":true,"s1786860156561":true,"s1787069288069":false,"s1787290788391":true,"s1787714092986":false},"payments":{"s1":70000,"s2":90000,"s3":0,"s4":0,"s5":0,"s1786346767984":0,"s1786860156561":0,"s1787069288069":0,"s1787290788391":0,"s1787714092986":0}},
+      {"id":8,"name":"Tài","paid":222000,"attendance":{"s1":true,"s2":false,"s3":true,"s4":false,"s5":true,"s1786346767984":true,"s1786860156561":true,"s1787069288069":false,"s1787290788391":true,"s1787714092986":true},"payments":{"s1":22000,"s2":200000,"s3":0,"s4":0,"s5":0,"s1786346767984":0,"s1786860156561":0,"s1787069288069":0,"s1787290788391":0,"s1787714092986":0}},
+      {"id":9,"name":"Nghĩa","paid":100000,"attendance":{"s1":true,"s2":false,"s3":true,"s4":false,"s5":false,"s1786346767984":true,"s1786860156561":true,"s1787069288069":false,"s1787290788391":false,"s1787714092986":true},"payments":{"s1":100000,"s2":0,"s3":0,"s4":0,"s5":0,"s1786346767984":0,"s1786860156561":0,"s1787069288069":0,"s1787290788391":0,"s1787714092986":0}},
+      {"id":10,"name":"Hoàng Anh","paid":142000,"attendance":{"s1":true,"s2":false,"s3":true,"s4":false,"s5":true,"s1786346767984":true,"s1786860156561":true,"s1787069288069":false,"s1787290788391":true,"s1787714092986":false},"payments":{"s1":0,"s2":0,"s3":0,"s4":0,"s5":0,"s1786346767984":0,"s1786860156561":0,"s1787069288069":0,"s1787290788391":0,"s1787714092986":0}},
+      {"id":11,"name":"Kantan","paid":752243.01,"attendance":{"s1":true,"s2":true,"s3":true,"s4":true,"s5":true,"s1786346767984":true,"s1786860156561":true,"s1787069288069":true,"s1787290788391":true,"s1787714092986":true},"payments":{"s1":0,"s2":0,"s3":0,"s4":0,"s5":0,"s1786346767984":0,"s1786860156561":0,"s1787069288069":0,"s1787290788391":0,"s1787714092986":0}}
+    ],
+    shuttleBatches: [
+      {"id":"p1","label":"Lần 1","quantity":1,"packPrice":155000,"totalPrice":155000,"unitPrice":12917,"note":"88 - 95%","isDepleted":true},
+      {"id":"p2","label":"Lần 2","quantity":1,"packPrice":313000,"totalPrice":313000,"unitPrice":26083,"note":"Cầu Vina - new","isDepleted":true},
+      {"id":"p3","label":"Lần 3","quantity":1,"packPrice":132000,"totalPrice":132000,"unitPrice":11000,"note":"0.95","isDepleted":true},
+      {"id":"p1786165949984","label":"Lần 4","quantity":1,"packPrice":320000,"totalPrice":320000,"unitPrice":26667,"note":"88 - new","isDepleted":true},
+      {"id":"p1786346700232","label":"Lần 5","quantity":1,"packPrice":150000,"totalPrice":150000,"unitPrice":12500,"note":"88 - 90%","isDepleted":true},
+      {"id":"p1786346717915","label":"Lần 6","quantity":1,"packPrice":150000,"totalPrice":150000,"unitPrice":12500,"note":"88 - 90%","isDepleted":true},
+      {"id":"p1787024096209","label":"Lần 7","quantity":1,"packPrice":150000,"totalPrice":150000,"unitPrice":12500,"note":"88 -90%","isDepleted":true},
+      {"id":"p1787024120558","label":"Lần 8","quantity":1,"packPrice":150000,"totalPrice":150000,"unitPrice":12500,"note":"88 - 90%","isDepleted":false},
+      {"id":"p1787581904340","label":"24/08 - 2 ống VBCS","quantity":2,"packPrice":290000,"totalPrice":580000,"unitPrice":24167,"note":"","isDepleted":false}
+    ],
+    qrInfo: {
+      bankName: "MB Bank",
+      bankAcc: "1903",
+      bankOwner: "NGUYEN VAN A",
+      qrUrl: ""
+    }
+  };
+}
+
+/**
+ * Hàm thủ công để Admin chạy trong Apps Script Editor khi muốn tạo lại toàn bộ dữ liệu mẫu
+ */
+function setupInitialData() {
+  const seed = getDefaultSeedData();
+  saveToSheets(seed);
+  Logger.log('Đã khởi tạo dữ liệu mẫu thành công vào Google Sheets!');
+}
+
+/**
  * Proxy Server-side để gọi Gemini AI bảo mật từ Apps Script
- * Đọc API Key từ ScriptProperties hoặc hằng số phía server.
  */
 function callGeminiAI(promptText, clubContext) {
   const apiKey = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY') || '';

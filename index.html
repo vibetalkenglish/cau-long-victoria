@@ -1257,13 +1257,18 @@
             updateUIByRole();
 
             // 4. Đồng bộ dữ liệu ngầm với Google Sheets
-            if (typeof google !== 'undefined' && google.script) {
-                google.script.run.withSuccessHandler((role) => {
-                    if (role && role.isAdmin) {
-                        isAdmin = true;
-                    }
-                    updateUIByRole();
-                }).getUserRole();
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler((role) => {
+                        if (role && role.isAdmin) {
+                            isAdmin = true;
+                        }
+                        updateUIByRole();
+                    })
+                    .withFailureHandler((err) => {
+                        console.warn('Lỗi lấy quyền người dùng:', err);
+                    })
+                    .getUserRole();
 
                 google.script.run
                     .withSuccessHandler((data) => {
@@ -1277,6 +1282,10 @@
                             updateQRDisplay();
                             renderAll();
                         }
+                    })
+                    .withFailureHandler((err) => {
+                        console.error('Lỗi khi lấy dữ liệu từ Google Sheets:', err);
+                        showToast('Không thể tải từ Google Sheets: ' + (err?.message || err), 'error');
                     })
                     .getFromSheets();
             } else {
