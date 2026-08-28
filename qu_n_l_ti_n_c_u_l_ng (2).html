@@ -1488,6 +1488,7 @@
         }
 
         function renderMemberCards() {
+            calculateSheetMath();
             const container = document.getElementById('member-cards-container');
             if (!container) return;
 
@@ -1625,7 +1626,12 @@
 
                     <!-- Bên phải: 🔴 Số tiền nợ/dư nổi bật & nút QR -->
                     <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-                        ${isDebt ? `
+                        ${isKantan(m) ? `
+                            <div class="text-right shrink-0">
+                                <span class="text-xs sm:text-sm font-black text-emerald-700 font-mono tracking-tight block" title="Tổng tiền đã nộp tự động theo công thức = ${formatVND(m.paid)}đ">Đã nộp: ${formatVND(m.paid)}đ</span>
+                                <span class="text-[10px] sm:text-[11px] text-sky-600 font-bold font-mono block">Dư: +${formatVND(item.remaining)}đ</span>
+                            </div>
+                        ` : isDebt ? `
                             <span class="text-xs sm:text-sm font-black text-rose-600 font-mono tracking-tight shrink-0">Nợ: ${formatVND(item.remaining)}đ</span>
                         ` : isSurplus ? `
                             <span class="text-xs sm:text-sm font-black text-sky-600 font-mono tracking-tight shrink-0">Dư: +${formatVND(item.remaining)}đ</span>
@@ -2393,6 +2399,7 @@
         // 4. MEMBER DETAILS & QR
         // ==========================================
         function openMemberDetails(memberId) {
+            calculateSheetMath();
             const m = members.find(x => x.id === memberId);
             if (!m) return;
 

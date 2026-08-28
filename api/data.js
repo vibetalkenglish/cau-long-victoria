@@ -206,6 +206,41 @@ async function getFromSheets(sheets, spreadsheetId) {
     }
   }
 
+  // Tự động tính toán tiền đã nộp của Kantan (Chủ Quỹ)
+  const isKantan = (m) => m && m.name && m.name.trim().toLowerCase() === 'kantan';
+  const kantanMember = members.find(m => isKantan(m));
+  if (kantanMember) {
+    let sessionStats = {};
+    sessions.forEach(s => {
+      let count = 0;
+      members.forEach(m => { if (m.attendance && m.attendance[s.id]) count++; });
+      const totalCost = (Number(s.shuttles) || 0) * (Number(s.unitPrice) || 0);
+      sessionStats[s.id] = { count, totalCost, costPerPerson: count > 0 ? (totalCost / count) : 0 };
+    });
+
+    const totalBoughtShuttles = shuttleBatches.reduce((sum, b) => {
+      const qty = Number(b.quantity) || 1;
+      const pack = Number(b.packPrice) || 0;
+      return sum + (Number(b.totalPrice) || (qty * pack));
+    }, 0);
+
+    let memberDeductions = 0;
+    members.forEach(m => {
+      if (isKantan(m)) return;
+      let mBill = 0;
+      sessions.forEach(s => {
+        if (m.attendance && m.attendance[s.id] && sessionStats[s.id]) {
+          mBill += sessionStats[s.id].costPerPerson;
+        }
+      });
+      const mPaid = Number(m.paid) || 0;
+      const deduction = (mPaid >= mBill) ? mBill : mPaid;
+      memberDeductions += deduction;
+    });
+
+    kantanMember.paid = totalBoughtShuttles - memberDeductions;
+  }
+
   return { sessions, members, qrInfo, shuttleBatches };
 }
 
