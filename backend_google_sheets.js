@@ -1,6 +1,6 @@
 const SPREADSHEET_ID = '1-425z-aI4Im3b_eZ-ky5B47wm1R_zBa5uYdwCrnswM0';
 const ADMIN_EMAILS = ['sayoonara.htq90@gmail.com'];
-const DEFAULT_ADMIN_PIN = '123456';
+const DEFAULT_ADMIN_PIN = '19901990';
 
 /**
  * Lấy đối tượng Spreadsheet (hỗ trợ cả Script nhúng trong Sheet lẫn Script độc lập Standalone)
