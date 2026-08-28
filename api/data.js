@@ -1,7 +1,12 @@
-const { google } = require('googleapis');
-
 // 1. CẤU HÌNH XÁC THỰC GOOGLE SHEETS API
 function getGoogleAuth() {
+  let google;
+  try {
+    google = require('googleapis').google;
+  } catch (e) {
+    return null;
+  }
+
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   let privateKey = process.env.GOOGLE_PRIVATE_KEY;
   const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
@@ -351,24 +356,48 @@ module.exports = async (req, res) => {
 
   const auth = getGoogleAuth();
   const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  const FALLBACK_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtEZgoalXo5UzktFuw0xBMe_0DZRZIYqBGjrWbYigw_qwlxQHeFQe6UUJLym4EtlVhbg/exec';
 
-  // Xử lý trường hợp chưa cấu hình Service Account trên Vercel
+  // Nếu chưa cấu hình Service Account trên Vercel: Tự động Proxy ngầm qua Apps Script Web App (Zero Config)
   if (!auth || !spreadsheetId) {
-    const errorMsg = 'Chưa cấu hình biến môi trường GOOGLE_SHEET_ID hoặc GOOGLE_SERVICE_ACCOUNT trên Vercel!';
     if (req.method === 'GET') {
-      return res.status(200).json({
-        success: false,
-        isConfigRequired: true,
-        message: errorMsg,
-        guide: {
-          step1: 'Vào Vercel Project Settings -> Environment Variables',
-          step2: 'Thêm GOOGLE_SHEET_ID, GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY'
-        }
-      });
+      try {
+        const response = await fetch(FALLBACK_SCRIPT_URL + '?action=loadData&_t=' + Date.now());
+        const data = await response.json();
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        return res.status(200).json(data);
+      } catch (proxyErr) {
+        console.error('Lỗi fallback proxy GET:', proxyErr);
+        return res.status(200).json({
+          success: false,
+          error: 'Lỗi kết nối proxy tới Google Sheets: ' + proxyErr.message
+        });
+      }
     }
-    return res.status(400).json({ success: false, error: errorMsg });
+
+    if (req.method === 'POST') {
+      try {
+        const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+        const response = await fetch(FALLBACK_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(body)
+        });
+        const data = await response.json();
+        return res.status(200).json(data);
+      } catch (proxyErr) {
+        console.error('Lỗi fallback proxy POST:', proxyErr);
+        return res.status(500).json({
+          success: false,
+          error: 'Lỗi ghi dữ liệu qua proxy: ' + proxyErr.message
+        });
+      }
+    }
+
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
+  const { google } = require('googleapis');
   const sheets = google.sheets({ version: 'v4', auth });
 
   // A. GET /api/data -> Đọc dữ liệu từ Google Sheets
