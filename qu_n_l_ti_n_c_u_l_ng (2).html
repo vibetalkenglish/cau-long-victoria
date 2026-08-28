@@ -1360,17 +1360,17 @@
             });
 
             // TÍNH TOÁN TIỀN ĐÃ THANH TOÁN CỦA KANTAN:
-            // Tiền đã thanh toán của Kantan = Tổng tiền cầu đã mua
-            //   - Tổng tiền các thành viên cần thanh toán (nếu thành viên thanh toán dư/đủ)
-            //   - Tổng tiền các thành viên đã thanh toán (nếu thành viên thanh toán thiếu)
+            // Tiền đã nộp của Kantan = Tổng tiền cầu
+            //   - Tổng tiền của thành viên đã đóng (nếu thành viên đó đóng thiếu)
+            //   - Tổng tiền cần thanh toán của các thành viên (nếu thành viên đó đóng dư/đủ)
             const kantanMember = members.find(m => isKantan(m));
             if (kantanMember) {
-                const totalBoughtShuttles = shuttleBatches.reduce((sum, b) => {
-                    const qty = Number(b.quantity) || 1;
-                    const pack = Number(b.packPrice) || 0;
-                    return sum + (Number(b.totalPrice) || (qty * pack));
+                // 1. Tổng tiền cầu (Tổng chi phí các buổi chơi thực tế)
+                const totalSessionShuttleCost = sessions.reduce((sum, s) => {
+                    return sum + ((Number(s.shuttles) || 0) * (Number(s.unitPrice) || 0));
                 }, 0);
 
+                // 2. Tổng tiền khấu trừ từ các thành viên khác
                 let memberDeductions = 0;
                 members.forEach(m => {
                     if (isKantan(m)) return;
@@ -1383,13 +1383,13 @@
                     });
 
                     const mPaid = Number(m.paid) || 0;
-                    // Nếu thành viên thanh toán dư/đủ (mPaid >= mBill) -> lấy mBill
-                    // Nếu thành viên thanh toán thiếu (mPaid < mBill) -> lấy mPaid
-                    const deduction = mPaid >= mBill ? mBill : mPaid;
+                    // Nếu thành viên đóng dư/đủ (mPaid >= mBill) -> trừ số tiền cần thanh toán (mBill)
+                    // Nếu thành viên đóng thiếu (mPaid < mBill) -> trừ số tiền thành viên đã đóng (mPaid)
+                    const deduction = (mPaid >= mBill) ? mBill : mPaid;
                     memberDeductions += deduction;
                 });
 
-                kantanMember.paid = totalBoughtShuttles - memberDeductions;
+                kantanMember.paid = totalSessionShuttleCost - memberDeductions;
             }
         }
 
