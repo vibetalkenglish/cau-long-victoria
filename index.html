@@ -48,8 +48,11 @@
         @media (min-width: 1440px) {
             html { font-size: 16.5px; }
         }
-        *, *::before, *::after, html, body, button, input, select, textarea, table, th, td, h1, h2, h3, h4, h5, h6, p, span, div, strong, b, code, pre, .font-mono { 
-            font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; 
+        *, html, body, button, input, select, textarea, table, th, td, h1, h2, h3, h4, h5, h6, p, span, div, strong, b, code, pre, .font-mono { 
+            font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+        }
+        .fa, .fas, .far, .fab, .fa-solid, .fa-regular, .fa-brands, [class*=" fa-"], [class^="fa-"] {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
         }
         body { 
             font-size: 1rem; 
@@ -1828,7 +1831,9 @@
                     <td class="p-3 text-right font-mono ${footBg} border-r border-slate-200 whitespace-nowrap text-sm px-2.5" title="${s.shuttles} trái cầu • Tổng tiền buổi ${s.date}: ${formatVND(sessionTotal)}">
                         <div class="inline-flex items-center justify-end gap-1.5">
                             <span class="font-bold">${s.shuttles}</span>
-                            <i class="fa-solid fa-feather-pointed text-amber-500 text-xs" title="${s.shuttles} trái cầu"></i>
+                            <svg class="w-3.5 h-3.5 inline-block text-amber-600 shrink-0 -mt-0.5" viewBox="0 0 24 24" fill="currentColor" title="${s.shuttles} trái cầu">
+                                <path d="M14.83 13.41L18.5 9.74a1 1 0 0 0 .26-.95l-1.2-4.81a1 1 0 0 0-.73-.73l-4.81-1.2a1 1 0 0 0-.95.26L7.33 5.95l7.5 7.46zM5.92 7.36L2.26 11.03a1 1 0 0 0-.26.95l1.2 4.81c.14.54.56.96 1.1 1.1l4.81 1.2c.33.08.68-.01.95-.26l3.66-3.66-7.8-7.81zM6.34 19.07a3 3 0 0 0 4.24 0l1.41-1.41-4.24-4.24-1.41 1.41a3 3 0 0 0 0 4.24z"/>
+                            </svg>
                             <span class="font-bold">${formatVND(sessionTotal)}</span>
                         </div>
                     </td>
