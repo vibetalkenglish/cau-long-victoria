@@ -1825,7 +1825,13 @@
                 const footBg = isNewest ? 'bg-amber-100/90 text-amber-950 font-black' : 'bg-slate-100 text-slate-800 font-extrabold';
                 fHtml += `
                     <td class="p-2.5 text-center ${footBg} border-r border-slate-200 text-sm" title="Tổng số người tham gia: ${sessionStats[s.id]?.count || 0}">${sessionStats[s.id]?.count || 0}</td>
-                    <td class="p-3 text-right font-mono ${footBg} border-r border-slate-200 whitespace-nowrap text-sm px-2.5" title="${s.shuttles} trái cầu • Tổng tiền buổi ${s.date}: ${formatVND(sessionTotal)}">${s.shuttles} - ${formatVND(sessionTotal)}</td>
+                    <td class="p-3 text-right font-mono ${footBg} border-r border-slate-200 whitespace-nowrap text-sm px-2.5" title="${s.shuttles} trái cầu • Tổng tiền buổi ${s.date}: ${formatVND(sessionTotal)}">
+                        <div class="inline-flex items-center justify-end gap-1.5">
+                            <span class="font-bold">${s.shuttles}</span>
+                            <i class="fa-solid fa-feather-pointed text-amber-500 text-xs" title="${s.shuttles} trái cầu"></i>
+                            <span class="font-bold">${formatVND(sessionTotal)}</span>
+                        </div>
+                    </td>
                 `;
             });
             fHtml += `</tr>`;
