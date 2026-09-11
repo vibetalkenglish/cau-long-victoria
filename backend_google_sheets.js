@@ -177,12 +177,23 @@ function getFromSheets() {
   if (mValues.length > 1) {
     let headers = mValues[0];
     for(let i = 1; i < mValues.length; i++) {
-       if (!mValues[i][0] && !mValues[i][1]) continue;
-       let att = {};
-       for(let j = 3; j < headers.length; j++) {
-         let val = mValues[i][j];
-         att[headers[j]] = (val === true || val === 'true' || val === 'TRUE' || val === 'Yes');
-       }
+        if (!mValues[i][0] && !mValues[i][1]) continue;
+        let att = {};
+        for(let j = 3; j < headers.length; j++) {
+          let val = mValues[i][j];
+          if (val === true || val === 'true' || val === 'TRUE' || val === 'Yes' || val === 'yes') {
+            att[headers[j]] = true;
+          } else if (val === false || val === 'false' || val === 'FALSE' || val === 'No' || val === 'no' || !val) {
+            att[headers[j]] = false;
+          } else if (typeof val === 'number') {
+            att[headers[j]] = (val <= 0) ? false : (val === 1 || val === 100 ? true : (val > 1 ? val / 100 : val));
+          } else if (typeof val === 'string' && val.includes('%')) {
+            let num = parseFloat(val.replace('%', '').trim());
+            att[headers[j]] = (!isNaN(num) && num > 0) ? (num >= 100 ? true : num / 100) : false;
+          } else {
+            att[headers[j]] = false;
+          }
+        }
        let mId = mValues[i][0];
        members.push({
          id: Number(mId) || mId,
@@ -293,7 +304,19 @@ function saveToSheets(payloadData) {
       let row = [m.id, m.name, m.paid];
       if (sessions) {
         sessions.forEach(s => {
-          row.push(m.attendance[s.id] ? 'Yes' : 'No');
+          let a = m.attendance ? m.attendance[s.id] : false;
+          if (a === true || a === 1) {
+            row.push('Yes');
+          } else if (typeof a === 'number' && a > 0) {
+            let pct = a > 1 ? Math.round(a) : Math.round(a * 100);
+            row.push(pct >= 100 ? 'Yes' : (pct + '%'));
+          } else if (typeof a === 'string' && a.includes('%')) {
+            row.push(a);
+          } else if (a && a !== 'No' && a !== 'false') {
+            row.push('Yes');
+          } else {
+            row.push('No');
+          }
         });
       }
       mData.push(row);

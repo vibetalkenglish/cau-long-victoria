@@ -94,12 +94,33 @@ async function getFromSheets(sheets, spreadsheetId) {
   const cValues = (valueRanges[2] && valueRanges[2].values) || [];
   const pValues = (valueRanges[3] && valueRanges[3].values) || [];
   const payValues = (valueRanges[4] && valueRanges[4].values) || [];
+
   function parseSafeNumber(val, defaultVal = 0) {
     if (val === undefined || val === null || val === '') return defaultVal;
     if (typeof val === 'number') return isNaN(val) ? defaultVal : val;
     const str = val.toString().trim().replace(/,/g, '.');
     const num = parseFloat(str);
     return isNaN(num) ? defaultVal : num;
+  }
+
+  function parseAttendanceVal(val) {
+    if (val === true || val === 'true' || val === 'TRUE' || val === 'Yes' || val === 'yes') return true;
+    if (val === false || val === 'false' || val === 'FALSE' || val === 'No' || val === 'no' || !val) return false;
+    if (typeof val === 'number') {
+      if (val <= 0) return false;
+      if (val === 1 || val === 100) return true;
+      if (val > 1) return val / 100;
+      return val;
+    }
+    if (typeof val === 'string') {
+      const clean = val.replace('%', '').trim();
+      const num = parseFloat(clean);
+      if (isNaN(num) || num <= 0) return false;
+      if (num === 1 || num === 100) return true;
+      if (num > 1) return num / 100;
+      return num;
+    }
+    return false;
   }
 
   // A. Sessions
@@ -110,8 +131,8 @@ async function getFromSheets(sheets, spreadsheetId) {
       sessions.push({
         id: sValues[i][0].toString(),
         date: sValues[i][1] || '',
-        shuttles: parseSafeNumber(sValues[i][2]),
-        unitPrice: parseSafeNumber(sValues[i][3])
+        shuttles: parseSafeNumber(sValues[i][2], 0),
+        unitPrice: parseSafeNumber(sValues[i][3], 0)
       });
     }
   }
@@ -119,17 +140,15 @@ async function getFromSheets(sheets, spreadsheetId) {
   // B. Payments Map
   const paymentsMap = {};
   if (payValues.length > 1) {
-    const payHeaders = payValues[0];
     for (let i = 1; i < payValues.length; i++) {
       const mId = payValues[i][0];
-      if (!mId) continue;
-      paymentsMap[mId] = {};
-      paymentsMap[mId.toString()] = {};
-      for (let j = 2; j < payHeaders.length; j++) {
-        const sId = payHeaders[j];
-        const val = parseSafeNumber(payValues[i][j]);
-        paymentsMap[mId][sId] = val;
-        paymentsMap[mId.toString()][sId] = val;
+      const sId = payValues[i][2];
+      const amount = parseSafeNumber(payValues[i][3], 0);
+      if (mId && sId) {
+        if (!paymentsMap[mId]) paymentsMap[mId] = {};
+        paymentsMap[mId][sId] = amount;
+        paymentsMap[mId.toString()] = paymentsMap[mId];
+        paymentsMap[Number(mId)] = paymentsMap[mId];
       }
     }
   }
@@ -142,15 +161,14 @@ async function getFromSheets(sheets, spreadsheetId) {
       if (!mValues[i][0] && !mValues[i][1]) continue;
       const att = {};
       for (let j = 3; j < headers.length; j++) {
-        const val = mValues[i][j];
-        att[headers[j]] = (val === true || val === 'true' || val === 'TRUE' || val === 'Yes');
+        att[headers[j]] = parseAttendanceVal(mValues[i][j]);
       }
       const mId = mValues[i][0];
       const memberPayments = paymentsMap[mId] || paymentsMap[mId.toString()] || paymentsMap[Number(mId)] || {};
       members.push({
         id: Number(mId) || mId,
         name: mValues[i][1] ? mValues[i][1].toString() : '',
-        paid: parseSafeNumber(mValues[i][2]),
+        paid: parseSafeNumber(mValues[i][2], 0),
         attendance: att,
         payments: memberPayments
       });
@@ -178,7 +196,7 @@ async function getFromSheets(sheets, spreadsheetId) {
       if (isNewFormat && pValues[i].length >= 8) {
         label = pValues[i][1] || '';
         quantity = parseSafeNumber(pValues[i][2], 1);
-        packPrice = parseSafeNumber(pValues[i][3]);
+        packPrice = parseSafeNumber(pValues[i][3], 0);
         totalPrice = parseSafeNumber(pValues[i][4], quantity * packPrice);
         unitPrice = parseSafeNumber(pValues[i][5], Math.round(packPrice / 12));
         note = pValues[i][6] || '';
@@ -186,7 +204,7 @@ async function getFromSheets(sheets, spreadsheetId) {
       } else {
         label = pValues[i][1] || '';
         quantity = 1;
-        packPrice = parseSafeNumber(pValues[i][2]);
+        packPrice = parseSafeNumber(pValues[i][2], 0);
         totalPrice = packPrice;
         unitPrice = parseSafeNumber(pValues[i][3], Math.round(packPrice / 12));
         note = pValues[i][4] || '';
@@ -208,14 +226,31 @@ async function getFromSheets(sheets, spreadsheetId) {
 
   // Tự động tính toán tiền đã nộp của Kantan (Chủ Quỹ)
   const isKantan = (m) => m && m.name && m.name.trim().toLowerCase() === 'kantan';
+  const getAttRatio = (m, sId) => {
+    if (!m || !m.attendance) return 0;
+    const v = m.attendance[sId];
+    if (v === true) return 1;
+    if (v === false || !v) return 0;
+    if (typeof v === 'number') return v;
+    return 0;
+  };
+
   const kantanMember = members.find(m => isKantan(m));
   if (kantanMember) {
     let sessionStats = {};
     sessions.forEach(s => {
       let count = 0;
-      members.forEach(m => { if (m.attendance && m.attendance[s.id]) count++; });
+      let totalWeight = 0;
+      members.forEach(m => {
+        const r = getAttRatio(m, s.id);
+        if (r > 0) {
+          count++;
+          totalWeight += r;
+        }
+      });
       const totalCost = (Number(s.shuttles) || 0) * (Number(s.unitPrice) || 0);
-      sessionStats[s.id] = { count, totalCost, costPerPerson: count > 0 ? (totalCost / count) : 0 };
+      const costPerUnit = totalWeight > 0 ? (totalCost / totalWeight) : 0;
+      sessionStats[s.id] = { count, totalWeight, totalCost, costPerUnit };
     });
 
     const totalBoughtShuttles = shuttleBatches.reduce((sum, b) => {
@@ -229,8 +264,9 @@ async function getFromSheets(sheets, spreadsheetId) {
       if (isKantan(m)) return;
       let mBill = 0;
       sessions.forEach(s => {
-        if (m.attendance && m.attendance[s.id] && sessionStats[s.id]) {
-          mBill += sessionStats[s.id].costPerPerson;
+        const r = getAttRatio(m, s.id);
+        if (r > 0 && sessionStats[s.id]) {
+          mBill += r * sessionStats[s.id].costPerUnit;
         }
       });
       const mPaid = Number(m.paid) || 0;
@@ -267,7 +303,19 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
       const row = [m.id, m.name, m.paid];
       if (sessions && Array.isArray(sessions)) {
         sessions.forEach(s => {
-          row.push(m.attendance && m.attendance[s.id] ? 'Yes' : 'No');
+          const a = m.attendance ? m.attendance[s.id] : false;
+          if (a === true || a === 1) {
+            row.push('Yes');
+          } else if (typeof a === 'number' && a > 0) {
+            const pct = a > 1 ? Math.round(a) : Math.round(a * 100);
+            row.push(pct >= 100 ? 'Yes' : `${pct}%`);
+          } else if (typeof a === 'string' && a.includes('%')) {
+            row.push(a);
+          } else if (a && a !== 'No' && a !== 'false') {
+            row.push('Yes');
+          } else {
+            row.push('No');
+          }
         });
       }
       mData.push(row);

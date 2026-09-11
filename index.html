@@ -806,6 +806,76 @@
         </div>
     </div>
 
+    <!-- MODAL: ATTENDANCE RATIO (CHỈ DÀNH CHO ADMIN) -->
+    <div id="modal-att-ratio" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] hidden items-center justify-center p-4" onclick="if(event.target===this) closeModal('modal-att-ratio')">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center font-bold text-sm">🏸</span>
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 leading-tight">Thời Lượng Tham Gia</h3>
+                        <p id="att-modal-sub" class="text-xs text-slate-500 font-medium">Chọn % thời lượng chơi trong buổi</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('modal-att-ratio')" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <input type="hidden" id="att-modal-mid">
+            <input type="hidden" id="att-modal-sid">
+
+            <div class="space-y-4">
+                <!-- Preset buttons -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">Chọn nhanh mức thời lượng:</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="selectRatioPreset(100)" class="att-preset-btn py-2.5 px-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 font-bold text-xs text-slate-800 flex items-center justify-between transition" data-pct="100">
+                            <span>100% (Cả buổi)</span>
+                            <i class="fa-solid fa-check text-[11px] text-emerald-600 hidden"></i>
+                        </button>
+                        <button type="button" onclick="selectRatioPreset(75)" class="att-preset-btn py-2.5 px-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 font-bold text-xs text-slate-800 flex items-center justify-between transition" data-pct="75">
+                            <span>75% (3/4 buổi)</span>
+                            <i class="fa-solid fa-check text-[11px] text-emerald-600 hidden"></i>
+                        </button>
+                        <button type="button" onclick="selectRatioPreset(50)" class="att-preset-btn py-2.5 px-3 rounded-xl border border-slate-200 hover:border-amber-500 hover:bg-amber-50 font-bold text-xs text-slate-800 flex items-center justify-between transition" data-pct="50">
+                            <span>50% (Nửa buổi)</span>
+                            <i class="fa-solid fa-check text-[11px] text-amber-600 hidden"></i>
+                        </button>
+                        <button type="button" onclick="selectRatioPreset(30)" class="att-preset-btn py-2.5 px-3 rounded-xl border border-slate-200 hover:border-amber-500 hover:bg-amber-50 font-bold text-xs text-slate-800 flex items-center justify-between transition" data-pct="30">
+                            <span>30% (Đánh ít)</span>
+                            <i class="fa-solid fa-check text-[11px] text-amber-600 hidden"></i>
+                        </button>
+                    </div>
+                    <button type="button" onclick="selectRatioPreset(0)" class="att-preset-btn w-full mt-2 py-2 px-3 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-700 font-bold text-xs flex items-center justify-center gap-1.5 transition" data-pct="0">
+                        <i class="fa-solid fa-user-xmark"></i> <span>0% (Chuyển thành Vắng)</span>
+                    </button>
+                </div>
+
+                <!-- Custom input -->
+                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+                    <div class="flex items-center justify-between gap-3">
+                        <label class="text-xs font-bold text-slate-700">Hoặc tự nhập %:</label>
+                        <div class="flex items-center gap-1">
+                            <input type="number" id="att-modal-custom" min="0" max="100" step="5" class="w-20 p-2 text-center text-sm font-black text-slate-900 border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-amber-500 outline-none" oninput="onRatioInputChange()">
+                            <span class="text-sm font-bold text-slate-600">%</span>
+                        </div>
+                    </div>
+                    <!-- Live estimation preview -->
+                    <div class="mt-2.5 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-xs">
+                        <span class="text-slate-500 font-medium">Tiền cầu dự kiến:</span>
+                        <span id="att-modal-estimate" class="font-mono font-black text-emerald-700 text-sm">0đ</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5 flex items-center justify-end gap-2 text-sm font-semibold">
+                <button onclick="closeModal('modal-att-ratio')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition">Đóng</button>
+                <button onclick="saveAttRatioFromModal()" class="px-5 py-2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-black rounded-xl shadow-xs transition">Xác Nhận</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: QR CONFIG -->
     <div id="modal-qr" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] hidden items-center justify-center p-4" onclick="if(event.target===this) closeModal('modal-qr')">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
@@ -1350,13 +1420,58 @@
             return m && m.name && m.name.trim().toLowerCase() === 'kantan';
         }
 
+        function getAttRatio(m, sId) {
+            if (!m || !m.attendance) return 0;
+            const val = m.attendance[sId];
+            if (val === true || val === 'Yes' || val === 'yes' || val === 'true') return 1;
+            if (val === false || val === 'No' || val === 'no' || val === 'false' || val === null || val === undefined || val === 0) return 0;
+            if (typeof val === 'number') {
+                if (val <= 0) return 0;
+                if (val > 1) return val / 100;
+                return val;
+            }
+            if (typeof val === 'string') {
+                const clean = val.replace('%', '').trim();
+                const num = parseFloat(clean);
+                if (isNaN(num) || num <= 0) return 0;
+                if (num > 1) return num / 100;
+                return num;
+            }
+            return 0;
+        }
+
+        function isAttending(m, sId) {
+            return getAttRatio(m, sId) > 0;
+        }
+
+        function getMemberSessionCost(m, sId) {
+            if (!m || !sessionStats[sId]) return 0;
+            const ratio = getAttRatio(m, sId);
+            if (ratio <= 0) return 0;
+            return ratio * (sessionStats[sId].costPerUnit || sessionStats[sId].costPerPerson || 0);
+        }
+
         function calculateSheetMath() {
             sessionStats = {};
             sessions.forEach(s => {
                 let count = 0;
-                members.forEach(m => { if (m.attendance && m.attendance[s.id]) count++; });
-                const totalCost = s.shuttles * s.unitPrice;
-                sessionStats[s.id] = { count, totalCost, costPerPerson: count > 0 ? (totalCost / count) : 0 };
+                let totalWeight = 0;
+                members.forEach(m => {
+                    const r = getAttRatio(m, s.id);
+                    if (r > 0) {
+                        count++;
+                        totalWeight += r;
+                    }
+                });
+                const totalCost = (Number(s.shuttles) || 0) * (Number(s.unitPrice) || 0);
+                const costPerUnit = totalWeight > 0 ? (totalCost / totalWeight) : 0;
+                sessionStats[s.id] = { 
+                    count, 
+                    totalWeight, 
+                    totalCost, 
+                    costPerUnit, 
+                    costPerPerson: costPerUnit 
+                };
             });
 
             // TÍNH TOÁN TIỀN ĐÃ THANH TOÁN CỦA KANTAN:
@@ -1379,9 +1494,7 @@
 
                     let mBill = 0;
                     sessions.forEach(s => {
-                        if (m.attendance && m.attendance[s.id] && sessionStats[s.id]) {
-                            mBill += sessionStats[s.id].costPerPerson;
-                        }
+                        mBill += getMemberSessionCost(m, s.id);
                     });
 
                     const mPaid = Number(m.paid) || 0;
@@ -1614,8 +1727,8 @@
                 let bill = 0;
                 let attendedSessions = 0;
                 sessions.forEach(s => {
-                    if (m.attendance && m.attendance[s.id] && sessionStats[s.id]) {
-                        bill += sessionStats[s.id].costPerPerson;
+                    if (isAttending(m, s.id)) {
+                        bill += getMemberSessionCost(m, s.id);
                         attendedSessions++;
                     }
                 });
@@ -1775,9 +1888,7 @@
 
             let bill = 0;
             sessions.forEach(s => {
-                if (m.attendance && m.attendance[s.id] && sessionStats[s.id]) {
-                    bill += sessionStats[s.id].costPerPerson;
-                }
+                bill += getMemberSessionCost(m, s.id);
             });
             const paid = Number(m.paid) || 0;
             const remaining = paid - bill;
@@ -1891,10 +2002,14 @@
                 if (sessions.length > 0) {
                     const latestS = sessions[sessions.length - 1];
                     const attCount = sessionStats[latestS.id]?.count || 0;
-                    const costP = sessionStats[latestS.id]?.costPerPerson || 0;
+                    const totWeight = sessionStats[latestS.id]?.totalWeight || 0;
+                    const costP = sessionStats[latestS.id]?.costPerUnit || sessionStats[latestS.id]?.costPerPerson || 0;
+                    const weightPill = (isAdmin && totWeight > 0 && Math.abs(totWeight - attCount) > 0.01)
+                        ? ` (${Math.round(totWeight * 10) / 10} suất)`
+                        : '';
                     summaryEl.innerHTML = `
-                        <div class="bg-amber-400/20 text-amber-300 px-3 py-1 rounded-full font-bold flex items-center gap-2 border border-amber-400/30">
-                            <i class="fa-solid fa-fire text-amber-400"></i> Buổi ${latestS.date}: <span class="text-white">${attCount}/${members.length} người</span> • <span class="text-amber-300 font-mono">${formatVND(costP)}đ/người</span>
+                        <div class="bg-amber-400/20 text-amber-300 px-3 py-1 rounded-full font-bold flex items-center gap-2 border border-amber-400/30 text-xs sm:text-sm">
+                            <i class="fa-solid fa-fire text-amber-400"></i> Buổi ${latestS.date}: <span class="text-white">${attCount}/${members.length} người${weightPill}</span> • <span class="text-amber-300 font-mono">${formatVND(costP)}đ/người</span>
                         </div>
                     `;
                 } else {
@@ -1924,8 +2039,8 @@
             sortedMembers.sort((a, b) => {
                 let aBill = 0, bBill = 0;
                 sessions.forEach(s => { 
-                    if(a.attendance && a.attendance[s.id] && sessionStats[s.id]) aBill += sessionStats[s.id].costPerPerson; 
-                    if(b.attendance && b.attendance[s.id] && sessionStats[s.id]) bBill += sessionStats[s.id].costPerPerson;
+                    aBill += getMemberSessionCost(a, s.id); 
+                    bBill += getMemberSessionCost(b, s.id);
                 });
                 return (a.paid - aBill) - (b.paid - bBill);
             });
@@ -1984,7 +2099,8 @@
             displaySessions.forEach((s, sIdx) => {
                 const isNewest = (sIdx === 0);
                 const r2Class = isNewest ? 'bg-amber-100 text-amber-950 font-bold border-b border-amber-300' : 'bg-slate-100 text-slate-600 font-semibold border-b border-slate-200';
-                tr2.appendChild(createTH('Tham gia?', `p-2 border-r border-slate-200 ${r2Class} w-[75px] sm:w-[85px] text-center sticky-top-row-2`));
+                const colTitle = isAdmin ? 'Tham gia / %' : 'Tham gia?';
+                tr2.appendChild(createTH(colTitle, `p-2 border-r border-slate-200 ${r2Class} w-[75px] sm:w-[90px] text-center sticky-top-row-2`));
                 tr2.appendChild(createTH('Tiền cầu', `p-2 border-r border-slate-200 ${r2Class} min-w-[95px] sm:min-w-[110px] text-right px-2.5 sticky-top-row-2`));
             });
             thead.appendChild(tr2);
@@ -1999,28 +2115,44 @@
 
                 // Tính tổng chi phí dựa trên toàn bộ các buổi chơi
                 sessions.forEach(s => {
-                    if (m.attendance && m.attendance[s.id] && sessionStats[s.id]) {
-                        memberTotalBill += sessionStats[s.id].costPerPerson;
-                    }
+                    memberTotalBill += getMemberSessionCost(m, s.id);
                 });
 
                 // Hiển thị các ô buổi chơi theo thứ tự MỚI ➡️ CŨ
                 displaySessions.forEach((s, sIdx) => {
                     const isNewest = (sIdx === 0);
-                    const isAttending = m.attendance && m.attendance[s.id] ? true : false;
-                    const cost = isAttending && sessionStats[s.id] ? sessionStats[s.id].costPerPerson : 0;
+                    const ratio = getAttRatio(m, s.id);
+                    const isAtt = (ratio > 0);
+                    const cost = getMemberSessionCost(m, s.id);
 
-                    const bClass = isAttending ? 'btn-att-yes' : 'btn-att-no';
-                    const label = isAttending ? '<i class="fa-solid fa-check mr-1 text-[11px]"></i> Có' : '<span class="text-slate-400 text-xs">- Vắng</span>';
-                    const btn = isAdmin 
-                        ? `<button onclick="toggleAtt(${m.id}, '${s.id}')" class="min-w-[56px] sm:min-w-[64px] py-1.5 px-2 text-xs font-bold rounded-xl ${bClass} active:scale-95 transition-all shadow-xs flex items-center justify-center mx-auto">${label}</button>`
-                        : `<span class="min-w-[56px] sm:min-w-[64px] py-1.5 px-2 text-xs font-bold rounded-xl inline-flex items-center justify-center mx-auto ${bClass}">${label}</span>`;
+                    let btn = '';
+                    if (!isAdmin) {
+                        const bClass = isAtt ? 'btn-att-yes' : 'btn-att-no';
+                        const label = isAtt ? '<i class="fa-solid fa-check mr-1 text-[11px]"></i> Có' : '<span class="text-slate-400 text-xs">- Vắng</span>';
+                        btn = `<span class="min-w-[56px] sm:min-w-[64px] py-1.5 px-2 text-xs font-bold rounded-xl inline-flex items-center justify-center mx-auto ${bClass}">${label}</span>`;
+                    } else {
+                        // Giao diện Admin:
+                        if (!isAtt) {
+                            btn = `<button onclick="setAttRatio(${m.id}, '${s.id}', 1)" class="min-w-[56px] sm:min-w-[64px] py-1.5 px-2 text-xs font-bold rounded-xl btn-att-no active:scale-95 transition-all shadow-xs flex items-center justify-center mx-auto hover:border-slate-400" title="Bấm để điểm danh Có mặt (100%)"><span class="text-slate-400 text-xs">- Vắng</span></button>`;
+                        } else {
+                            const pctText = Math.round(ratio * 100) + '%';
+                            const pctBadgeClass = (ratio === 1) 
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100' 
+                                : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100';
+                            btn = `
+                                <div class="inline-flex items-center justify-center gap-1">
+                                    <button onclick="setAttRatio(${m.id}, '${s.id}', 0)" class="py-1 px-1.5 text-xs font-bold rounded-lg btn-att-yes shadow-xs active:scale-90 transition hover:bg-rose-500 hover:border-rose-600 hover:text-white" title="Bấm để chuyển thành VẮNG"><i class="fa-solid fa-check"></i></button>
+                                    <button onclick="openAttRatioModal(${m.id}, '${s.id}')" class="py-1 px-1.5 sm:px-2 text-xs font-black font-mono rounded-lg border shadow-xs active:scale-95 transition ${pctBadgeClass}" title="Bấm để đổi % thời lượng tham gia">${pctText}</button>
+                                </div>
+                            `;
+                        }
+                    }
 
                     const cellHighlight = isNewest ? 'bg-amber-50/40' : '';
 
                     sessionCells += `
                         <td class="p-2 sm:p-2.5 text-center bg-white border-r border-slate-200 ${cellHighlight}">${btn}</td>
-                        <td class="p-2 sm:p-2.5 text-right font-mono font-medium text-slate-800 border-r border-slate-200 text-sm px-2.5 ${cellHighlight} ${isAttending?'':'text-slate-400'}">${isAttending ? formatVND(cost) : '0'}</td>
+                        <td class="p-2 sm:p-2.5 text-right font-mono font-medium text-slate-800 border-r border-slate-200 text-sm px-2.5 ${cellHighlight} ${isAtt ? '' : 'text-slate-400'}">${isAtt ? formatVND(cost) : '0'}</td>
                     `;
                 });
 
@@ -2078,8 +2210,13 @@
                 const isNewest = (sIdx === 0);
                 const sessionTotal = sessionStats[s.id]?.totalCost || 0;
                 const footBg = isNewest ? 'bg-amber-100/90 text-amber-950 font-black' : 'bg-slate-100 text-slate-800 font-extrabold';
+                const cnt = sessionStats[s.id]?.count || 0;
+                const totWeight = sessionStats[s.id]?.totalWeight || 0;
+                const countDisplay = (isAdmin && totWeight > 0 && Math.abs(totWeight - cnt) > 0.01)
+                    ? `${cnt} <span class="text-[10px] text-amber-800 block font-normal">(${Math.round(totWeight * 10) / 10} suất)</span>`
+                    : `${cnt}`;
                 fHtml += `
-                    <td class="p-2.5 text-center ${footBg} border-r border-slate-200 text-sm" title="Tổng số người tham gia: ${sessionStats[s.id]?.count || 0}">${sessionStats[s.id]?.count || 0}</td>
+                    <td class="p-2.5 text-center ${footBg} border-r border-slate-200 text-sm" title="Tổng số người: ${cnt} • Trọng số quy đổi: ${totWeight}">${countDisplay}</td>
                     <td class="p-3 text-right font-mono ${footBg} border-r border-slate-200 whitespace-nowrap text-sm px-2.5" title="${s.shuttles} trái cầu • Tổng tiền buổi ${s.date}: ${formatVND(sessionTotal)}">
                         <div class="inline-flex items-center justify-end gap-1.5">
                             <span class="font-bold">${s.shuttles}</span>
@@ -2117,8 +2254,8 @@
             sortedMembers.sort((a, b) => {
                 let aBill = 0, bBill = 0;
                 sessions.forEach(s => { 
-                    if (a.attendance && a.attendance[s.id] && sessionStats[s.id]) aBill += sessionStats[s.id].costPerPerson; 
-                    if (b.attendance && b.attendance[s.id] && sessionStats[s.id]) bBill += sessionStats[s.id].costPerPerson;
+                    aBill += getMemberSessionCost(a, s.id); 
+                    bBill += getMemberSessionCost(b, s.id);
                 });
                 return (a.paid - aBill) - (b.paid - bBill);
             });
@@ -2162,8 +2299,8 @@
                 const isNewest = (idx === displaySessions.length - 1);
                 let rowCells = '';
                 sortedMembers.forEach(m => {
-                    const isAttending = m.attendance && m.attendance[s.id] ? true : false;
-                    const cost = isAttending ? (sessionStats[s.id] ? sessionStats[s.id].costPerPerson : 0) : 0;
+                    const isAtt = isAttending(m, s.id);
+                    const cost = getMemberSessionCost(m, s.id);
                     const payVal = (m.payments && m.payments[s.id]) ? Number(m.payments[s.id]) : 0;
 
                     let payInputHTML = '';
@@ -2174,7 +2311,7 @@
                     }
 
                     rowCells += `
-                        <td class="p-2.5 sm:p-3 text-right font-mono font-medium border-r border-slate-200 text-sm px-3 ${isAttending ? 'text-amber-900 bg-amber-50/30 font-semibold' : 'text-slate-400'}">${isAttending ? formatVND(cost) : '0'}</td>
+                        <td class="p-2.5 sm:p-3 text-right font-mono font-medium border-r border-slate-200 text-sm px-3 ${isAtt ? 'text-amber-900 bg-amber-50/30 font-semibold' : 'text-slate-400'}">${isAtt ? formatVND(cost) : '0'}</td>
                         <td class="p-2 sm:p-2.5 text-right bg-emerald-50/20 border-r border-slate-200 text-sm px-2">${payInputHTML}</td>
                     `;
                 });
@@ -2211,9 +2348,7 @@
                 let mTotalCost = 0;
                 let mTotalPaid = 0;
                 sessions.forEach(s => {
-                    if (m.attendance && m.attendance[s.id] && sessionStats[s.id]) {
-                        mTotalCost += sessionStats[s.id].costPerPerson;
-                    }
+                    mTotalCost += getMemberSessionCost(m, s.id);
                     if (m.payments && m.payments[s.id]) {
                         mTotalPaid += Number(m.payments[s.id]) || 0;
                     }
@@ -2239,9 +2374,7 @@
                 let mTotalCost = 0;
                 let mTotalPaid = 0;
                 sessions.forEach(s => {
-                    if (m.attendance && m.attendance[s.id] && sessionStats[s.id]) {
-                        mTotalCost += sessionStats[s.id].costPerPerson;
-                    }
+                    mTotalCost += getMemberSessionCost(m, s.id);
                     if (m.payments && m.payments[s.id]) {
                         mTotalPaid += Number(m.payments[s.id]) || 0;
                     }
@@ -2327,14 +2460,120 @@
         // ==========================================
         // 3. INTERACTION & DATA MUTATION
         // ==========================================
+        let activeRatioEditing = { mId: null, sId: null };
+
         function toggleAtt(mId, sId) {
             if (!isAdmin) return;
             const m = members.find(x => x.id === mId);
             if (m) { 
-                m.attendance[sId] = !m.attendance[sId]; 
+                m.attendance = m.attendance || {};
+                const currentRatio = getAttRatio(m, sId);
+                m.attendance[sId] = (currentRatio > 0) ? 0 : 1; 
                 renderAll(); 
                 markUnsaved(); 
             }
+        }
+
+        function setAttRatio(mId, sId, ratio) {
+            if (!isAdmin) return;
+            const m = members.find(x => x.id === mId);
+            if (m) {
+                m.attendance = m.attendance || {};
+                const rNum = Number(ratio);
+                m.attendance[sId] = isNaN(rNum) ? 0 : rNum;
+                renderAll();
+                markUnsaved();
+            }
+        }
+
+        function openAttRatioModal(mId, sId) {
+            if (!isAdmin) return;
+            const m = members.find(x => x.id === mId);
+            const s = sessions.find(x => x.id === sId);
+            if (!m || !s) return;
+
+            activeRatioEditing = { mId, sId };
+            document.getElementById('att-modal-mid').value = mId;
+            document.getElementById('att-modal-sid').value = sId;
+
+            const ratio = getAttRatio(m, sId);
+            const pct = Math.round(ratio * 100);
+
+            document.getElementById('att-modal-sub').textContent = `${m.name} • Buổi ${s.date}`;
+            document.getElementById('att-modal-custom').value = pct;
+            
+            updateRatioPresetUI(pct);
+            updateRatioEstimate(pct);
+            openModal('modal-att-ratio');
+        }
+
+        function updateRatioPresetUI(pct) {
+            document.querySelectorAll('.att-preset-btn').forEach(btn => {
+                const p = Number(btn.getAttribute('data-pct'));
+                const icon = btn.querySelector('i');
+                if (p === pct) {
+                    btn.classList.add('border-amber-500', 'bg-amber-100/70', 'text-amber-950');
+                    if (icon) icon.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('border-amber-500', 'bg-amber-100/70', 'text-amber-950');
+                    if (icon && p !== 0) icon.classList.add('hidden');
+                }
+            });
+        }
+
+        function selectRatioPreset(pct) {
+            document.getElementById('att-modal-custom').value = pct;
+            updateRatioPresetUI(pct);
+            updateRatioEstimate(pct);
+        }
+
+        function onRatioInputChange() {
+            let val = Number(document.getElementById('att-modal-custom').value);
+            if (isNaN(val)) val = 0;
+            if (val > 100) val = 100;
+            if (val < 0) val = 0;
+            updateRatioPresetUI(val);
+            updateRatioEstimate(val);
+        }
+
+        function updateRatioEstimate(pct) {
+            const { mId, sId } = activeRatioEditing;
+            const s = sessions.find(x => x.id === sId);
+            if (!s) return;
+
+            const totalCost = (Number(s.shuttles) || 0) * (Number(s.unitPrice) || 0);
+            
+            let newTotalWeight = 0;
+            members.forEach(m => {
+                if (m.id === mId) {
+                    newTotalWeight += (pct / 100);
+                } else {
+                    newTotalWeight += getAttRatio(m, sId);
+                }
+            });
+
+            const estUnitCost = newTotalWeight > 0 ? (totalCost / newTotalWeight) : 0;
+            const estMemberCost = Math.round((pct / 100) * estUnitCost);
+
+            const estEl = document.getElementById('att-modal-estimate');
+            if (estEl) {
+                estEl.textContent = formatVND(estMemberCost) + 'đ';
+            }
+        }
+
+        function saveAttRatioFromModal() {
+            const mIdRaw = document.getElementById('att-modal-mid').value;
+            const mId = Number(mIdRaw) || mIdRaw;
+            const sId = document.getElementById('att-modal-sid').value;
+            let pct = Number(document.getElementById('att-modal-custom').value);
+            if (isNaN(pct)) pct = 0;
+            if (pct < 0) pct = 0;
+            if (pct > 100) pct = 100;
+
+            const ratio = pct / 100;
+            setAttRatio(mId, sId, ratio);
+            closeModal('modal-att-ratio');
+            showToast(`Đã cập nhật thời lượng tham gia: ${pct}%`, 'success');
         }
 
         function updatePaid(mId, val) {
@@ -2542,15 +2781,19 @@
             const displaySessions = [...sessions].reverse();
 
             displaySessions.forEach(s => {
-                const isAttended = m.attendance && m.attendance[s.id];
-                const stats = sessionStats[s.id] || { count: 0, costPerPerson: 0 };
-                const cost = stats.costPerPerson;
+                const ratio = getAttRatio(m, s.id);
+                const isAttended = ratio > 0;
+                const cost = getMemberSessionCost(m, s.id);
                 const paidVal = (m.payments && m.payments[s.id]) ? Number(m.payments[s.id]) : 0;
                 
                 if (isAttended) {
                     attendedSessions++;
                     memberTotalBill += cost;
                 }
+
+                const ratioBadge = (isAdmin && isAttended && ratio < 1) 
+                    ? `<span class="text-[9px] font-bold bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded ml-1">Tham gia ${Math.round(ratio * 100)}%</span>` 
+                    : '';
 
                 sessionListHTML += `
                     <div class="flex items-center justify-between p-2.5 rounded-xl ${isAttended ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-slate-100/70 border border-slate-200/60 opacity-60'}">
@@ -2559,7 +2802,10 @@
                                 <i class="fa-solid ${isAttended ? 'fa-check' : 'fa-xmark'}"></i>
                             </span>
                             <div>
-                                <span class="font-bold text-xs ${isAttended ? 'text-slate-900' : 'text-slate-500'}">${s.date}</span>
+                                <div class="flex items-center">
+                                    <span class="font-bold text-xs ${isAttended ? 'text-slate-900' : 'text-slate-500'}">${s.date}</span>
+                                    ${ratioBadge}
+                                </div>
                                 <span class="text-[10px] text-slate-400 block">${s.shuttles} quả • ${formatVND(s.unitPrice)}/quả</span>
                             </div>
                         </div>
@@ -2941,7 +3187,7 @@
             let totalCost = 0, totalPaid = 0, debtList = [], overpaidList = [];
             members.forEach(m => {
                 let memberTotalBill = 0;
-                sessions.forEach(s => { if (m.attendance[s.id]) memberTotalBill += sessionStats[s.id].costPerPerson; });
+                sessions.forEach(s => { memberTotalBill += getMemberSessionCost(m, s.id); });
                 const remaining = m.paid - memberTotalBill;
                 totalCost += memberTotalBill; totalPaid += m.paid;
                 
