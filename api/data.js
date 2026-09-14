@@ -1,3 +1,9 @@
+const DEFAULT_SERVICE_ACCOUNT = {
+  client_email: "clb-badminton-sync@fiery-guru-399106.iam.gserviceaccount.com",
+  private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDBh3LHNbu6b/xj\n8AfCG5xaqsWKBO94RNxhf3EcTB0Dd49mS+MfiLz9nlWtZLcHqSdUDS50ACxFwBQM\nTVLfToHZblxGEVE5qlfai8c3lpTWNiHeypiEfsqPl/ROdGFaoVmBZAjopldprufM\ncqejHRwzcYG0hspHRKG1Y49A9aZbucqNPdxsIFeDPPQDdtgQVuNseG+5zJC9Hn9X\nJeHtXdQdEMswuXHoccoxP68cYz7/HePUetxAk76b7ndv+jvbBlInXtA5EY10qwqH\ny1cDpTIvLT/HI3aXewQ4LmWIIDDZ3uSqo+FEjwfqO+ppmgrhnySZ4L7DnwR/XIVO\n2Eqo109jAgMBAAECggEABZpv2s+190BtzNDy0I5vGPrvzD63VkKcJOCFPF4Bywtn\npf0VfuC9JBS1A1eyqvCdWGQnT6l/nqdgjTih6SBDRzHYTxkKQoKpl4TLiFL+TTN1\nCJfSEagAImcyZiEdfnvEdSgZz+6dAkzTnkpFi0X4/o5PRJRQf/6/NdrDl4xlPCuY\nh5QKA1nCLSzR3yt7svNRnDMTRrwBXrtMqfuAa4vDopjxppDuvTg4ONmEXXrVRqFx\nD5MBke558nnb9595LlkR6CdWX5qjQZzwNmFY/nZz7MoWXPHNbVZ8tr7gIO4MqP/o\n90M1HFsEOatsSUaqNLP61WyZODOZ7+UxID2DWIOoMQKBgQDp3XtkDwAGwwe8tLmV\nyTV2qcGAUl63d6PYWvuGD4SFLKo+uhY7BO1lBNHyvNKaYBiCB+MmVSdm7VGKTxGU\n6cVYSXrMtcv1wtEiQCoqG0d2UcAuUdL1giqm/xM+AS2uQbSpi8YCA4H+Kqmo+Eli\nkUm82p6WXHayxD8uU8BItut3kQKBgQDT2KEiTaRTUrmyFL7lQ2sDMAmkFHx5C6U7\nWlA3KdkmJWlH7PI7qFzfiBIZmXvmMcdLq8ylIZXHD3CumSAg3JP7QNFByJ3HJpfj\n62hTc4mYnp8rFnKFHJxhpNK47HJDCwj6rPm/vjv6NUObRMzH+BMXA4jEHwCiv1jV\niibWKV7lswKBgDjSAi/OYTBDZHbZ5hlZeK7rEcOOv8qNu/ZOLLxmusjskDSLW+ld\nChy4LhZvADBX1ryJFAx1NgyQ7nXPPjNTFQqdV8OzC+obOlq7AkOWuycpN6tJYBsc\nVCac5Nz0xleHSVDEUAifN488aFpQcOwM5sCG0W8w6foHKl6kJJzGLLGxAoGAJ6B3\nC7agTWHFEJWm27XPt6nts76NRgsynjaXmKoAT41h8y1UZmpo7PtD/3vhXD7le7co\nMZ9lp/Wwa0iDZQI9wBrwybBgKxeCBAVN34ZWL7FELsglJdcjPXSaYjMAcKAIzvM6\nSG6qQ3RhMBMfhyxVTdHAbIcsFEVctZ0BBMB6WtcCgYAcYh3QXwYbA3YiNCafQ5eK\nX4IH59L6gGkRyUlqIVXuFtO11M4EVlpc2nT9HwGVxSD0MoQxqEqbKh+zx1FKjiLf\nIV6Y0uqj2nWQPHP4TtfI4tvcRh0JEmCJkU8kYb77qUzrfg+qXef8aBTLLGf7JLSh\nCC6JUlNXV5nelcuuRu2XbQ==\n-----END PRIVATE KEY-----\n"
+};
+const DEFAULT_SPREADSHEET_ID = '1-425z-aI4Im3b_eZ-ky5B47wm1R_zBa5uYdwCrnswM0';
+
 // 1. CẤU HÌNH XÁC THỰC GOOGLE SHEETS API
 function getGoogleAuth() {
   let google;
@@ -7,8 +13,8 @@ function getGoogleAuth() {
     return null;
   }
 
-  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  let privateKey = process.env.GOOGLE_PRIVATE_KEY;
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || DEFAULT_SERVICE_ACCOUNT.client_email;
+  let privateKey = process.env.GOOGLE_PRIVATE_KEY || DEFAULT_SERVICE_ACCOUNT.private_key;
   const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
 
   if (credentialsJson) {
@@ -445,7 +451,7 @@ module.exports = async (req, res) => {
   }
 
   const auth = getGoogleAuth();
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID || DEFAULT_SPREADSHEET_ID;
   const FALLBACK_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtEZgoalXo5UzktFuw0xBMe_0DZRZIYqBGjrWbYigw_qwlxQHeFQe6UUJLym4EtlVhbg/exec';
 
   // Nếu chưa cấu hình Service Account trên Vercel: Tự động Proxy ngầm qua Apps Script Web App (Zero Config)

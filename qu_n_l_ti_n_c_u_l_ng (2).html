@@ -204,9 +204,14 @@
                     </button>
                 </div>
 
-                <!-- Right Actions: Role Toggle -->
+                <!-- Right Actions: Sync Status & Role Toggle -->
                 <div class="flex items-center space-x-2 shrink-0">
-                    <button id="btn-toggle-role" onclick="toggleRole()" class="px-4 py-2 text-xs sm:text-sm font-extrabold rounded-xl bg-slate-900 hover:bg-slate-800 text-white transition flex items-center gap-1.5 shadow-sm border border-slate-700/80 active:scale-95">
+                    <button id="btn-sync-status" onclick="loadDataFromApi(false, true)" class="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-bold rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 transition flex items-center gap-2 border border-slate-700/80 active:scale-95 shadow-xs" title="Bấm để làm mới và đồng bộ dữ liệu Google Sheets">
+                        <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] shrink-0"></span>
+                        <span id="sync-status-text" class="hidden md:inline">Google Sheets</span>
+                        <i id="sync-status-icon" class="fa-solid fa-arrows-rotate text-sky-400 text-xs shrink-0"></i>
+                    </button>
+                    <button id="btn-toggle-role" onclick="toggleRole()" class="px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-extrabold rounded-xl bg-slate-900 hover:bg-slate-800 text-white transition flex items-center gap-1.5 shadow-sm border border-slate-700/80 active:scale-95">
                         <i class="fa-solid fa-user-shield text-amber-400"></i> <span id="btn-role-text">Admin</span>
                     </button>
                 </div>
@@ -1060,22 +1065,95 @@
                 });
         }
 
-        function loadDataFromApi() {
-            // 1. Nếu đang chạy trong môi trường Google Apps Script Web App
+        let lastSyncTime = null;
+        let isApiLoading = false;
+
+        function updateSyncStatusPill(isSuccess, customLabel = null) {
+            const dot = document.getElementById('sync-status-dot');
+            const text = document.getElementById('sync-status-text');
+            const icon = document.getElementById('sync-status-icon');
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+            lastSyncTime = timeStr;
+
+            if (dot) {
+                dot.className = isSuccess 
+                    ? 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] shrink-0' 
+                    : 'w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)] shrink-0';
+            }
+            if (text) {
+                text.textContent = customLabel || (isSuccess ? `Đã đồng bộ ${timeStr}` : 'Lỗi kết nối Sheet');
+            }
+            if (icon) {
+                icon.className = 'fa-solid fa-arrows-rotate text-sky-400 text-xs shrink-0';
+            }
+        }
+
+        function loadDataFromApi(isSilent = false, isManualClick = false) {
+            if (isApiLoading) return;
+            // Nếu admin đang có thay đổi chưa lưu, không ghi đè dữ liệu mới lên màn hình soạn thảo
+            if (hasUnsavedChanges) {
+                console.log('Bỏ qua tự động tải lại vì Admin đang có thay đổi chưa lưu.');
+                return;
+            }
+
+            const icon = document.getElementById('sync-status-icon');
+            const text = document.getElementById('sync-status-text');
+            if (icon) icon.className = 'fa-solid fa-arrows-rotate fa-spin text-amber-400 text-xs shrink-0';
+            if (isManualClick && text) text.textContent = 'Đang tải...';
+            if (isManualClick) showToast('Đang tải dữ liệu mới nhất từ Google Sheets...', 'info');
+
+            isApiLoading = true;
+
+            function onDataLoaded(d, source = '') {
+                isApiLoading = false;
+                if (!d || (!d.sessions?.length && !d.members?.length)) {
+                    updateSyncStatusPill(true);
+                    return;
+                }
+
+                const prevSnapshot = JSON.stringify({ sessions, members, qrInfo, shuttleBatches });
+                const newSnapshot = JSON.stringify({ 
+                    sessions: d.sessions || [], 
+                    members: d.members || [], 
+                    qrInfo: d.qrInfo || qrInfo, 
+                    shuttleBatches: d.shuttleBatches || [] 
+                });
+
+                const hasDiff = prevSnapshot !== newSnapshot;
+
+                sessions = d.sessions || [];
+                members = d.members || [];
+                if (d.qrInfo && Object.keys(d.qrInfo).length > 0) qrInfo = d.qrInfo;
+                shuttleBatches = d.shuttleBatches || [];
+
+                safeSetStorage('CLB_CACHED_DATA', newSnapshot);
+                backupState();
+                updateQRDisplay();
+                renderAll();
+                updateSyncStatusPill(true);
+
+                if (isManualClick) {
+                    showToast(`Đã đồng bộ Google Sheets thành công! (${sessions.length} buổi chơi)`, 'success');
+                } else if (hasDiff && !isSilent) {
+                    showToast('Đã cập nhật dữ liệu mới nhất từ Google Sheets!', 'info');
+                }
+            }
+
+            function onDataError(err) {
+                isApiLoading = false;
+                console.error('Lỗi tải dữ liệu từ Google Sheets:', err);
+                updateSyncStatusPill(false);
+                if (isManualClick) {
+                    showToast('Không thể tải từ Google Sheets: ' + (err?.message || err), 'error');
+                }
+            }
+
+            // 1. Môi trường Google Apps Script Web App
             if (typeof google !== 'undefined' && google.script && google.script.run) {
                 google.script.run
-                    .withSuccessHandler((data) => {
-                        if (data && (data.sessions?.length > 0 || data.members?.length > 0)) {
-                            sessions = data.sessions || [];
-                            members = data.members || [];
-                            if (data.qrInfo && Object.keys(data.qrInfo).length > 0) qrInfo = data.qrInfo;
-                            shuttleBatches = data.shuttleBatches || [];
-                            safeSetStorage('CLB_CACHED_DATA', JSON.stringify({ sessions, members, qrInfo, shuttleBatches }));
-                            backupState();
-                            updateQRDisplay();
-                            renderAll();
-                        }
-                    })
+                    .withSuccessHandler((d) => onDataLoaded(d, 'Apps Script'))
+                    .withFailureHandler(onDataError)
                     .getFromSheets();
                 return;
             }
@@ -1087,7 +1165,13 @@
             const isGoogleScriptUrl = url.includes('script.google.com');
             const fetchUrl = url + (url.includes('?') ? '&' : '?') + (isGoogleScriptUrl ? 'action=loadData&' : '') + '_t=' + Date.now();
 
-            fetch(fetchUrl)
+            fetch(fetchUrl, {
+                cache: 'no-store',
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache'
+                }
+            })
                 .then(res => {
                     if (!res.ok && url !== FALLBACK_APPS_SCRIPT_URL) {
                         console.warn('API chính không phản hồi, thử qua Fallback URL...');
@@ -1097,43 +1181,28 @@
                 })
                 .then(data => {
                     if (data && data.success && data.data) {
-                        const d = data.data;
-                        if (d.sessions?.length > 0 || d.members?.length > 0) {
-                            sessions = d.sessions || [];
-                            members = d.members || [];
-                            if (d.qrInfo && Object.keys(d.qrInfo).length > 0) qrInfo = d.qrInfo;
-                            shuttleBatches = d.shuttleBatches || [];
-                            safeSetStorage('CLB_CACHED_DATA', JSON.stringify({ sessions, members, qrInfo, shuttleBatches }));
-                            backupState();
-                            updateQRDisplay();
-                            renderAll();
-                            console.log('Đã nạp dữ liệu thành công từ Google Sheets:', sessions.length, 'buổi,', members.length, 'thành viên');
-                        }
+                        onDataLoaded(data.data, isGoogleScriptUrl ? 'Google API' : 'Vercel API');
                     } else if (data && data.isConfigRequired) {
                         console.info('Vercel API đang chờ cấu hình.');
-                    } else if (data && data.error) {
-                        console.warn('API Error:', data.error);
+                        isApiLoading = false;
+                    } else {
+                        onDataError(data?.error || data?.message || 'Dữ liệu không đúng định dạng');
                     }
                 })
                 .catch(err => {
-                    console.error('Lỗi khi fetch API:', err);
-                    // Thử fallback 1 lần cuối
                     if (url !== FALLBACK_APPS_SCRIPT_URL) {
                         fetch(FALLBACK_APPS_SCRIPT_URL + '?action=loadData&_t=' + Date.now())
                             .then(r => r.json())
-                            .then(data => {
-                                if (data && data.success && data.data) {
-                                    const d = data.data;
-                                    sessions = d.sessions || [];
-                                    members = d.members || [];
-                                    if (d.qrInfo && Object.keys(d.qrInfo).length > 0) qrInfo = d.qrInfo;
-                                    shuttleBatches = d.shuttleBatches || [];
-                                    backupState();
-                                    updateQRDisplay();
-                                    renderAll();
+                            .then(fbData => {
+                                if (fbData && fbData.success && fbData.data) {
+                                    onDataLoaded(fbData.data, 'Fallback Google API');
+                                } else {
+                                    onDataError(fbData?.error || err.message);
                                 }
                             })
-                            .catch(e => console.error('Fallback error:', e));
+                            .catch(e => onDataError(err.message || e.message));
+                    } else {
+                        onDataError(err.message);
                     }
                 });
         }
@@ -1175,29 +1244,35 @@
             
             if (autoSaveTimer) clearTimeout(autoSaveTimer);
             if (isImmediate) {
-                commitChanges(true);
+                if (isAdmin) {
+                    commitChanges(true);
+                }
                 return;
             }
-            // Tự động lưu sau 1.2 giây khi người dùng dừng thao tác
+            // Tự động lưu nhanh sau 600ms khi người dùng dừng thao tác
             autoSaveTimer = setTimeout(() => {
                 if (hasUnsavedChanges && isAdmin) {
                     commitChanges(true);
                 }
-            }, 1200);
+            }, 600);
         }
 
         function updateSaveUI(customMsg = null) {
             const banner = document.getElementById('unsaved-banner');
             const msgEl = document.getElementById('unsaved-banner-msg');
             if (msgEl) {
-                msgEl.textContent = customMsg || 'Có thay đổi mới • Tự động lưu sau 1s...';
+                msgEl.textContent = customMsg || 'Có thay đổi mới • Đang tự động lưu...';
             }
+            if (!banner) return;
             if (hasUnsavedChanges) {
-                banner.classList.remove('translate-y-32', 'opacity-0');
+                banner.classList.remove('hidden', 'translate-y-32', 'opacity-0');
                 banner.classList.add('translate-y-0', 'opacity-100');
             } else {
                 banner.classList.remove('translate-y-0', 'opacity-100');
                 banner.classList.add('translate-y-32', 'opacity-0');
+                setTimeout(() => {
+                    if (!hasUnsavedChanges) banner.classList.add('hidden');
+                }, 300);
             }
         }
 
@@ -1211,11 +1286,15 @@
             const btn = document.getElementById('btn-commit');
             const icon = document.getElementById('icon-commit');
             const msgEl = document.getElementById('unsaved-banner-msg');
+            const syncIcon = document.getElementById('sync-status-icon');
+            const syncText = document.getElementById('sync-status-text');
             
             if (btn) btn.disabled = true;
             if (icon) icon.className = "fa-solid fa-spinner fa-spin";
             if (btnText) btnText.textContent = "Đang lưu...";
             if (msgEl) msgEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-amber-400"></i> Đang lưu vào Google Sheets...`;
+            if (syncIcon) syncIcon.className = "fa-solid fa-arrows-rotate fa-spin text-amber-400 text-xs shrink-0";
+            if (syncText) syncText.textContent = "Đang lưu...";
 
             const payload = { sessions, members, qrInfo, shuttleBatches };
             const payloadString = JSON.stringify(payload);
@@ -1228,14 +1307,27 @@
                 if (btn) btn.disabled = false;
                 if (icon) icon.className = "";
                 if (btnText) btnText.textContent = "Lưu ngay";
+                updateSyncStatusPill(true);
+                if (msgEl) msgEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> Đã lưu vào Google Sheets thành công!`;
+                setTimeout(() => {
+                    if (!hasUnsavedChanges) {
+                        const banner = document.getElementById('unsaved-banner');
+                        if (banner) {
+                            banner.classList.remove('translate-y-0', 'opacity-100');
+                            banner.classList.add('translate-y-32', 'opacity-0');
+                            setTimeout(() => { if (!hasUnsavedChanges) banner.classList.add('hidden'); }, 300);
+                        }
+                    }
+                }, 1500);
                 showToast('Đã lưu dữ liệu vào Google Sheets thành công!' + (source ? ` (${source})` : ''), 'success');
             }
 
             function onSaveFailure(errMsg) {
                 if (btn) btn.disabled = false;
                 if (icon) icon.className = "";
-                if (btnText) btnText.textContent = "Lưu ngay";
-                if (msgEl) msgEl.textContent = 'Lỗi lưu: ' + errMsg;
+                if (btnText) btnText.textContent = "Thử lại";
+                if (msgEl) msgEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400"></i> Lỗi lưu: ${errMsg}`;
+                updateSyncStatusPill(false, 'Lỗi lưu Google Sheets');
                 showToast('Lỗi lưu Google Sheets: ' + errMsg, 'error');
                 console.error('Lỗi khi lưu dữ liệu:', errMsg);
             }
@@ -1405,6 +1497,33 @@
                 // Chạy trên Vercel / GitHub / Localhost: tải ngầm qua REST API
                 loadDataFromApi();
             }
+
+            // 5. Tự động làm mới dữ liệu mới nhất (Real-time auto-refresh cho user & admin)
+            // A. Khi người dùng mở lại tab hoặc quay lại trình duyệt
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible' && !hasUnsavedChanges) {
+                    loadDataFromApi(true);
+                }
+            });
+            window.addEventListener('focus', () => {
+                if (!hasUnsavedChanges) {
+                    loadDataFromApi(true);
+                }
+            });
+
+            // B. Tự động kiểm tra dữ liệu mới mỗi 20 giây khi tab đang mở
+            setInterval(() => {
+                if (document.visibilityState === 'visible' && !hasUnsavedChanges) {
+                    loadDataFromApi(true);
+                }
+            }, 20000);
+
+            // C. Tự động lưu ngay nếu admin đóng tab hoặc chuyển trang khi có thay đổi
+            window.addEventListener('beforeunload', () => {
+                if (hasUnsavedChanges && isAdmin) {
+                    commitChanges(true);
+                }
+            });
         };
 
         // ==========================================
@@ -1977,8 +2096,8 @@
                 m.attendance[latestS.id] = status;
             });
             renderAll();
-            markUnsaved();
-            showToast(status ? `Đã chọn CÓ MẶT tất cả cho buổi ${latestS.date}` : `Đã BỎ CHỌN tất cả cho buổi ${latestS.date}`, 'success');
+            markUnsaved(true);
+            showToast(status ? `Đã chọn CÓ MẶT tất cả cho buổi ${latestS.date} và đang lưu Google Sheets...` : `Đã BỎ CHỌN tất cả cho buổi ${latestS.date} và đang lưu Google Sheets...`, 'info');
         }
 
         function renderAll() {
@@ -2474,7 +2593,7 @@
             }
         }
 
-        function setAttRatio(mId, sId, ratio) {
+        function setAttRatio(mId, sId, ratio, isImmediate = false) {
             if (!isAdmin) return;
             const m = members.find(x => x.id === mId);
             if (m) {
@@ -2482,7 +2601,7 @@
                 const rNum = Number(ratio);
                 m.attendance[sId] = isNaN(rNum) ? 0 : rNum;
                 renderAll();
-                markUnsaved();
+                markUnsaved(isImmediate);
             }
         }
 
@@ -2571,9 +2690,9 @@
             if (pct > 100) pct = 100;
 
             const ratio = pct / 100;
-            setAttRatio(mId, sId, ratio);
+            setAttRatio(mId, sId, ratio, true);
             closeModal('modal-att-ratio');
-            showToast(`Đã cập nhật thời lượng tham gia: ${pct}%`, 'success');
+            showToast(`Đã lưu thời lượng tham gia (${pct}%) và đang cập nhật Google Sheets...`, 'info');
         }
 
         function updatePaid(mId, val) {
@@ -2582,9 +2701,12 @@
             if (m) {
                 if (isKantan(m)) return; // Tiền của Kantan được hệ thống tự động tính toán
                 const clean = typeof val === 'string' ? val.replace(/[^\d-]/g, '') : val;
-                m.paid = Number(clean) || 0;
-                renderAll();
-                markUnsaved();
+                const newPaid = Number(clean) || 0;
+                if (m.paid !== newPaid) {
+                    m.paid = newPaid;
+                    renderAll();
+                    markUnsaved(true);
+                }
             }
         }
 
@@ -2594,19 +2716,20 @@
             if (m) {
                 m.payments = m.payments || {};
                 const clean = typeof val === 'string' ? val.replace(/[^\d-]/g, '') : val;
-                m.payments[sId] = Number(clean) || 0;
-
-                // Tự động tính tổng tiền m.paid cho thành viên thông thường
-                if (!isKantan(m)) {
-                    let total = 0;
-                    sessions.forEach(s => {
-                        total += Number(m.payments[s.id]) || 0;
-                    });
-                    m.paid = total;
+                const newP = Number(clean) || 0;
+                if (m.payments[sId] !== newP) {
+                    m.payments[sId] = newP;
+                    // Tự động tính tổng tiền m.paid cho thành viên thông thường
+                    if (!isKantan(m)) {
+                        let total = 0;
+                        sessions.forEach(s => {
+                            total += Number(m.payments[s.id]) || 0;
+                        });
+                        m.paid = total;
+                    }
+                    renderAll();
+                    markUnsaved(true);
                 }
-
-                renderAll();
-                markUnsaved();
             }
         }
 
@@ -2618,8 +2741,8 @@
                     if (m.payments) delete m.payments[sId];
                 });
                 renderAll();
-                markUnsaved();
-                showToast('Đã xóa buổi chơi tạm thời. Bấm LƯU DATA để xác nhận.', 'info');
+                markUnsaved(true);
+                showToast('Đã xóa buổi chơi và đang lưu Google Sheets...', 'info');
             }
         }
 
@@ -2658,8 +2781,8 @@
             
             closeModal('modal-session');
             renderAll();
-            markUnsaved();
-            showToast('Đã tạm thêm buổi chơi (Hãy bấm LƯU DATA để ghi vào máy chủ)', 'info');
+            markUnsaved(true);
+            showToast('Đã thêm buổi chơi và đang lưu Google Sheets...', 'info');
         }
 
         function openAddMemberModal() {
@@ -2674,8 +2797,8 @@
                 });
                 members.push({ id: newId, name: name.trim(), paid: 0, attendance: att, payments: pay });
                 renderAll();
-                markUnsaved();
-                showToast('Đã thêm thành viên tạm thời.', 'info');
+                markUnsaved(true);
+                showToast('Đã thêm thành viên và đang lưu Google Sheets...', 'info');
             }
         }
 
@@ -2761,8 +2884,8 @@
 
             closeModal('modal-price-batch');
             renderAll();
-            markUnsaved();
-            showToast('Đã lưu bảng giá tạm thời! Bấm LƯU DATA để xác nhận.', 'info');
+            markUnsaved(true);
+            showToast('Đã cập nhật lô cầu và đang lưu Google Sheets...', 'info');
         }
 
         // ==========================================
@@ -2980,8 +3103,8 @@
 
             updateQRDisplay();
             closeModal('modal-qr');
-            markUnsaved();
-            showToast('Đã cập nhật thông tin QR! Bấm "LƯU DATA" để lưu vào cơ sở dữ liệu.', 'info');
+            markUnsaved(true);
+            showToast('Đã lưu thông tin VietQR vào Google Sheets thành công!', 'success');
         }
 
         function updateUIByRole() {
