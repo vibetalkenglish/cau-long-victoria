@@ -143,19 +143,23 @@ async function getFromSheets(sheets, spreadsheetId) {
     }
   }
 
-  // B. Payments Map
+  // B. Payments Map (Ma trận đóng tiền theo buổi)
   const paymentsMap = {};
   if (payValues.length > 1) {
+    const payHeaders = payValues[0];
     for (let i = 1; i < payValues.length; i++) {
       const mId = payValues[i][0];
-      const sId = payValues[i][2];
-      const amount = parseSafeNumber(payValues[i][3], 0);
-      if (mId && sId) {
-        if (!paymentsMap[mId]) paymentsMap[mId] = {};
-        paymentsMap[mId][sId] = amount;
-        paymentsMap[mId.toString()] = paymentsMap[mId];
-        paymentsMap[Number(mId)] = paymentsMap[mId];
+      if (!mId) continue;
+      const mPay = {};
+      for (let j = 2; j < payHeaders.length; j++) {
+        const sId = payHeaders[j];
+        if (sId) {
+          mPay[sId] = parseSafeNumber(payValues[i][j], 0);
+        }
       }
+      paymentsMap[mId] = mPay;
+      paymentsMap[mId.toString()] = mPay;
+      paymentsMap[Number(mId)] = mPay;
     }
   }
 
