@@ -1045,7 +1045,13 @@
             const testUrl = val + (val.includes('?') ? '&' : '?') + (isGoogleScriptUrl ? 'action=loadData&' : '') + '_t=' + Date.now();
 
             fetch(testUrl)
-                .then(res => res.json())
+                .then(async res => {
+                    const contentType = res.headers.get('content-type') || '';
+                    if (!contentType.includes('application/json')) {
+                        throw new Error('API không trả về JSON hợp lệ (status: ' + res.status + ', content-type: ' + (contentType.split(';')[0] || 'text/html') + ')');
+                    }
+                    return res.json();
+                })
                 .then(data => {
                     btn.disabled = false;
                     if (data && data.success && data.data) {
@@ -1172,10 +1178,18 @@
                     'Pragma': 'no-cache'
                 }
             })
-                .then(res => {
-                    if (!res.ok && url !== FALLBACK_APPS_SCRIPT_URL) {
-                        console.warn('API chính không phản hồi, thử qua Fallback URL...');
-                        return fetch(FALLBACK_APPS_SCRIPT_URL + '?action=loadData&_t=' + Date.now()).then(r => r.json());
+                .then(async res => {
+                    const contentType = res.headers.get('content-type') || '';
+                    if (!res.ok || !contentType.includes('application/json')) {
+                        if (url !== FALLBACK_APPS_SCRIPT_URL) {
+                            console.warn('API chính không phản hồi JSON, thử qua Fallback URL...');
+                            const fbRes = await fetch(FALLBACK_APPS_SCRIPT_URL + '?action=loadData&_t=' + Date.now());
+                            const fbContentType = fbRes.headers.get('content-type') || '';
+                            if (fbContentType.includes('application/json')) {
+                                return fbRes.json();
+                            }
+                        }
+                        throw new Error('Server không phản hồi đúng JSON (status: ' + res.status + ', content-type: ' + (contentType.split(';')[0] || 'text/html') + ')');
                     }
                     return res.json();
                 })
@@ -1192,7 +1206,11 @@
                 .catch(err => {
                     if (url !== FALLBACK_APPS_SCRIPT_URL) {
                         fetch(FALLBACK_APPS_SCRIPT_URL + '?action=loadData&_t=' + Date.now())
-                            .then(r => r.json())
+                            .then(async r => {
+                                const ct = r.headers.get('content-type') || '';
+                                if (!ct.includes('application/json')) throw new Error('Fallback URL không trả về JSON');
+                                return r.json();
+                            })
                             .then(fbData => {
                                 if (fbData && fbData.success && fbData.data) {
                                     onDataLoaded(fbData.data, 'Fallback Google API');
@@ -1357,9 +1375,17 @@
             const fetchUrl = apiUrl + (apiUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
 
             fetch(fetchUrl, fetchOptions)
-                .then(res => {
-                    if (!res.ok && !isGoogleScriptUrl) {
-                        return res.json().then(j => { throw new Error(j.error || j.message || ('Lỗi ' + res.status)); });
+                .then(async res => {
+                    const contentType = res.headers.get('content-type') || '';
+                    if (!res.ok || !contentType.includes('application/json')) {
+                        let errText = '';
+                        try {
+                            const errJson = await res.json();
+                            errText = errJson.error || errJson.message;
+                        } catch(e) {
+                            errText = 'Server lưu phản hồi không đúng định dạng (status: ' + res.status + ', content-type: ' + (contentType.split(';')[0] || 'text/html') + ')';
+                        }
+                        throw new Error(errText);
                     }
                     return res.json();
                 })
