@@ -156,7 +156,7 @@
         <div class="max-w-[1720px] mx-auto px-3.5 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 sm:h-20 items-center gap-2">
                 <!-- Brand & Official Logo -->
-                <div class="flex items-center space-x-3 shrink-0 cursor-pointer group" onclick="switchTab('members')">
+                <div class="flex items-center space-x-3 shrink-0 cursor-pointer group" onclick="switchTab('sheet')">
                     <div class="relative shrink-0">
                         <div class="absolute -inset-0.5 bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-500 rounded-2xl blur-sm opacity-75 group-hover:opacity-100 transition duration-300"></div>
                         <img src="logo.png" onerror="this.src='https://lh3.googleusercontent.com/d/1TqOD0ecIMUMmst9mSq-h86BDcs8rQZFD'" alt="Victoria Logo" class="relative w-10 h-10 sm:w-12 sm:h-12 rounded-2xl object-cover shadow-lg border border-amber-400/40 shrink-0 bg-white">
@@ -172,11 +172,11 @@
 
                 <!-- Desktop Tab Navigation (Pill Glass Tabs) -->
                 <div class="hidden sm:flex items-center space-x-1.5 overflow-x-auto custom-scrollbar py-1 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800">
-                    <button id="btn-tab-members" onclick="switchTab('members')" class="px-4 py-2 text-sm font-extrabold rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 transition flex items-center gap-1.5 shadow-[0_2px_12px_rgba(245,158,11,0.35)] shrink-0">
-                        <i class="fa-solid fa-users"></i> <span>Thành Viên</span>
+                    <button id="btn-tab-sheet" onclick="switchTab('sheet')" class="px-4 py-2 text-sm font-extrabold rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 transition flex items-center gap-1.5 shadow-[0_2px_12px_rgba(245,158,11,0.35)] shrink-0">
+                        <i class="fa-solid fa-calendar-check"></i> <span>Điểm Danh</span>
                     </button>
-                    <button id="btn-tab-sheet" onclick="switchTab('sheet')" class="px-4 py-2 text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition flex items-center gap-1.5 shrink-0">
-                        <i class="fa-solid fa-calendar-check text-sky-400"></i> <span>Điểm Danh</span>
+                    <button id="btn-tab-members" onclick="switchTab('members')" class="px-4 py-2 text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition flex items-center gap-1.5 shrink-0">
+                        <i class="fa-solid fa-users text-amber-400"></i> <span>Thành Viên</span>
                     </button>
                     <button id="btn-tab-payments" onclick="switchTab('payments')" class="px-4 py-2 text-sm font-semibold rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition flex items-center gap-1.5 shrink-0">
                         <i class="fa-solid fa-money-bill-wave text-emerald-400"></i> <span>Đóng Tiền</span>
@@ -244,9 +244,72 @@
     <main class="flex-1 max-w-[1720px] w-full mx-auto p-3.5 sm:p-6 lg:p-8 overflow-y-auto space-y-6 lg:space-y-8 pb-36 sm:pb-20">
         
         <!-- ============================================================== -->
-        <!-- TAB 1: 🏠 TỔNG QUAN & THẺ THÀNH VIÊN (COMPACT MODERN VIEW) -->
+        <!-- TAB 1: 📋 BẢNG ĐIỂM DANH CHI TIẾT (ATTENDANCE SHEET GRID) -->
         <!-- ============================================================== -->
-        <section id="tab-members" class="space-y-4">
+        <section id="tab-sheet" class="space-y-4 sm:space-y-6">
+            <div class="bg-white rounded-3xl shadow-luxury border border-slate-200/90 overflow-hidden relative">
+                <!-- Main Banner Header -->
+                <div class="p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2.5">
+                            <i class="fa-solid fa-calendar-check text-amber-400"></i> BẢNG ĐIỂM DANH & TÍNH TIỀN THEO BUỔI
+                        </h3>
+                        <p class="text-xs text-slate-300 mt-0.5">Sắp xếp ưu tiên người nợ lên trước • Buổi chơi xếp từ mới nhất ➡️ cũ nhất</p>
+                    </div>
+
+                    <!-- Quick Info Badge of Latest Session -->
+                    <div id="sheet-latest-summary" class="flex flex-wrap items-center gap-2 text-xs">
+                        <!-- Rendered dynamically by JS -->
+                    </div>
+                </div>
+
+                <!-- Secondary Toolbar: Search + View Modes + Quick Action -->
+                <div class="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs sm:text-sm">
+                    <!-- Search box -->
+                    <div class="relative flex-1 max-w-xs">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="sheet-search-input" oninput="renderSheetGrid()" placeholder="Tìm tên thành viên trong bảng..." class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition">
+                    </div>
+
+                    <!-- View Mode and Actions -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- Button Xem thêm / Thu gọn buổi cũ cho view thường -->
+                        <button id="btn-toggle-sessions" onclick="toggleSessionsExpand()" class="hidden"></button>
+
+                        <div class="flex items-center bg-slate-200/80 p-0.5 rounded-xl text-xs font-bold text-slate-700">
+                            <button id="btn-view-full" onclick="setSheetViewMode('full')" class="px-2.5 py-1 rounded-lg bg-white shadow-xs text-slate-900 transition">📋 Đầy đủ</button>
+                            <button id="btn-view-compact" onclick="setSheetViewMode('compact')" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition" title="Ẩn cột tài chính để điểm danh nhanh">⚡ Rút gọn</button>
+                        </div>
+
+                        <!-- Admin Fast Attendance Buttons for Newest Session -->
+                        <div id="sheet-admin-quick-actions" class="hidden items-center gap-1.5">
+                            <button onclick="quickMarkAttendance(true)" title="Đánh dấu tất cả có mặt ở buổi mới nhất" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1 shadow-xs transition">
+                                <i class="fa-solid fa-check-double"></i> Chọn hết
+                            </button>
+                            <button onclick="quickMarkAttendance(false)" title="Bỏ chọn tất cả ở buổi mới nhất" class="px-2.5 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs flex items-center gap-1 transition">
+                                <i class="fa-solid fa-xmark"></i> Bỏ hết
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar w-full touch-pan-x">
+                    <table class="grid-table w-full text-sm lg:text-[15px] text-left text-slate-800 border-collapse">
+                        <thead id="sheet-thead" class="select-none text-center"></thead>
+                        <tbody id="sheet-body" class="divide-y divide-slate-200 font-medium"></tbody>
+                        <tfoot id="sheet-footer" class="bg-slate-50 border-t-2 border-slate-300"></tfoot>
+                    </table>
+                </div>
+
+                <!-- Footer Bar for Expanding/Collapsing Sessions -->
+                <div id="sheet-expand-footer-bar" class="hidden"></div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 2: 🏠 TỔNG QUAN & THẺ THÀNH VIÊN (COMPACT MODERN VIEW) -->
+        <!-- ============================================================== -->
+        <section id="tab-members" class="hidden space-y-4">
             
             <!-- 4 COMPACT KPI DASHBOARD CARDS -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
@@ -319,63 +382,6 @@
             <!-- LEADERBOARD RANKING LIST CONTAINER -->
             <div id="member-cards-container" class="space-y-2 sm:space-y-2.5">
                 <!-- Rendered dynamically by renderMemberCards() -->
-            </div>
-        </section>
-
-        <!-- ============================================================== -->
-        <!-- TAB 2: 📋 BẢNG ĐIỂM DANH CHI TIẾT (ATTENDANCE SHEET GRID) -->
-        <!-- ============================================================== -->
-        <section id="tab-sheet" class="hidden space-y-4 sm:space-y-6">
-            <div class="bg-white rounded-3xl shadow-luxury border border-slate-200/90 overflow-hidden relative">
-                <!-- Main Banner Header -->
-                <div class="p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div>
-                        <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2.5">
-                            <i class="fa-solid fa-calendar-check text-amber-400"></i> BẢNG ĐIỂM DANH & TÍNH TIỀN THEO BUỔI
-                        </h3>
-                        <p class="text-xs text-slate-300 mt-0.5">Sắp xếp ưu tiên người nợ lên trước • Buổi chơi xếp từ mới nhất ➡️ cũ nhất</p>
-                    </div>
-
-                    <!-- Quick Info Badge of Latest Session -->
-                    <div id="sheet-latest-summary" class="flex flex-wrap items-center gap-2 text-xs">
-                        <!-- Rendered dynamically by JS -->
-                    </div>
-                </div>
-
-                <!-- Secondary Toolbar: Search + View Modes + Quick Action -->
-                <div class="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs sm:text-sm">
-                    <!-- Search box -->
-                    <div class="relative flex-1 max-w-xs">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="sheet-search-input" oninput="renderSheetGrid()" placeholder="Tìm tên thành viên trong bảng..." class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition">
-                    </div>
-
-                    <!-- View Mode and Actions -->
-                    <div class="flex flex-wrap items-center gap-2">
-                        <div class="flex items-center bg-slate-200/80 p-0.5 rounded-xl text-xs font-bold text-slate-700">
-                            <button id="btn-view-full" onclick="setSheetViewMode('full')" class="px-2.5 py-1 rounded-lg bg-white shadow-xs text-slate-900 transition">📋 Đầy đủ</button>
-                            <button id="btn-view-compact" onclick="setSheetViewMode('compact')" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition" title="Ẩn cột tài chính để điểm danh nhanh">⚡ Rút gọn</button>
-                        </div>
-
-                        <!-- Admin Fast Attendance Buttons for Newest Session -->
-                        <div id="sheet-admin-quick-actions" class="hidden items-center gap-1.5">
-                            <button onclick="quickMarkAttendance(true)" title="Đánh dấu tất cả có mặt ở buổi mới nhất" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1 shadow-xs transition">
-                                <i class="fa-solid fa-check-double"></i> Chọn hết
-                            </button>
-                            <button onclick="quickMarkAttendance(false)" title="Bỏ chọn tất cả ở buổi mới nhất" class="px-2.5 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs flex items-center gap-1 transition">
-                                <i class="fa-solid fa-xmark"></i> Bỏ hết
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto custom-scrollbar w-full touch-pan-x">
-                    <table class="grid-table w-full text-sm lg:text-[15px] text-left text-slate-800 border-collapse">
-                        <thead id="sheet-thead" class="select-none text-center"></thead>
-                        <tbody id="sheet-body" class="divide-y divide-slate-200 font-medium"></tbody>
-                        <tfoot id="sheet-footer" class="bg-slate-50 border-t-2 border-slate-300"></tfoot>
-                    </table>
-                </div>
             </div>
         </section>
 
@@ -561,13 +567,13 @@
 
     <!-- FLOATING ISLAND MOBILE NAVIGATION (ULTRA MODERN iOS STYLE) -->
     <nav id="mobile-bottom-nav" class="sm:hidden fixed bottom-3 left-2.5 right-2.5 z-50 bg-slate-950/95 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] flex justify-between items-center py-2 px-3 text-[11px] font-extrabold text-slate-400">
-        <button id="mb-nav-members" onclick="switchTab('members')" class="flex flex-col items-center gap-1 text-amber-400 py-1 px-2 rounded-2xl transition-all duration-200 active:scale-90">
-            <i class="fa-solid fa-users text-base"></i>
-            <span>Thành viên</span>
-        </button>
-        <button id="mb-nav-sheet" onclick="switchTab('sheet')" class="flex flex-col items-center gap-1 text-slate-400 py-1 px-2 rounded-2xl transition-all duration-200 active:scale-90">
+        <button id="mb-nav-sheet" onclick="switchTab('sheet')" class="flex flex-col items-center gap-1 text-amber-400 scale-105 font-black py-1 px-2 rounded-2xl transition-all duration-200 active:scale-90">
             <i class="fa-solid fa-calendar-check text-base"></i>
             <span>Điểm danh</span>
+        </button>
+        <button id="mb-nav-members" onclick="switchTab('members')" class="flex flex-col items-center gap-1 text-slate-400 font-bold py-1 px-2 rounded-2xl transition-all duration-200 active:scale-90">
+            <i class="fa-solid fa-users text-base"></i>
+            <span>Thành viên</span>
         </button>
         <button id="mb-nav-payments" onclick="switchTab('payments')" class="flex flex-col items-center gap-1 text-slate-400 py-1 px-2 rounded-2xl transition-all duration-200 active:scale-90">
             <i class="fa-solid fa-money-bill-wave text-base"></i>
@@ -2093,6 +2099,75 @@
         }
 
         let sheetViewMode = 'full'; // 'full' or 'compact'
+        let isSessionsExpanded = false; // Trạng thái xem thêm các buổi cũ cho view không phải Admin
+
+        function toggleSessionsExpand() {
+            isSessionsExpanded = !isSessionsExpanded;
+            renderSheetGrid();
+        }
+
+        function updateSessionsExpandUI(hasMore, isExpanded, totalCount) {
+            const btnToolbar = document.getElementById('btn-toggle-sessions');
+            const footerBar = document.getElementById('sheet-expand-footer-bar');
+            
+            if (!hasMore) {
+                if (btnToolbar) {
+                    btnToolbar.classList.add('hidden');
+                    btnToolbar.classList.remove('inline-flex');
+                }
+                if (footerBar) {
+                    footerBar.classList.add('hidden');
+                    footerBar.classList.remove('flex');
+                }
+                return;
+            }
+
+            const hiddenCount = totalCount - 5;
+
+            // 1. Toolbar Button (Phía trên bảng)
+            if (btnToolbar) {
+                btnToolbar.classList.remove('hidden');
+                btnToolbar.classList.add('inline-flex');
+                if (isExpanded) {
+                    btnToolbar.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs border border-slate-300 transition shadow-xs cursor-pointer active:scale-95";
+                    btnToolbar.innerHTML = `<i class="fa-solid fa-compress text-slate-600 text-xs"></i> <span>Thu gọn (5 buổi gần nhất)</span>`;
+                    btnToolbar.title = "Thu gọn bảng về 5 buổi chơi gần nhất";
+                } else {
+                    btnToolbar.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold text-xs border border-amber-300 transition shadow-xs cursor-pointer active:scale-95";
+                    btnToolbar.innerHTML = `<i class="fa-solid fa-clock-rotate-left text-amber-700 text-xs"></i> <span>Xem thêm (${hiddenCount} buổi cũ)</span> <i class="fa-solid fa-chevron-down text-[10px] text-amber-700"></i>`;
+                    btnToolbar.title = `Bấm để xem thêm ${hiddenCount} buổi chơi trước đây`;
+                }
+            }
+
+            // 2. Footer Bar (Phía dưới bảng)
+            if (footerBar) {
+                footerBar.classList.remove('hidden');
+                footerBar.classList.add('flex');
+                if (isExpanded) {
+                    footerBar.className = "flex flex-col sm:flex-row items-center justify-between gap-2 p-3 sm:p-3.5 bg-slate-100 border-t border-slate-200 text-xs sm:text-sm text-slate-700";
+                    footerBar.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-circle-info text-sky-500"></i>
+                            <span>Đang hiển thị toàn bộ <strong>${totalCount} buổi chơi</strong> (từ mới nhất đến cũ nhất).</span>
+                        </div>
+                        <button onclick="toggleSessionsExpand()" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-200 text-slate-800 font-bold border border-slate-300 transition text-xs flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95">
+                            <i class="fa-solid fa-chevron-up text-xs"></i> Thu gọn về 5 buổi gần nhất
+                        </button>
+                    `;
+                } else {
+                    footerBar.className = "flex flex-col sm:flex-row items-center justify-between gap-2 p-3 sm:p-3.5 bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 border-t border-amber-200 text-xs sm:text-sm text-amber-950";
+                    footerBar.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-amber-600"></i>
+                            <span>Đang hiển thị <strong>5 buổi gần nhất</strong> (còn ${hiddenCount} buổi cũ hơn).</span>
+                        </div>
+                        <button onclick="toggleSessionsExpand()" class="px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-black transition text-xs flex items-center gap-1.5 shadow-sm cursor-pointer active:scale-95">
+                            <i class="fa-solid fa-chevron-down text-xs"></i> Xem thêm tất cả ${totalCount} buổi
+                        </button>
+                    `;
+                }
+            }
+        }
 
         function setSheetViewMode(mode) {
             sheetViewMode = mode;
@@ -2194,8 +2269,18 @@
             });
 
             // SẮP XẾP CÁC BUỔI CHƠI: TỪ MỚI NHẤT ĐẾN CŨ NHẤT (Cột sau thông tin thành viên)
-            const displaySessions = [...sessions].reverse();
+            const allSessionsDesc = [...sessions].reverse();
             const isFull = (sheetViewMode === 'full');
+
+            // Xử lý giới hạn 5 buổi gần nhất cho view không phải Admin
+            let displaySessions = allSessionsDesc;
+            const hasMoreSessions = (!isAdmin && allSessionsDesc.length > 5);
+            if (hasMoreSessions && !isSessionsExpanded) {
+                displaySessions = allSessionsDesc.slice(0, 5);
+            }
+
+            // Cập nhật trạng thái nút Xem thêm / Thu gọn
+            updateSessionsExpandUI(hasMoreSessions, isSessionsExpanded, allSessionsDesc.length);
 
             // --- BUILD THEAD (PURE DOM) ---
             thead.innerHTML = '';
@@ -3198,7 +3283,7 @@
         }
 
         function switchTab(tabId) {
-            const allTabs = ['members', 'sheet', 'payments', 'batches', 'qr', 'ai', 'script'];
+            const allTabs = ['sheet', 'members', 'payments', 'batches', 'qr', 'ai', 'script'];
             
             allTabs.forEach(id => {
                 document.getElementById('tab-' + id)?.classList.add('hidden');
@@ -3252,10 +3337,11 @@
                     restoreState(); // revert
                 }
                 isAdmin = false;
+                isSessionsExpanded = false;
                 safeRemoveStorage('CLB_ADMIN_LOGGED');
                 updateUIByRole();
                 renderAll();
-                switchTab('members');
+                switchTab('sheet');
                 showToast('Đã chuyển sang chế độ Thành Viên', 'info');
             } else {
                 document.getElementById('google-email').value = '';
