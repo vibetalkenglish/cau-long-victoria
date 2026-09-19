@@ -70,37 +70,86 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        .grid-table { border-collapse: separate !important; border-spacing: 0 !important; }
+        :root {
+            --col-left-1-w: 36px;
+            --col-left-2-w: 118px;
+        }
+        @media (min-width: 640px) {
+            :root {
+                --col-left-1-w: 44px;
+                --col-left-2-w: 160px;
+            }
+        }
+
+        /* CUỘN MƯỢT MÀ DI ĐỘNG (NATIVE TOUCH MOMENTUM SCROLLING) */
+        main {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+        }
+
+        .table-scroll-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-x pan-y; /* Cho phép vuốt cả chiều ngang và chiều dọc mượt mà, không bao giờ đơ */
+            overscroll-behavior-x: contain;
+        }
+        
+        .grid-table { 
+            border-collapse: separate !important; 
+            border-spacing: 0 !important;
+            -webkit-font-smoothing: antialiased;
+        }
         .grid-table th, .grid-table td {
             border-right: 1px solid #e2e8f0;
             border-bottom: 1px solid #e2e8f0;
             white-space: nowrap;
         }
         
-        /* ĐÓNG BĂNG CỘT 1 (#) và CỘT 2 (TÊN THÀNH VIÊN) */
+        /* ĐÓNG BĂNG CỘT 1 (#) và CỘT 2 (TÊN THÀNH VIÊN) - GPU COMPOSITED */
         .sticky-col-left-1 { 
             position: sticky; left: 0; z-index: 25; 
-            width: 44px; min-width: 44px; max-width: 44px; 
+            width: var(--col-left-1-w); min-width: var(--col-left-1-w); max-width: var(--col-left-1-w);
+            will-change: transform;
+            transform: translateZ(0);
         }
         .sticky-col-left-2 { 
-            position: sticky; left: 44px; z-index: 25; 
-            min-width: 140px; max-width: 220px; 
+            position: sticky; left: var(--col-left-1-w); z-index: 25; 
+            width: var(--col-left-2-w); min-width: var(--col-left-2-w); max-width: var(--col-left-2-w); 
             border-right: 2px solid #cbd5e1 !important; 
-            box-shadow: 4px 0 8px -3px rgba(15, 23, 42, 0.12); 
+            box-shadow: 3px 0 6px -2px rgba(15, 23, 42, 0.12);
+            will-change: transform;
+            transform: translateZ(0);
         }
         
         /* ĐÓNG BĂNG HÀNG TIÊU ĐỀ (HEADER ROWS) */
-        .sticky-top-row-1 { position: sticky; top: 0 !important; z-index: 30 !important; }
-        .sticky-top-row-2 { position: sticky; top: 48px !important; z-index: 30 !important; }
+        .sticky-top-row-1 { 
+            position: sticky; top: 0 !important; z-index: 30 !important; 
+            will-change: transform;
+            transform: translateZ(0);
+        }
+        .sticky-top-row-2 { 
+            position: sticky; top: 40px !important; z-index: 30 !important; 
+            will-change: transform;
+            transform: translateZ(0);
+        }
+        @media (min-width: 640px) {
+            .sticky-top-row-2 { top: 48px !important; }
+        }
         
         /* GIAO ĐIỂM CỦA HÀNG VÀ CỘT ĐÓNG BĂNG (CORNER CELLS) */
         .sticky-top-row-1.sticky-col-left-1, .sticky-top-row-1.sticky-col-left-2 { z-index: 45 !important; }
         .sticky-top-row-2.sticky-col-left-1, .sticky-top-row-2.sticky-col-left-2 { z-index: 45 !important; }
         
-        /* ĐÓNG BĂNG HÀNG CHÂN TRANG (STICKY TFOOT) */
-        .grid-table tfoot { position: sticky; bottom: 0; z-index: 32; }
-        .grid-table tfoot tr { box-shadow: 0 -4px 8px -3px rgba(15, 23, 42, 0.12); }
-        .grid-table tfoot td.sticky-col-left-1, .grid-table tfoot td.sticky-col-left-2 { z-index: 46 !important; }
+        /* HÀNG CHÂN TRANG (TFOOT) - TỐI ƯU HIỆU NĂNG CHO MOBILE */
+        @media (min-width: 640px) {
+            .grid-table tfoot { position: sticky; bottom: 0; z-index: 32; }
+            .grid-table tfoot tr { box-shadow: 0 -4px 8px -3px rgba(15, 23, 42, 0.12); }
+            .grid-table tfoot td.sticky-col-left-1, .grid-table tfoot td.sticky-col-left-2 { z-index: 46 !important; }
+        }
+        @media (max-width: 639px) {
+            .grid-table tfoot { position: static; }
+            .grid-table tfoot tr { box-shadow: none; }
+        }
 
         /* NÚT BẤM ĐIỂM DANH YES / NO TOUCH-FRIENDLY */
         .btn-att-yes {
@@ -241,7 +290,7 @@
     </div>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 max-w-[1720px] w-full mx-auto p-3.5 sm:p-6 lg:p-8 overflow-y-auto space-y-6 lg:space-y-8 pb-36 sm:pb-20">
+    <main class="flex-1 max-w-[1720px] w-full mx-auto p-2 sm:p-6 lg:p-8 overflow-y-auto space-y-4 sm:space-y-6 lg:space-y-8 pb-32 sm:pb-20">
         
         <!-- ============================================================== -->
         <!-- TAB 1: 📋 BẢNG ĐIỂM DANH CHI TIẾT (ATTENDANCE SHEET GRID) -->
@@ -273,6 +322,9 @@
 
                     <!-- View Mode and Actions -->
                     <div class="flex flex-wrap items-center gap-2">
+                        <!-- Mobile Swipe Hint -->
+                        <span class="sm:hidden text-[11px] font-bold text-slate-500 bg-slate-200/80 px-2 py-1 rounded-lg inline-flex items-center gap-1 shrink-0"><i class="fa-solid fa-arrows-left-right text-[10px] text-amber-600"></i> Vuốt ngang</span>
+
                         <!-- Button Xem thêm / Thu gọn buổi cũ cho view thường -->
                         <button id="btn-toggle-sessions" onclick="toggleSessionsExpand()" class="hidden"></button>
 
@@ -293,7 +345,7 @@
                     </div>
                 </div>
 
-                <div class="overflow-x-auto custom-scrollbar w-full touch-pan-x">
+                <div class="table-scroll-container custom-scrollbar w-full">
                     <table class="grid-table w-full text-sm lg:text-[15px] text-left text-slate-800 border-collapse">
                         <thead id="sheet-thead" class="select-none text-center"></thead>
                         <tbody id="sheet-body" class="divide-y divide-slate-200 font-medium"></tbody>
@@ -413,7 +465,7 @@
                     </p>
                 </div>
 
-                <div class="overflow-x-auto custom-scrollbar w-full touch-pan-x">
+                <div class="table-scroll-container custom-scrollbar w-full">
                     <table class="grid-table w-full text-sm lg:text-[15px] text-left text-slate-800 border-collapse min-w-[700px]">
                         <thead id="pay-thead" class="select-none text-center"></thead>
                         <tbody id="pay-body" class="divide-y divide-slate-200 font-medium"></tbody>
@@ -2289,36 +2341,36 @@
             const tr1 = document.createElement('tr');
             tr1.className = "bg-slate-800 text-white border-b border-slate-700 text-sm lg:text-base";
             
-            tr1.appendChild(createTH('#', 'p-2.5 sm:p-3 w-10 sm:w-11 bg-slate-800 text-slate-400 sticky-col-left-1 sticky-top-row-1 border-r border-slate-700 align-middle text-center font-bold'));
-            tr1.appendChild(createTH('THÀNH VIÊN', 'p-2.5 sm:p-3 min-w-[130px] sm:min-w-[160px] bg-slate-800 text-white sticky-col-left-2 sticky-top-row-1 text-left px-3 lg:px-4 border-r border-slate-700 align-middle font-bold tracking-wide'));
+            tr1.appendChild(createTH('#', 'p-2 sm:p-3 bg-slate-800 text-slate-400 sticky-col-left-1 sticky-top-row-1 border-r border-slate-700 align-middle text-center font-bold text-xs sm:text-sm'));
+            tr1.appendChild(createTH('THÀNH VIÊN', 'p-2 sm:p-3 bg-slate-800 text-white sticky-col-left-2 sticky-top-row-1 text-left px-2 sm:px-3 border-r border-slate-700 align-middle font-bold tracking-wide text-xs sm:text-sm'));
             
             if (isFull) {
-                tr1.appendChild(createTH('Cần thanh toán', 'p-2.5 sm:p-3 min-w-[120px] sm:min-w-[140px] bg-slate-800 text-amber-300 border-r border-slate-700 align-middle text-right px-3 sticky-top-row-1 font-bold'));
-                tr1.appendChild(createTH('Đã thanh toán', 'p-2.5 sm:p-3 min-w-[115px] sm:min-w-[135px] bg-slate-800 text-emerald-300 border-r border-slate-700 align-middle text-right px-3 sticky-top-row-1 font-bold'));
-                tr1.appendChild(createTH('Còn lại', 'p-2.5 sm:p-3 min-w-[110px] sm:min-w-[130px] bg-slate-800 text-rose-300 border-r border-slate-700 align-middle text-right px-3 sticky-top-row-1 font-bold'));
+                tr1.appendChild(createTH('Cần đóng', 'p-2 sm:p-3 min-w-[85px] sm:min-w-[130px] bg-slate-800 text-amber-300 border-r border-slate-700 align-middle text-right px-2 sm:px-3 sticky-top-row-1 font-bold text-xs sm:text-sm'));
+                tr1.appendChild(createTH('Đã đóng', 'p-2 sm:p-3 min-w-[80px] sm:min-w-[125px] bg-slate-800 text-emerald-300 border-r border-slate-700 align-middle text-right px-2 sm:px-3 sticky-top-row-1 font-bold text-xs sm:text-sm'));
+                tr1.appendChild(createTH('Còn lại', 'p-2 sm:p-3 min-w-[78px] sm:min-w-[120px] bg-slate-800 text-rose-300 border-r border-slate-700 align-middle text-right px-2 sm:px-3 sticky-top-row-1 font-bold text-xs sm:text-sm'));
             }
 
             displaySessions.forEach((s, sIdx) => {
                 const isNewest = (sIdx === 0);
                 let actionBtns = '';
                 if (isAdmin) {
-                    actionBtns = `<button onclick="deleteSession('${s.id}')" title="Xóa buổi này" class="text-slate-400 hover:text-rose-400 text-xs ml-1.5 p-0.5"><i class="fa-solid fa-trash-can"></i></button>`;
+                    actionBtns = `<button onclick="deleteSession('${s.id}')" title="Xóa buổi này" class="text-slate-400 hover:text-rose-400 text-xs ml-1 p-0.5"><i class="fa-solid fa-trash-can"></i></button>`;
                 }
                 const newestBadge = isNewest 
-                    ? `<span class="bg-amber-400 text-slate-950 font-black text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm animate-pulse">Mới</span>` 
+                    ? `<span class="bg-amber-400 text-slate-950 font-black text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm animate-pulse">Mới</span>` 
                     : '';
 
                 const thS = document.createElement('th');
                 thS.colSpan = 2;
-                thS.className = `p-2.5 sm:p-3 border-r border-slate-700 font-bold ${isNewest ? 'bg-slate-800 text-amber-300 ring-2 ring-inset ring-amber-400/70' : 'bg-slate-800 text-slate-100'} text-center sticky-top-row-1 whitespace-nowrap text-sm min-w-[160px] lg:min-w-[190px]`;
-                thS.innerHTML = `<div class="flex items-center justify-center gap-1.5">${newestBadge}<span class="font-bold whitespace-nowrap">${s.date}</span>${actionBtns}</div>`;
+                thS.className = `p-2 sm:p-3 border-r border-slate-700 font-bold ${isNewest ? 'bg-slate-800 text-amber-300 ring-2 ring-inset ring-amber-400/70' : 'bg-slate-800 text-slate-100'} text-center sticky-top-row-1 whitespace-nowrap text-xs sm:text-sm min-w-[135px] sm:min-w-[170px]`;
+                thS.innerHTML = `<div class="flex items-center justify-center gap-1 sm:gap-1.5">${newestBadge}<span class="font-bold whitespace-nowrap">${s.date}</span>${actionBtns}</div>`;
                 tr1.appendChild(thS);
             });
             thead.appendChild(tr1);
 
             // Row 2
             const tr2 = document.createElement('tr');
-            tr2.className = "bg-slate-100 text-slate-600 text-xs sm:text-[13px] font-semibold border-b border-slate-200";
+            tr2.className = "bg-slate-100 text-slate-600 text-[11px] sm:text-[13px] font-semibold border-b border-slate-200";
             
             tr2.appendChild(createTH('', 'p-1 bg-slate-100 sticky-col-left-1 sticky-top-row-2 border-r border-slate-200'));
             tr2.appendChild(createTH('', 'p-1 bg-slate-100 sticky-col-left-2 sticky-top-row-2 border-r border-slate-200'));
@@ -2333,8 +2385,8 @@
                 const isNewest = (sIdx === 0);
                 const r2Class = isNewest ? 'bg-amber-100 text-amber-950 font-bold border-b border-amber-300' : 'bg-slate-100 text-slate-600 font-semibold border-b border-slate-200';
                 const colTitle = isAdmin ? 'Tham gia / %' : 'Tham gia?';
-                tr2.appendChild(createTH(colTitle, `p-2 border-r border-slate-200 ${r2Class} w-[75px] sm:w-[90px] text-center sticky-top-row-2`));
-                tr2.appendChild(createTH('Tiền cầu', `p-2 border-r border-slate-200 ${r2Class} min-w-[95px] sm:min-w-[110px] text-right px-2.5 sticky-top-row-2`));
+                tr2.appendChild(createTH(colTitle, `p-1.5 sm:p-2 border-r border-slate-200 ${r2Class} w-[62px] sm:w-[80px] text-center sticky-top-row-2 text-[11px] sm:text-xs`));
+                tr2.appendChild(createTH('Tiền cầu', `p-1.5 sm:p-2 border-r border-slate-200 ${r2Class} min-w-[70px] sm:min-w-[90px] text-right px-2 sm:px-2.5 sticky-top-row-2 text-[11px] sm:text-xs`));
             });
             thead.appendChild(tr2);
 
@@ -2361,12 +2413,12 @@
                     let btn = '';
                     if (!isAdmin) {
                         const bClass = isAtt ? 'btn-att-yes' : 'btn-att-no';
-                        const label = isAtt ? '<i class="fa-solid fa-check mr-1 text-[11px]"></i> Có' : '<span class="text-slate-400 text-xs">- Vắng</span>';
-                        btn = `<span class="min-w-[56px] sm:min-w-[64px] py-1.5 px-2 text-xs font-bold rounded-xl inline-flex items-center justify-center mx-auto ${bClass}">${label}</span>`;
+                        const label = isAtt ? '<i class="fa-solid fa-check mr-1 text-[10px]"></i> Có' : '<span class="text-slate-400 text-[11px] sm:text-xs">- Vắng</span>';
+                        btn = `<span class="min-w-[48px] sm:min-w-[60px] py-1 sm:py-1.5 px-1.5 sm:px-2 text-[11px] sm:text-xs font-bold rounded-xl inline-flex items-center justify-center mx-auto select-none pointer-events-none ${bClass}">${label}</span>`;
                     } else {
                         // Giao diện Admin:
                         if (!isAtt) {
-                            btn = `<button onclick="setAttRatio(${m.id}, '${s.id}', 1)" class="min-w-[56px] sm:min-w-[64px] py-1.5 px-2 text-xs font-bold rounded-xl btn-att-no active:scale-95 transition-all shadow-xs flex items-center justify-center mx-auto hover:border-slate-400" title="Bấm để điểm danh Có mặt (100%)"><span class="text-slate-400 text-xs">- Vắng</span></button>`;
+                            btn = `<button onclick="setAttRatio(${m.id}, '${s.id}', 1)" class="min-w-[48px] sm:min-w-[60px] py-1 sm:py-1.5 px-1.5 sm:px-2 text-[11px] sm:text-xs font-bold rounded-xl btn-att-no active:scale-95 transition-all shadow-xs flex items-center justify-center mx-auto hover:border-slate-400" title="Bấm để điểm danh Có mặt (100%)"><span class="text-slate-400 text-[11px] sm:text-xs">- Vắng</span></button>`;
                         } else {
                             const pctText = Math.round(ratio * 100) + '%';
                             const pctBadgeClass = (ratio === 1) 
@@ -2384,8 +2436,8 @@
                     const cellHighlight = isNewest ? 'bg-amber-50/40' : '';
 
                     sessionCells += `
-                        <td class="p-2 sm:p-2.5 text-center bg-white border-r border-slate-200 ${cellHighlight}">${btn}</td>
-                        <td class="p-2 sm:p-2.5 text-right font-mono font-medium text-slate-800 border-r border-slate-200 text-sm px-2.5 ${cellHighlight} ${isAtt ? '' : 'text-slate-400'}">${isAtt ? formatVND(cost) : '0'}</td>
+                        <td class="p-1.5 sm:p-2 text-center bg-white border-r border-slate-200 ${cellHighlight}">${btn}</td>
+                        <td class="p-1.5 sm:p-2 text-right font-mono font-medium text-slate-800 border-r border-slate-200 text-xs sm:text-sm px-1.5 sm:px-2.5 ${cellHighlight} ${isAtt ? '' : 'text-slate-400'}">${isAtt ? formatVND(cost) : '0'}</td>
                     `;
                 });
 
@@ -2397,28 +2449,28 @@
                 
                 let paidCellHTML = '';
                 if (isKantan(m)) {
-                    paidCellHTML = `<span class="text-emerald-700 font-extrabold font-mono block text-right px-2 w-full text-sm" title="Tự động tính = Tổng tiền cầu đã mua - Tiền thu từ các thành viên">${formatVND(m.paid)}</span>`;
+                    paidCellHTML = `<span class="text-emerald-700 font-extrabold font-mono block text-right px-1 sm:px-2 w-full text-xs sm:text-sm" title="Tự động tính = Tổng tiền cầu đã mua - Tiền thu từ các thành viên">${formatVND(m.paid)}</span>`;
                 } else if (isAdmin) {
-                    paidCellHTML = `<input type="text" value="${formatVND(m.paid)}" onfocus="this.value=${m.paid}; this.select();" onblur="updatePaid(${m.id}, this.value)" onkeydown="if(event.key==='Enter') this.blur();" class="currency-input text-emerald-700 font-bold font-mono text-right w-full text-sm">`;
+                    paidCellHTML = `<input type="text" value="${formatVND(m.paid)}" onfocus="this.value=${m.paid}; this.select();" onblur="updatePaid(${m.id}, this.value)" onkeydown="if(event.key==='Enter') this.blur();" class="currency-input text-emerald-700 font-bold font-mono text-right w-full text-xs sm:text-sm">`;
                 } else {
-                    paidCellHTML = `<span class="text-emerald-700 font-bold font-mono block text-right px-2 w-full text-sm">${formatVND(m.paid)}</span>`;
+                    paidCellHTML = `<span class="text-emerald-700 font-bold font-mono block text-right px-1 sm:px-2 w-full text-xs sm:text-sm">${formatVND(m.paid)}</span>`;
                 }
 
-                const nameHtml = `<span onclick="openMemberDetails(${m.id})" class="cursor-pointer hover:text-sky-600 transition text-sky-700 flex items-center gap-1.5 truncate text-sm" title="Xem chi tiết ${m.name}"><i class="fa-solid fa-circle-info text-xs text-sky-400 shrink-0"></i> <span class="truncate font-semibold">${m.name}</span></span>`;
+                const nameHtml = `<span onclick="openMemberDetails(${m.id})" class="cursor-pointer hover:text-sky-600 transition text-sky-700 flex items-center gap-1 truncate text-xs sm:text-sm" title="Xem chi tiết ${m.name}"><i class="fa-solid fa-circle-info text-[10px] sm:text-xs text-sky-400 shrink-0"></i> <span class="truncate font-semibold">${m.name}</span></span>`;
 
                 let financialCells = '';
                 if (isFull) {
                     financialCells = `
-                        <td class="p-2.5 sm:p-3 text-right font-bold font-mono text-slate-900 bg-amber-50/40 border-r border-slate-200 text-sm px-3">${formatVND(memberTotalBill)}</td>
-                        <td class="p-2 sm:p-2.5 text-right bg-emerald-50/30 border-r border-slate-200 text-sm px-3">${paidCellHTML}</td>
-                        <td class="p-2.5 sm:p-3 text-right font-mono border-r border-slate-200 text-sm px-3 ${remainingColor}">${formatVND(remaining)}</td>
+                        <td class="p-1.5 sm:p-2.5 text-right font-bold font-mono text-slate-900 bg-amber-50/40 border-r border-slate-200 text-xs sm:text-sm px-1.5 sm:px-3">${formatVND(memberTotalBill)}</td>
+                        <td class="p-1.5 sm:p-2 text-right bg-emerald-50/30 border-r border-slate-200 text-xs sm:text-sm px-1.5 sm:px-3">${paidCellHTML}</td>
+                        <td class="p-1.5 sm:p-2.5 text-right font-mono border-r border-slate-200 text-xs sm:text-sm px-1.5 sm:px-3 ${remainingColor}">${formatVND(remaining)}</td>
                     `;
                 }
 
                 bodyHTML += `
                     <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="p-2.5 sm:p-3 text-center text-slate-500 font-mono text-sm bg-slate-50 sticky-col-left-1 border-r border-slate-200">${idx + 1}</td>
-                        <td class="p-2.5 sm:p-3 font-bold text-slate-900 bg-white sticky-col-left-2 border-r border-slate-200 text-sm px-3">${nameHtml}</td>
+                        <td class="p-1.5 sm:p-2 text-center text-slate-500 font-mono text-xs sm:text-sm bg-slate-50 sticky-col-left-1 border-r border-slate-200">${idx + 1}</td>
+                        <td class="p-1.5 sm:p-2 font-bold text-slate-900 bg-white sticky-col-left-2 border-r border-slate-200 text-xs sm:text-sm px-1.5 sm:px-2.5">${nameHtml}</td>
                         ${financialCells}
                         ${sessionCells}
                     </tr>
@@ -2428,15 +2480,15 @@
 
             // --- BUILD TFOOT ---
             let fHtml = `
-                <tr class="bg-slate-100 text-slate-800 border-t-2 border-slate-300 text-sm">
-                    <td class="p-3 sticky-col-left-1 border-r border-slate-200 bg-slate-200 text-center font-bold">#</td>
-                    <td class="p-3 sticky-col-left-2 border-r border-slate-200 bg-slate-200 text-slate-900 font-extrabold uppercase text-xs tracking-wide truncate px-3">Tổng Cộng</td>
+                <tr class="bg-slate-100 text-slate-800 border-t-2 border-slate-300 text-xs sm:text-sm">
+                    <td class="p-2 sm:p-3 sticky-col-left-1 border-r border-slate-200 bg-slate-200 text-center font-bold">#</td>
+                    <td class="p-2 sm:p-3 sticky-col-left-2 border-r border-slate-200 bg-slate-200 text-slate-900 font-extrabold uppercase text-[11px] sm:text-xs tracking-wide truncate px-2 sm:px-3">Tổng Cộng</td>
             `;
             if (isFull) {
                 fHtml += `
-                    <td class="p-3 border-r border-slate-200 text-right font-extrabold font-mono bg-amber-100/70 text-slate-900 text-sm px-3">${formatVND(globalCost)}</td>
-                    <td class="p-3 border-r border-slate-200 text-right text-emerald-700 font-extrabold font-mono bg-emerald-100/70 text-sm px-3">${formatVND(globalPaid)}</td>
-                    <td class="p-3 border-r border-slate-200 text-right font-extrabold font-mono text-sm px-3 ${globalPaid - globalCost < 0 ? 'text-rose-700 bg-rose-100/70' : 'text-emerald-700 bg-emerald-100/70'}">${formatVND(globalPaid - globalCost)}</td>
+                    <td class="p-2 sm:p-3 border-r border-slate-200 text-right font-extrabold font-mono bg-amber-100/70 text-slate-900 text-xs sm:text-sm px-2 sm:px-3">${formatVND(globalCost)}</td>
+                    <td class="p-2 sm:p-3 border-r border-slate-200 text-right text-emerald-700 font-extrabold font-mono bg-emerald-100/70 text-xs sm:text-sm px-2 sm:px-3">${formatVND(globalPaid)}</td>
+                    <td class="p-2 sm:p-3 border-r border-slate-200 text-right font-extrabold font-mono text-xs sm:text-sm px-2 sm:px-3 ${globalPaid - globalCost < 0 ? 'text-rose-700 bg-rose-100/70' : 'text-emerald-700 bg-emerald-100/70'}">${formatVND(globalPaid - globalCost)}</td>
                 `;
             }
             displaySessions.forEach((s, sIdx) => {
@@ -2446,14 +2498,14 @@
                 const cnt = sessionStats[s.id]?.count || 0;
                 const totWeight = sessionStats[s.id]?.totalWeight || 0;
                 const countDisplay = (isAdmin && totWeight > 0 && Math.abs(totWeight - cnt) > 0.01)
-                    ? `${cnt} <span class="text-[10px] text-amber-800 block font-normal">(${Math.round(totWeight * 10) / 10} suất)</span>`
+                    ? `${cnt} <span class="text-[9px] sm:text-[10px] text-amber-800 block font-normal">(${Math.round(totWeight * 10) / 10} suất)</span>`
                     : `${cnt}`;
                 fHtml += `
-                    <td class="p-2.5 text-center ${footBg} border-r border-slate-200 text-sm" title="Tổng số người: ${cnt} • Trọng số quy đổi: ${totWeight}">${countDisplay}</td>
-                    <td class="p-3 text-right font-mono ${footBg} border-r border-slate-200 whitespace-nowrap text-sm px-2.5" title="${s.shuttles} trái cầu • Tổng tiền buổi ${s.date}: ${formatVND(sessionTotal)}">
-                        <div class="inline-flex items-center justify-end gap-1.5">
+                    <td class="p-1.5 sm:p-2 text-center ${footBg} border-r border-slate-200 text-xs sm:text-sm" title="Tổng số người: ${cnt} • Trọng số quy đổi: ${totWeight}">${countDisplay}</td>
+                    <td class="p-2 sm:p-3 text-right font-mono ${footBg} border-r border-slate-200 whitespace-nowrap text-xs sm:text-sm px-2 sm:px-2.5" title="${s.shuttles} trái cầu • Tổng tiền buổi ${s.date}: ${formatVND(sessionTotal)}">
+                        <div class="inline-flex items-center justify-end gap-1">
                             <span class="font-bold">${s.shuttles}</span>
-                            <svg class="w-3.5 h-3.5 inline-block text-amber-600 shrink-0 -mt-0.5" viewBox="0 0 24 24" fill="currentColor" title="${s.shuttles} trái cầu">
+                            <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 inline-block text-amber-600 shrink-0 -mt-0.5" viewBox="0 0 24 24" fill="currentColor" title="${s.shuttles} trái cầu">
                                 <path d="M14.83 13.41L18.5 9.74a1 1 0 0 0 .26-.95l-1.2-4.81a1 1 0 0 0-.73-.73l-4.81-1.2a1 1 0 0 0-.95.26L7.33 5.95l7.5 7.46zM5.92 7.36L2.26 11.03a1 1 0 0 0-.26.95l1.2 4.81c.14.54.56.96 1.1 1.1l4.81 1.2c.33.08.68-.01.95-.26l3.66-3.66-7.8-7.81zM6.34 19.07a3 3 0 0 0 4.24 0l1.41-1.41-4.24-4.24-1.41 1.41a3 3 0 0 0 0 4.24z"/>
                             </svg>
                             <span class="font-bold">${formatVND(sessionTotal)}</span>
