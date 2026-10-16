@@ -1,7 +1,13 @@
 const DEFAULT_SPREADSHEET_ID = '1-425z-aI4Im3b_eZ-ky5B47wm1R_zBa5uYdwCrnswM0';
 
+// Lý do không tạo được xác thực (chỉ mô tả, không chứa giá trị khóa)
+let authDebug = '';
+
 // 1. CẤU HÌNH XÁC THỰC GOOGLE SHEETS API
 function getGoogleAuth() {
+  authDebug = 'hasCredentialsJson=' + !!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON +
+    ', hasEmail=' + !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL +
+    ', hasPrivateKey=' + !!process.env.GOOGLE_PRIVATE_KEY;
   let google;
   try {
     google = require('googleapis').google;
@@ -23,6 +29,9 @@ function getGoogleAuth() {
       });
     } catch (e) {
       console.error('Lỗi parse GOOGLE_APPLICATION_CREDENTIALS_JSON:', e);
+      // Không đưa e.message ra ngoài vì JSON.parse có thể trích một đoạn nội dung khóa
+      const raw = credentialsJson.trim();
+      authDebug += ', credentialsJsonInvalid=true, length=' + raw.length + ', startsWithBrace=' + raw.startsWith('{') + ', endsWithBrace=' + raw.endsWith('}');
     }
   }
 
@@ -466,7 +475,8 @@ module.exports = async (req, res) => {
         console.error('Lỗi fallback proxy GET:', proxyErr);
         return res.status(200).json({
           success: false,
-          error: 'Lỗi kết nối proxy tới Google Sheets: ' + proxyErr.message
+          error: 'Lỗi kết nối proxy tới Google Sheets: ' + proxyErr.message,
+          authDebug: authDebug
         });
       }
     }
