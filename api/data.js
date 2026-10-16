@@ -77,10 +77,10 @@ async function getFromSheets(sheets, spreadsheetId) {
 
   const ranges = [
     'Sessions!A:D',
-    'Members!A:Z',
+    'Members',
     'Config!A:B',
     'Prices!A:H',
-    'Payments!A:Z'
+    'Payments'
   ];
 
   let valueRanges = [];
@@ -380,11 +380,11 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
       spreadsheetId: spreadsheetId,
       requestBody: {
         ranges: [
-          'Sessions!A1:Z500',
-          'Members!A1:Z500',
-          'Config!A1:B20',
-          'Prices!A1:H100',
-          'Payments!A1:Z500'
+          'Sessions',
+          'Members',
+          'Config',
+          'Prices',
+          'Payments'
         ]
       }
     });
