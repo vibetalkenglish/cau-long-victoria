@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const DEFAULT_SPREADSHEET_ID = '1-425z-aI4Im3b_eZ-ky5B47wm1R_zBa5uYdwCrnswM0';
 
 // Lý do không tạo được xác thực (chỉ mô tả, không chứa giá trị khóa)
@@ -53,10 +54,14 @@ function getGoogleAuth() {
 
 // 2. TỰ ĐỘNG TẠO CÁC SHEET NẾU BẢNG TÍNH CHƯA CÓ
 async function ensureSheetsExist(sheets, spreadsheetId) {
+  const gridSizes = {};
   const requiredSheets = ['Sessions', 'Members', 'Config', 'Prices', 'Payments'];
   try {
     const meta = await sheets.spreadsheets.get({ spreadsheetId });
     const existingTitles = (meta.data.sheets || []).map(s => s.properties?.title);
+    (meta.data.sheets || []).forEach(s => {
+      gridSizes[s.properties?.title] = s.properties?.gridProperties || {};
+    });
 
     const sheetsToAdd = requiredSheets.filter(title => !existingTitles.includes(title));
     if (sheetsToAdd.length > 0) {
@@ -70,10 +75,32 @@ async function ensureSheetsExist(sheets, spreadsheetId) {
         requestBody: { requests }
       });
       console.log('Đã tự động tạo các sheet còn thiếu:', sheetsToAdd.join(', '));
+      sheetsToAdd.forEach(title => { gridSizes[title] = { rowCount: 1000, columnCount: 26 }; });
     }
   } catch (err) {
     console.warn('Cảnh báo khi kiểm tra cấu trúc sheet:', err.message);
   }
+  return gridSizes;
+}
+
+// Đổi số thứ tự cột (1-based) sang chữ cái A1: 1 -> A, 27 -> AA
+function columnLetter(n) {
+  let s = '';
+  while (n > 0) {
+    const r = (n - 1) % 26;
+    s = String.fromCharCode(65 + r) + s;
+    n = Math.floor((n - 1) / 26);
+  }
+  return s;
+}
+
+// So khớp mã PIN admin (lưu trong biến môi trường ADMIN_PIN trên Vercel)
+function checkAdminPin(pin) {
+  const expected = process.env.ADMIN_PIN;
+  if (!expected) return { ok: false, reason: 'Máy chủ chưa cấu hình biến ADMIN_PIN trên Vercel.' };
+  const a = crypto.createHash('sha256').update(String(pin || '').trim()).digest();
+  const b = crypto.createHash('sha256').update(String(expected).trim()).digest();
+  return crypto.timingSafeEqual(a, b) ? { ok: true } : { ok: false, reason: 'Mã PIN admin không đúng.' };
 }
 
 // 3. HÀM ĐỌC DỮ LIỆU TỪ GOOGLE SHEETS (SIÊU TỐC QUA BATCH GET)
@@ -124,9 +151,11 @@ async function getFromSheets(sheets, spreadsheetId) {
       return val;
     }
     if (typeof val === 'string') {
-      const clean = val.replace('%', '').trim();
-      const num = parseFloat(clean);
+      const isPercent = val.includes('%');
+      const num = parseFloat(val.replace('%', '').replace(',', '.').trim());
       if (isNaN(num) || num <= 0) return false;
+      // Chuỗi có dấu % luôn là phần trăm ("1%" = 0.01, "100%" = có mặt đủ)
+      if (isPercent) return num >= 100 ? true : num / 100;
       if (num === 1 || num === 100) return true;
       if (num > 1) return num / 100;
       return num;
@@ -295,9 +324,11 @@ async function getFromSheets(sheets, spreadsheetId) {
   return { sessions, members, qrInfo, shuttleBatches };
 }
 
-// 4. HÀM GHI DỮ LIỆU VÀO GOOGLE SHEETS (SIÊU TỐC VỚI BATCH CLEAR & BATCH UPDATE)
+// 4. HÀM GHI DỮ LIỆU VÀO GOOGLE SHEETS
+// Ghi dữ liệu mới TRƯỚC, sau đó mới dọn phần thừa bên dưới/bên phải.
+// Nếu bước ghi lỗi giữa chừng, dữ liệu cũ vẫn còn nguyên thay vì bị xóa trắng.
 async function saveToSheets(sheets, spreadsheetId, payload) {
-  await ensureSheetsExist(sheets, spreadsheetId);
+  const gridSizes = await ensureSheetsExist(sheets, spreadsheetId);
 
   const { sessions, members, qrInfo, shuttleBatches } = payload;
 
@@ -338,15 +369,17 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
   }
 
   // C. Chuẩn bị dữ liệu Config
-  let rawQrUrl = (qrInfo && qrInfo.qrUrl) ? qrInfo.qrUrl : '';
-  if (rawQrUrl.length > 49000) rawQrUrl = rawQrUrl.substring(0, 49000);
+  // Ô Google Sheets chứa tối đa 50.000 ký tự. Ảnh QR quá lớn thì giữ nguyên ảnh cũ trên Sheet
+  // (không ghi dòng qrUrl) thay vì cắt cụt làm hỏng ảnh.
+  const rawQrUrl = (qrInfo && qrInfo.qrUrl) ? qrInfo.qrUrl : '';
+  const qrTooLarge = rawQrUrl.length > 49000;
   const cData = [
     ['Key', 'Value'],
     ['bankName', (qrInfo && qrInfo.bankName) ? qrInfo.bankName : ''],
     ['bankAcc', (qrInfo && qrInfo.bankAcc) ? qrInfo.bankAcc : ''],
-    ['bankOwner', (qrInfo && qrInfo.bankOwner) ? qrInfo.bankOwner : ''],
-    ['qrUrl', rawQrUrl]
+    ['bankOwner', (qrInfo && qrInfo.bankOwner) ? qrInfo.bankOwner : '']
   ];
+  if (!qrTooLarge) cData.push(['qrUrl', rawQrUrl]);
 
   // D. Chuẩn bị dữ liệu Prices
   const pData = [['ID', 'Lần Mua', 'Số Hộp', 'Giá 1 Hộp (12 Trái)', 'Tổng Tiền Mua Cầu', 'Đơn Giá 1 Trái', 'Ghi chú', 'Tình trạng']];
@@ -379,39 +412,50 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
     });
   }
 
-  // 1. Xóa sạch vùng cũ qua batchClear (1 request duy nhất)
-  try {
-    await sheets.spreadsheets.values.batchClear({
-      spreadsheetId: spreadsheetId,
-      requestBody: {
-        ranges: [
-          'Sessions',
-          'Members',
-          'Config',
-          'Prices',
-          'Payments'
-        ]
-      }
-    });
-  } catch (clearErr) {
-    console.warn('Cảnh báo batchClear:', clearErr.message);
-  }
+  const blocks = [
+    { name: 'Sessions', values: sData },
+    { name: 'Members', values: mData },
+    { name: 'Config', values: cData, keepRows: qrTooLarge ? 5 : 0 },
+    { name: 'Prices', values: pData },
+    { name: 'Payments', values: payData }
+  ];
 
-  // 2. Ghi toàn bộ dữ liệu mới qua batchUpdate (1 request duy nhất, siêu tốc)
+  // 1. Ghi toàn bộ dữ liệu mới (1 request)
   const updateRes = await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId: spreadsheetId,
     requestBody: {
       valueInputOption: 'USER_ENTERED',
-      data: [
-        { range: 'Sessions!A1', values: sData },
-        { range: 'Members!A1', values: mData },
-        { range: 'Config!A1', values: cData },
-        { range: 'Prices!A1', values: pData },
-        { range: 'Payments!A1', values: payData }
-      ]
+      data: blocks.map(b => ({ range: `${b.name}!A1`, values: b.values }))
     }
   });
 
+  // 2. Dọn dữ liệu cũ còn sót bên dưới và bên phải vùng vừa ghi (vd: buổi/thành viên đã xóa)
+  const leftovers = [];
+  blocks.forEach(b => {
+    const grid = gridSizes[b.name] || {};
+    const usedRows = Math.max(b.values.length, b.keepRows || 0);
+    const usedCols = Math.max(...b.values.map(r => r.length));
+    if (grid.rowCount > usedRows) {
+      leftovers.push(`${b.name}!${usedRows + 1}:${grid.rowCount}`);
+    }
+    if (grid.columnCount > usedCols) {
+      leftovers.push(`${b.name}!${columnLetter(usedCols + 1)}1:${columnLetter(grid.columnCount)}${usedRows}`);
+    }
+  });
+  if (leftovers.length > 0) {
+    try {
+      await sheets.spreadsheets.values.batchClear({
+        spreadsheetId: spreadsheetId,
+        requestBody: { ranges: leftovers }
+      });
+    } catch (clearErr) {
+      console.warn('Cảnh báo dọn dữ liệu thừa:', clearErr.message);
+    }
+  }
+
+  if (qrTooLarge) {
+    updateRes.data.warning = 'Ảnh QR quá lớn (>49.000 ký tự) nên chưa được lưu, ảnh cũ được giữ nguyên.';
+  }
   return updateRes.data;
 }
 
@@ -484,6 +528,14 @@ module.exports = async (req, res) => {
     if (req.method === 'POST') {
       try {
         const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+        if (body.action === 'saveData' || body.action === 'verifyPin') {
+          const check = checkAdminPin(body.pin);
+          if (!check.ok) {
+            await new Promise(r => setTimeout(r, 1000));
+            return res.status(401).json({ success: false, authError: true, error: check.reason });
+          }
+          if (body.action === 'verifyPin') return res.status(200).json({ success: true });
+        }
         const response = await fetch(FALLBACK_SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -534,11 +586,26 @@ module.exports = async (req, res) => {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
       const action = body.action;
 
+      if (action === 'verifyPin') {
+        const check = checkAdminPin(body.pin);
+        if (!check.ok) await new Promise(r => setTimeout(r, 1000)); // làm chậm việc dò PIN
+        return res.status(check.ok ? 200 : 401).json({ success: check.ok, error: check.reason });
+      }
+
       if (action === 'saveData') {
-        const payload = body.payload || body;
-        await saveToSheets(sheets, spreadsheetId, payload);
+        const check = checkAdminPin(body.pin);
+        if (!check.ok) {
+          await new Promise(r => setTimeout(r, 1000));
+          return res.status(401).json({ success: false, authError: true, error: check.reason });
+        }
+        const payload = body.payload;
+        if (!payload || !Array.isArray(payload.sessions) || !Array.isArray(payload.members)) {
+          return res.status(400).json({ success: false, error: 'Dữ liệu gửi lên không hợp lệ.' });
+        }
+        const result = await saveToSheets(sheets, spreadsheetId, payload);
         return res.status(200).json({
           success: true,
+          warning: result && result.warning,
           message: 'Đã lưu dữ liệu vào Google Sheets thành công!'
         });
       }

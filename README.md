@@ -56,5 +56,7 @@
 ---
 
 ## 🔐 ĐĂNG NHẬP QUẢN TRỊ VIÊN (ADMIN)
-- **Cách 1 (Dùng mã PIN)**: Nhấn nút **Admin** góc trên bên phải > Nhập mã PIN mặc định: `123456`.
-- **Cách 2 (Dùng Email)**: Nhập email: `sayoonara.htq90@gmail.com`.
+- Mã PIN admin được **máy chủ** kiểm tra, không nằm trong code.
+- **Vercel**: đặt biến môi trường `ADMIN_PIN` (Settings → Environment Variables), rồi Redeploy.
+- **Google Apps Script** (nếu dùng): Project Settings → Script Properties → thêm khóa `ADMIN_PIN`.
+- Trên web: nhấn nút **Admin** góc trên bên phải → nhập mã PIN. Chưa đặt `ADMIN_PIN` thì không ai lưu được dữ liệu.

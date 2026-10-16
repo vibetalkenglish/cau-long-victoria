@@ -1034,22 +1034,12 @@
         // ==========================================
         let isAdmin = false;
         
-        // Danh sách băm mã hóa một chiều SHA-256 (Chống lộ mã PIN khi xem nguồn F12 / DevTools)
-        const SECURE_ADMIN_HASHES = [
-            '871ff4548b468948538a25d9e1bb1a5af4033e5063234fdff8529557be1991e7', // Mã PIN bí mật
-            '071e57030164d3ffdd26394cb9695bd782c9c8cf95acfb1877a0d333bcc3140d'  // Email quản trị
-        ];
-
-        async function hashText(str) {
-            str = (str || '').trim();
-            if (window.crypto && window.crypto.subtle) {
-                const msgBuffer = new TextEncoder().encode(str);
-                const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgBuffer);
-                return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-            }
-            return '';
+        // Mã PIN admin được kiểm tra ở máy chủ (biến ADMIN_PIN trên Vercel).
+        // Trình duyệt chỉ giữ PIN đã nhập để gửi kèm mỗi lần lưu.
+        function getAdminPin() {
+            return safeGetStorage('CLB_ADMIN_PIN', '');
         }
-        
+
         function safeGetStorage(key, defaultVal = null) {
             try {
                 return localStorage.getItem(key) || defaultVal;
@@ -1163,7 +1153,7 @@
         }
 
         function loadDataFromApi(isSilent = false, isManualClick = false) {
-            if (isApiLoading) return;
+            if (isApiLoading || isSaving) return;
             // Nếu admin đang có thay đổi chưa lưu, không ghi đè dữ liệu mới lên màn hình soạn thảo
             if (hasUnsavedChanges) {
                 console.log('Bỏ qua tự động tải lại vì Admin đang có thay đổi chưa lưu.');
@@ -1180,6 +1170,8 @@
 
             function onDataLoaded(d, source = '') {
                 isApiLoading = false;
+                // Admin bắt đầu sửa hoặc đang lưu trong lúc chờ tải: bỏ bản tải về để không đè mất thao tác
+                if (hasUnsavedChanges || isSaving) return;
                 if (!d || (!d.sessions?.length && !d.members?.length)) {
                     updateSyncStatusPill(true);
                     return;
@@ -1361,11 +1353,26 @@
             }
         }
 
+        // Chỉ một lần lưu chạy tại một thời điểm. Thao tác mới trong lúc đang lưu được xếp hàng
+        // và lưu tiếp ngay sau đó, tránh mất lượt bấm hoặc bản cũ ghi đè bản mới.
+        let isSaving = false;
+        let saveQueued = false;
+
+        function currentSnapshot() {
+            return JSON.stringify({ sessions, members, qrInfo, shuttleBatches });
+        }
+
         function commitChanges(isAutoSave = false) {
             if (autoSaveTimer) {
                 clearTimeout(autoSaveTimer);
                 autoSaveTimer = null;
             }
+            if (isSaving) {
+                saveQueued = true;
+                return;
+            }
+            isSaving = true;
+            saveQueued = false;
 
             const btnText = document.getElementById('btn-commit-text');
             const btn = document.getElementById('btn-commit');
@@ -1382,39 +1389,60 @@
             if (syncText) syncText.textContent = "Đang lưu...";
 
             const payload = { sessions, members, qrInfo, shuttleBatches };
-            const payloadString = JSON.stringify(payload);
+            // Ảnh chụp đúng dữ liệu được gửi đi, để biết sau khi lưu xong còn thay đổi nào chưa lưu không
+            const sentSnapshot = JSON.stringify(payload);
 
             // Luôn lưu bản sao vào localStorage để dự phòng không bao giờ mất
-            safeSetStorage('CLB_CACHED_DATA', payloadString);
+            safeSetStorage('CLB_CACHED_DATA', sentSnapshot);
 
-            function onSaveSuccess(source = '') {
-                backupState();
+            function finishAndContinue() {
+                isSaving = false;
+                const needAnother = saveQueued || (hasUnsavedChanges && currentSnapshot() !== sentSnapshot);
+                saveQueued = false;
+                if (needAnother && isAdmin) commitChanges(true);
+            }
+
+            function onSaveSuccess(source = '', warning = '') {
+                originalState = sentSnapshot;
+                hasUnsavedChanges = currentSnapshot() !== sentSnapshot;
                 if (btn) btn.disabled = false;
                 if (icon) icon.className = "";
                 if (btnText) btnText.textContent = "Lưu ngay";
                 updateSyncStatusPill(true);
-                if (msgEl) msgEl.innerHTML = `<i class="fa-solid fa-circle-check text-[#bcd331]"></i> Đã lưu vào Google Sheets thành công!`;
-                setTimeout(() => {
-                    if (!hasUnsavedChanges) {
-                        const banner = document.getElementById('unsaved-banner');
-                        if (banner) {
-                            banner.classList.remove('translate-y-0', 'opacity-100');
-                            banner.classList.add('translate-y-32', 'opacity-0');
-                            setTimeout(() => { if (!hasUnsavedChanges) banner.classList.add('hidden'); }, 300);
-                        }
-                    }
-                }, 1500);
-                showToast('Đã lưu dữ liệu vào Google Sheets thành công!' + (source ? ` (${source})` : ''), 'success');
+                if (hasUnsavedChanges) {
+                    // Có thao tác mới trong lúc lưu: giữ banner, lưu tiếp ngay
+                    updateSaveUI();
+                } else {
+                    updateSaveUI();
+                    if (msgEl) msgEl.innerHTML = `<i class="fa-solid fa-circle-check text-[#bcd331]"></i> Đã lưu vào Google Sheets thành công!`;
+                    showToast('Đã lưu dữ liệu vào Google Sheets thành công!' + (source ? ` (${source})` : ''), 'success');
+                }
+                if (warning) showToast(warning, 'warning');
+                finishAndContinue();
             }
 
-            function onSaveFailure(errMsg) {
+            function onSaveFailure(errMsg, isAuthError = false) {
+                isSaving = false;
+                saveQueued = false;
                 if (btn) btn.disabled = false;
                 if (icon) icon.className = "";
                 if (btnText) btnText.textContent = "Thử lại";
                 if (msgEl) msgEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-[#ef403e]"></i> Lỗi lưu: ${errMsg}`;
                 updateSyncStatusPill(false, 'Lỗi lưu Google Sheets');
-                showToast('Lỗi lưu Google Sheets: ' + errMsg, 'error');
                 console.error('Lỗi khi lưu dữ liệu:', errMsg);
+
+                if (isAuthError) {
+                    // PIN sai/hết hiệu lực: thoát quyền admin nhưng GIỮ thay đổi, đăng nhập lại sẽ tự lưu
+                    isAdmin = false;
+                    safeRemoveStorage('CLB_ADMIN_LOGGED');
+                    safeRemoveStorage('CLB_ADMIN_PIN');
+                    updateUIByRole();
+                    showToast('Chưa lưu được: ' + errMsg + ' Nhập lại mã PIN để lưu các thay đổi.', 'error');
+                    document.getElementById('google-email').value = '';
+                    openModal('modal-google-login');
+                } else {
+                    showToast('Lỗi lưu Google Sheets: ' + errMsg, 'error');
+                }
             }
 
             // 1. Môi trường Google Apps Script Web App (chạy trực tiếp trong iframe/script.google.com)
@@ -1422,7 +1450,7 @@
                 google.script.run
                     .withSuccessHandler(() => onSaveSuccess('Apps Script'))
                     .withFailureHandler((err) => onSaveFailure(err?.message || err))
-                    .saveToSheets(payloadString);
+                    .saveToSheets(sentSnapshot, getAdminPin());
                 return;
             }
 
@@ -1430,62 +1458,38 @@
             let apiUrl = GOOGLE_SCRIPT_API_URL || '/api/data';
             if (apiUrl.includes('PLACEHOLDER')) apiUrl = '/api/data';
             const isGoogleScriptUrl = apiUrl.includes('script.google.com');
+            const body = JSON.stringify({ action: 'saveData', pin: getAdminPin(), payload: payload });
 
             const fetchOptions = {
                 method: 'POST',
                 headers: {
                     'Content-Type': isGoogleScriptUrl ? 'text/plain;charset=utf-8' : 'application/json'
                 },
-                body: JSON.stringify({ action: 'saveData', payload: payload })
+                body: body,
+                // keepalive giúp yêu cầu lưu vẫn đi tiếp khi tab bị đóng (trình duyệt giới hạn ~64KB)
+                keepalive: body.length < 60000
             };
 
             const fetchUrl = apiUrl + (apiUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
 
             fetch(fetchUrl, fetchOptions)
                 .then(async res => {
-                    const contentType = res.headers.get('content-type') || '';
-                    if (!res.ok || !contentType.includes('application/json')) {
-                        let errText = '';
-                        try {
-                            const errJson = await res.json();
-                            errText = errJson.error || errJson.message;
-                        } catch(e) {
-                            errText = 'Server lưu phản hồi không đúng định dạng (status: ' + res.status + ', content-type: ' + (contentType.split(';')[0] || 'text/html') + ')';
-                        }
-                        throw new Error(errText);
+                    const data = await res.json().catch(() => null);
+                    if (!data) {
+                        const contentType = res.headers.get('content-type') || '';
+                        throw new Error('Server lưu phản hồi không đúng định dạng (status: ' + res.status + ', content-type: ' + (contentType.split(';')[0] || 'text/html') + ')');
                     }
-                    return res.json();
-                })
-                .then(data => {
-                    if (data && data.success) {
-                        onSaveSuccess(isGoogleScriptUrl ? 'Google API' : 'Vercel API');
+                    if (data.authError || res.status === 401) {
+                        onSaveFailure(data.error || 'Mã PIN admin không hợp lệ.', true);
+                        return;
+                    }
+                    if (res.ok && data.success) {
+                        onSaveSuccess(isGoogleScriptUrl ? 'Google API' : 'Vercel API', data.warning);
                     } else {
                         throw new Error(data.error || data.message || 'Lỗi từ chối lưu');
                     }
                 })
-                .catch(err => {
-                    // Fallback sang Google Apps Script URL nếu Vercel API gặp sự cố
-                    if (apiUrl !== FALLBACK_APPS_SCRIPT_URL && !isGoogleScriptUrl) {
-                        console.warn('API chính thất bại, đang thử fallback qua Google Apps Script Web App...', err);
-                        fetch(FALLBACK_APPS_SCRIPT_URL + '?_t=' + Date.now(), {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                            body: JSON.stringify({ action: 'saveData', payload: payload })
-                        })
-                        .then(res => res.json())
-                        .then(fbData => {
-                            if (fbData && fbData.success) {
-                                onSaveSuccess('Fallback Google API');
-                            } else {
-                                onSaveFailure(fbData.error || fbData.message || 'Có lỗi xảy ra');
-                            }
-                        })
-                        .catch(fbErr => onSaveFailure(err.message || fbErr.message));
-                        return;
-                    }
-
-                    onSaveFailure(err.message);
-                });
+                .catch(err => onSaveFailure(err.message));
         }
 
         function initMockData() {
@@ -1552,7 +1556,7 @@
             updateQRDisplay();
             renderAll();
 
-            if (safeGetStorage('CLB_ADMIN_LOGGED') === 'true') {
+            if (safeGetStorage('CLB_ADMIN_LOGGED') === 'true' && getAdminPin()) {
                 isAdmin = true;
             }
             updateUIByRole();
@@ -1614,10 +1618,22 @@
                 }
             }, 20000);
 
-            // C. Tự động lưu ngay nếu admin đóng tab hoặc chuyển trang khi có thay đổi
-            window.addEventListener('beforeunload', () => {
-                if (hasUnsavedChanges && isAdmin) {
+            // C. Lưu ngay khi admin rời trang / chuyển app (không đợi 600ms),
+            //    vì trên điện thoại sự kiện đóng tab thường không kịp gửi yêu cầu.
+            const flushPendingSave = () => {
+                if (hasUnsavedChanges && isAdmin && !isSaving) {
                     commitChanges(true);
+                }
+            };
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') flushPendingSave();
+            });
+            window.addEventListener('pagehide', flushPendingSave);
+            window.addEventListener('beforeunload', (e) => {
+                flushPendingSave();
+                if (hasUnsavedChanges && isAdmin) {
+                    e.preventDefault();
+                    e.returnValue = '';
                 }
             });
         };
@@ -1646,9 +1662,10 @@
                 return val;
             }
             if (typeof val === 'string') {
-                const clean = val.replace('%', '').trim();
-                const num = parseFloat(clean);
+                const isPercent = val.includes('%');
+                const num = parseFloat(val.replace('%', '').replace(',', '.').trim());
                 if (isNaN(num) || num <= 0) return 0;
+                if (isPercent) return Math.min(num / 100, 1);
                 if (num > 1) return num / 100;
                 return num;
             }
@@ -3241,8 +3258,30 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // Nén JPEG 75%
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.75);
+                    // Nén JPEG, giảm dần chất lượng/kích thước tới khi vừa giới hạn 1 ô Google Sheets
+                    const MAX_CHARS = 45000;
+                    let quality = 0.8;
+                    let compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                    while (compressedBase64.length > MAX_CHARS && quality > 0.35) {
+                        quality -= 0.1;
+                        compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                    }
+                    while (compressedBase64.length > MAX_CHARS && canvas.width > 150) {
+                        const w = Math.round(canvas.width * 0.8);
+                        const h = Math.round(canvas.height * 0.8);
+                        const tmp = document.createElement('canvas');
+                        tmp.width = w;
+                        tmp.height = h;
+                        tmp.getContext('2d').drawImage(canvas, 0, 0, w, h);
+                        canvas.width = w;
+                        canvas.height = h;
+                        ctx.drawImage(tmp, 0, 0);
+                        compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                    }
+                    if (compressedBase64.length > MAX_CHARS) {
+                        showToast('Ảnh QR quá lớn, không nén vừa được. Hãy chọn ảnh khác.', 'error');
+                        return;
+                    }
                     pendingQRUrl = compressedBase64;
 
                     const preview = document.getElementById('qr-upload-preview');
@@ -3401,6 +3440,7 @@
                 isAdmin = false;
                 isSessionsExpanded = false;
                 safeRemoveStorage('CLB_ADMIN_LOGGED');
+                safeRemoveStorage('CLB_ADMIN_PIN');
                 updateUIByRole();
                 renderAll();
                 switchTab('sheet');
@@ -3432,24 +3472,55 @@
             }
         }
 
+        let isVerifyingPin = false;
+
         async function verifyGoogleLogin() {
             const val = document.getElementById('google-email').value.trim();
             if (!val) {
                 showToast('Vui lòng nhập mã PIN bảo mật!', 'error');
                 return;
             }
-            const h1 = await hashText(val);
-            const h2 = await hashText(val.toLowerCase());
+            if (isVerifyingPin) return;
+            isVerifyingPin = true;
 
-            if (SECURE_ADMIN_HASHES.includes(h1) || SECURE_ADMIN_HASHES.includes(h2)) {
+            function onPinOk() {
+                isVerifyingPin = false;
                 isAdmin = true;
                 safeSetStorage('CLB_ADMIN_LOGGED', 'true');
+                safeSetStorage('CLB_ADMIN_PIN', val);
                 closeModal('modal-google-login');
                 updateUIByRole();
                 renderAll();
                 showToast('Đăng nhập Admin thành công!', 'success');
-            } else {
-                showToast('Mã PIN hoặc Email quản trị không chính xác!', 'error');
+                // Có thay đổi đang chờ (vd: phiên đăng nhập cũ hết hạn khi đang lưu) thì lưu luôn
+                if (hasUnsavedChanges) commitChanges(true);
+            }
+            function onPinFail(msg) {
+                isVerifyingPin = false;
+                showToast(msg || 'Mã PIN không chính xác!', 'error');
+            }
+
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(ok => ok ? onPinOk() : onPinFail())
+                    .withFailureHandler(err => onPinFail(err?.message || err))
+                    .verifyAdminPin(val);
+                return;
+            }
+
+            try {
+                let apiUrl = GOOGLE_SCRIPT_API_URL || '/api/data';
+                if (apiUrl.includes('PLACEHOLDER')) apiUrl = '/api/data';
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': apiUrl.includes('script.google.com') ? 'text/plain;charset=utf-8' : 'application/json' },
+                    body: JSON.stringify({ action: 'verifyPin', pin: val })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (data && data.success) onPinOk();
+                else onPinFail(data && data.error);
+            } catch (e) {
+                onPinFail('Không kết nối được máy chủ để kiểm tra PIN: ' + e.message);
             }
         }
 

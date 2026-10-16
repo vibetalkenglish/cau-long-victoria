@@ -1,6 +1,6 @@
 const SPREADSHEET_ID = '1-425z-aI4Im3b_eZ-ky5B47wm1R_zBa5uYdwCrnswM0';
 const ADMIN_EMAILS = ['sayoonara.htq90@gmail.com'];
-const DEFAULT_ADMIN_PIN = '19901990';
+// Mã PIN admin đặt trong Project Settings > Script Properties, khóa ADMIN_PIN (không ghi trong code).
 
 /**
  * Lấy đối tượng Spreadsheet (hỗ trợ cả Script nhúng trong Sheet lẫn Script độc lập Standalone)
@@ -72,9 +72,16 @@ function doPost(e) {
     const action = requestData.action;
 
     // Action 1: Lưu toàn bộ dữ liệu vào Google Sheets
+    if (action === 'verifyPin') {
+      const ok = verifyAdminPin(requestData.pin);
+      return ContentService.createTextOutput(JSON.stringify({
+        success: ok,
+        error: ok ? undefined : 'Mã PIN admin không đúng.'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     if (action === 'saveData') {
-      const payload = requestData.payload || requestData;
-      saveToSheets(payload);
+      saveToSheets(requestData.payload, requestData.pin);
       
       // Xóa cache cũ để nạp dữ liệu mới nhất
       try {
@@ -125,8 +132,17 @@ function getUserRole() {
   return { email: email, isAdmin: true };
 }
 
-function isAdminUser() {
-  return true; // Cho phép thực thi lệnh lưu từ giao diện đã xác thực PIN
+function isAdminUser(pin) {
+  const expected = PropertiesService.getScriptProperties().getProperty('ADMIN_PIN');
+  if (!expected) return false;
+  return String(pin || '').trim() === String(expected).trim();
+}
+
+// Gọi từ giao diện (google.script.run) khi admin đăng nhập
+function verifyAdminPin(pin) {
+  const ok = isAdminUser(pin);
+  if (!ok) Utilities.sleep(1000); // làm chậm việc dò PIN
+  return ok;
 }
 
 function getFromSheets() {
@@ -256,19 +272,16 @@ function getFromSheets() {
     }
   }
   
-  // Tự động khởi tạo dữ liệu mẫu nếu bảng tính hoàn toàn trống
-  if (sessions.length === 0 && members.length === 0) {
-    const seed = getDefaultSeedData();
-    saveToSheets(seed);
-    return seed;
-  }
+  // Không tự ghi dữ liệu mẫu khi bảng trống: lúc đọc trúng khoảnh khắc đang lưu, bảng có thể trống tạm thời
+  // và việc ghi đè dữ liệu mẫu sẽ làm mất dữ liệu thật. Muốn khởi tạo thì chạy tay setupInitialData().
 
   return { sessions: sessions, members: members, qrInfo: qrInfo, shuttleBatches: shuttleBatches };
 }
 
-function saveToSheets(payloadData) {
-  if (!isAdminUser()) {
-    throw new Error('Từ chối truy cập: Bạn không có quyền Admin để thực hiện thao tác này!');
+function saveToSheets(payloadData, pin) {
+  if (!isAdminUser(pin)) {
+    Utilities.sleep(1000);
+    throw new Error('Mã PIN admin không đúng hoặc chưa cấu hình ADMIN_PIN trong Script Properties.');
   }
 
   if (!payloadData) return false;
@@ -439,7 +452,7 @@ function getDefaultSeedData() {
  */
 function setupInitialData() {
   const seed = getDefaultSeedData();
-  saveToSheets(seed);
+  saveToSheets(seed, PropertiesService.getScriptProperties().getProperty('ADMIN_PIN'));
   Logger.log('Đã khởi tạo dữ liệu mẫu thành công vào Google Sheets!');
 }
 
