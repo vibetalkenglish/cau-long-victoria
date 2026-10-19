@@ -108,7 +108,7 @@ async function getFromSheets(sheets, spreadsheetId) {
   await ensureSheetsExist(sheets, spreadsheetId);
 
   const ranges = [
-    'Sessions!A:D',
+    'Sessions!A:E',
     'Members',
     'Config!A:B',
     'Prices!A:H',
@@ -172,7 +172,8 @@ async function getFromSheets(sheets, spreadsheetId) {
         id: sValues[i][0].toString(),
         date: sValues[i][1] || '',
         shuttles: parseSafeNumber(sValues[i][2], 0),
-        unitPrice: parseSafeNumber(sValues[i][3], 0)
+        unitPrice: parseSafeNumber(sValues[i][3], 0),
+        totalCost: parseSafeNumber(sValues[i][4], 0)
       });
     }
   }
@@ -292,7 +293,7 @@ async function getFromSheets(sheets, spreadsheetId) {
           totalWeight += r;
         }
       });
-      const totalCost = (Number(s.shuttles) || 0) * (Number(s.unitPrice) || 0);
+      const totalCost = (Number(s.totalCost) > 0) ? Number(s.totalCost) : (Number(s.shuttles) || 0) * (Number(s.unitPrice) || 0);
       const costPerUnit = totalWeight > 0 ? (totalCost / totalWeight) : 0;
       sessionStats[s.id] = { count, totalWeight, totalCost, costPerUnit };
     });
@@ -333,9 +334,9 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
   const { sessions, members, qrInfo, shuttleBatches } = payload;
 
   // A. Chuẩn bị dữ liệu Sessions
-  const sData = [['ID', 'Ngày/Thứ', 'Số Cầu', 'Đơn Giá']];
+  const sData = [['ID', 'Ngày/Thứ', 'Số Cầu', 'Đơn Giá', 'Tổng Tiền (tự nhập)']];
   if (sessions && Array.isArray(sessions)) {
-    sessions.forEach(s => sData.push([s.id, s.date, s.shuttles, s.unitPrice]));
+    sessions.forEach(s => sData.push([s.id, s.date, s.shuttles, s.unitPrice, Number(s.totalCost) > 0 ? Number(s.totalCost) : '']));
   }
 
   // B. Chuẩn bị dữ liệu Members

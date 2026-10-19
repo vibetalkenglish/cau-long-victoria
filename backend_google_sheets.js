@@ -164,7 +164,8 @@ function getFromSheets() {
          id: sValues[i][0].toString(),
          date: sValues[i][1],
          shuttles: Number(sValues[i][2]) || 0,
-         unitPrice: Number(sValues[i][3]) || 0
+         unitPrice: Number(sValues[i][3]) || 0,
+         totalCost: Number(sValues[i][4]) || 0
        });
     }
   }
@@ -299,8 +300,8 @@ function saveToSheets(payloadData, pin) {
   // 1. Lưu Sessions
   let sSheet = ss.getSheetByName('Sessions');
   sSheet.clearContents();
-  let sData = [['ID', 'Ngày/Thứ', 'Số Cầu', 'Đơn Giá']];
-  if (sessions) sessions.forEach(s => sData.push([s.id, s.date, s.shuttles, s.unitPrice]));
+  let sData = [['ID', 'Ngày/Thứ', 'Số Cầu', 'Đơn Giá', 'Tổng Tiền (tự nhập)']];
+  if (sessions) sessions.forEach(s => sData.push([s.id, s.date, s.shuttles, s.unitPrice, Number(s.totalCost) > 0 ? Number(s.totalCost) : '']));
   if (sData.length > 0) {
     sSheet.getRange(1, 1, sData.length, sData[0].length).setValues(sData);
   }

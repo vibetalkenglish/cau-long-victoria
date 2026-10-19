@@ -863,10 +863,22 @@
                     <input type="text" id="inp-ss-date" placeholder="VD: Thứ 5 - 20/8" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#293879] outline-none text-sm">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1 text-slate-700">Số lượng trái cầu dùng:</label>
-                    <input type="number" id="inp-ss-shuttles" value="10" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#293879] outline-none text-sm font-bold text-center">
+                    <label class="block font-semibold mb-1 text-slate-700">Cách tính tiền buổi:</label>
+                    <div class="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl text-xs font-semibold">
+                        <button type="button" id="btn-ss-mode-shuttle" onclick="setSessionCostMode('shuttle')" class="py-2 rounded-lg transition">Theo số cầu</button>
+                        <button type="button" id="btn-ss-mode-manual" onclick="setSessionCostMode('manual')" class="py-2 rounded-lg transition">Tự nhập tổng tiền</button>
+                    </div>
+                </div>
+                <div id="ss-manual-total-wrap" class="hidden">
+                    <label class="block font-semibold mb-1 text-slate-700">Tổng tiền buổi chơi (VNĐ):</label>
+                    <input type="text" inputmode="numeric" id="inp-ss-total" placeholder="VD: 250.000" oninput="formatSessionTotalInput(this)" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#293879] outline-none text-sm font-bold text-center">
+                    <p class="text-[11px] text-slate-500 mt-1">Số tiền này được chia đều cho người có mặt (theo tỉ lệ tham gia).</p>
                 </div>
                 <div>
+                    <label class="block font-semibold mb-1 text-slate-700">Số lượng trái cầu dùng<span id="ss-shuttles-optional" class="hidden font-normal text-slate-400"> (không bắt buộc)</span>:</label>
+                    <input type="number" id="inp-ss-shuttles" value="10" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#293879] outline-none text-sm font-bold text-center">
+                </div>
+                <div id="ss-price-wrap">
                     <label class="block font-semibold mb-1 text-slate-700">Chọn Lô Cầu (Đơn giá/trái):</label>
                     <select id="inp-ss-price" class="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-[#293879] outline-none text-sm">
                     </select>
@@ -1676,6 +1688,17 @@
             return getAttRatio(m, sId) > 0;
         }
 
+        // Tổng tiền 1 buổi: dùng số tự nhập nếu có, nếu không thì số cầu × đơn giá
+        function getSessionTotalCost(s) {
+            const manual = Number(s && s.totalCost) || 0;
+            if (manual > 0) return manual;
+            return (Number(s && s.shuttles) || 0) * (Number(s && s.unitPrice) || 0);
+        }
+
+        function isManualTotalSession(s) {
+            return (Number(s && s.totalCost) || 0) > 0;
+        }
+
         function getMemberSessionCost(m, sId) {
             if (!m || !sessionStats[sId]) return 0;
             const ratio = getAttRatio(m, sId);
@@ -1695,7 +1718,7 @@
                         totalWeight += r;
                     }
                 });
-                const totalCost = (Number(s.shuttles) || 0) * (Number(s.unitPrice) || 0);
+                const totalCost = getSessionTotalCost(s);
                 const costPerUnit = totalWeight > 0 ? (totalCost / totalWeight) : 0;
                 sessionStats[s.id] = { 
                     count, 
@@ -2529,12 +2552,15 @@
                     : `${cnt}`;
                 fHtml += `
                     <td class="p-1.5 sm:p-2 text-center ${footBg} border-r border-slate-200 text-xs sm:text-sm" title="Tổng số người: ${cnt} • Trọng số quy đổi: ${totWeight}">${countDisplay}</td>
-                    <td class="p-2 sm:p-3 text-right font-mono ${footBg} border-r border-slate-200 whitespace-nowrap text-xs sm:text-sm px-2 sm:px-2.5" title="${s.shuttles} trái cầu • Tổng tiền buổi ${s.date}: ${formatVND(sessionTotal)}">
+                    <td class="p-2 sm:p-3 text-right font-mono ${footBg} border-r border-slate-200 whitespace-nowrap text-xs sm:text-sm px-2 sm:px-2.5" title="${isManualTotalSession(s) ? 'Tổng tiền tự nhập' : s.shuttles + ' trái cầu'} • Tổng tiền buổi ${s.date}: ${formatVND(sessionTotal)}">
                         <div class="inline-flex items-center justify-end gap-1">
+                            ${(isManualTotalSession(s) && !(Number(s.shuttles) > 0)) ? '' : `
                             <span class="font-bold">${s.shuttles}</span>
                             <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 inline-block text-[#f08622] shrink-0 -mt-0.5" viewBox="0 0 24 24" fill="currentColor" title="${s.shuttles} trái cầu">
                                 <path d="M14.83 13.41L18.5 9.74a1 1 0 0 0 .26-.95l-1.2-4.81a1 1 0 0 0-.73-.73l-4.81-1.2a1 1 0 0 0-.95.26L7.33 5.95l7.5 7.46zM5.92 7.36L2.26 11.03a1 1 0 0 0-.26.95l1.2 4.81c.14.54.56.96 1.1 1.1l4.81 1.2c.33.08.68-.01.95-.26l3.66-3.66-7.8-7.81zM6.34 19.07a3 3 0 0 0 4.24 0l1.41-1.41-4.24-4.24-1.41 1.41a3 3 0 0 0 0 4.24z"/>
                             </svg>
+                            `}
+                            ${isManualTotalSession(s) ? '<i class="fa-solid fa-pen-to-square text-[#f08622] text-[10px] sm:text-xs" title="Tổng tiền tự nhập"></i>' : ''}
                             <span class="font-bold">${formatVND(sessionTotal)}</span>
                         </div>
                     </td>
@@ -2853,7 +2879,7 @@
             const s = sessions.find(x => x.id === sId);
             if (!s) return;
 
-            const totalCost = (Number(s.shuttles) || 0) * (Number(s.unitPrice) || 0);
+            const totalCost = getSessionTotalCost(s);
             
             let newTotalWeight = 0;
             members.forEach(m => {
@@ -2955,17 +2981,55 @@
             
             document.getElementById('inp-ss-date').value = '';
             document.getElementById('inp-ss-shuttles').value = '10';
+            document.getElementById('inp-ss-total').value = '';
+            setSessionCostMode('shuttle');
             openModal('modal-session');
+        }
+
+        let sessionCostMode = 'shuttle';
+
+        function setSessionCostMode(mode) {
+            sessionCostMode = mode === 'manual' ? 'manual' : 'shuttle';
+            const isManual = sessionCostMode === 'manual';
+            const on = ['bg-white', 'text-[#293879]', 'shadow-sm'];
+            const off = ['text-slate-500'];
+            const btnShuttle = document.getElementById('btn-ss-mode-shuttle');
+            const btnManual = document.getElementById('btn-ss-mode-manual');
+            btnShuttle.classList.remove(...on, ...off);
+            btnManual.classList.remove(...on, ...off);
+            btnShuttle.classList.add(...(isManual ? off : on));
+            btnManual.classList.add(...(isManual ? on : off));
+            document.getElementById('ss-manual-total-wrap').classList.toggle('hidden', !isManual);
+            document.getElementById('ss-price-wrap').classList.toggle('hidden', isManual);
+            document.getElementById('ss-shuttles-optional').classList.toggle('hidden', !isManual);
+            const shuttlesInp = document.getElementById('inp-ss-shuttles');
+            if (isManual && shuttlesInp.value === '10') shuttlesInp.value = '';
+            if (!isManual && shuttlesInp.value === '') shuttlesInp.value = '10';
+            if (isManual) setTimeout(() => document.getElementById('inp-ss-total').focus(), 50);
+        }
+
+        // Hiển thị dấu chấm phân cách hàng nghìn khi gõ: 250000 -> 250.000
+        function formatSessionTotalInput(el) {
+            const digits = el.value.replace(/\D/g, '');
+            el.value = digits ? Number(digits).toLocaleString('vi-VN') : '';
         }
 
         function saveNewSession() {
             const dateStr = document.getElementById('inp-ss-date').value.trim();
             const shuttles = Number(document.getElementById('inp-ss-shuttles').value) || 0;
-            const price = Number(document.getElementById('inp-ss-price').value) || 0;
             if (!dateStr) return showToast('Vui lòng nhập Ngày/Thứ!', 'error');
 
-            const newId = 's' + new Date().getTime();
-            sessions.push({ id: newId, date: dateStr, shuttles: shuttles, unitPrice: price });
+            const newSession = { id: 's' + new Date().getTime(), date: dateStr, shuttles: shuttles, unitPrice: 0 };
+            if (sessionCostMode === 'manual') {
+                const total = Number(document.getElementById('inp-ss-total').value.replace(/\D/g, '')) || 0;
+                if (total <= 0) return showToast('Vui lòng nhập tổng tiền buổi chơi!', 'error');
+                newSession.totalCost = total;
+            } else {
+                newSession.unitPrice = Number(document.getElementById('inp-ss-price').value) || 0;
+            }
+
+            const newId = newSession.id;
+            sessions.push(newSession);
             members.forEach(m => {
                 m.attendance[newId] = false;
                 if (!m.payments) m.payments = {};
@@ -3122,7 +3186,7 @@
                                     <span class="font-bold text-xs ${isAttended ? 'text-slate-900' : 'text-slate-500'}">${s.date}</span>
                                     ${ratioBadge}
                                 </div>
-                                <span class="text-[10px] text-slate-400 block">${s.shuttles} quả • ${formatVND(s.unitPrice)}/quả</span>
+                                <span class="text-[10px] text-slate-400 block">${isManualTotalSession(s) ? `Tổng buổi (tự nhập): ${formatVND(s.totalCost)}` : `${s.shuttles} quả • ${formatVND(s.unitPrice)}/quả`}</span>
                             </div>
                         </div>
                         <div class="text-right">
