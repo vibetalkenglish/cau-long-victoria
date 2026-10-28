@@ -240,6 +240,9 @@
                     <button id="btn-tab-payments" onclick="switchTab('payments')" class="px-4 py-2 text-sm font-semibold rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition flex items-center gap-1.5 shrink-0">
                         <i class="fa-solid fa-money-bill-wave text-[#bcd331]"></i> <span>Đóng Tiền</span>
                     </button>
+                    <button id="btn-tab-fund" onclick="switchTab('fund')" class="px-4 py-2 text-sm font-semibold rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition flex items-center gap-1.5 shrink-0">
+                        <i class="fa-solid fa-piggy-bank text-[#e5b243]"></i> <span>Quỹ</span>
+                    </button>
                     <button id="btn-tab-batches" onclick="switchTab('batches')" class="px-4 py-2 text-sm font-semibold rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition flex items-center gap-1.5 shrink-0">
                         <i class="fa-solid fa-boxes-stacked text-[#f08622]"></i> <span>Lô Cầu</span>
                     </button>
@@ -488,6 +491,61 @@
         <!-- ============================================================== -->
         <!-- TAB 4: 📦 BẢNG GIÁ MUA CẦU (SHUTTLE BATCHES) -->
         <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- TAB: 🐷 QUỸ CẦU LÔNG (QUỸ CHUNG vs TÀI KHOẢN CÁ NHÂN) -->
+        <!-- ============================================================== -->
+        <section id="tab-fund" class="hidden space-y-4 sm:space-y-6">
+            <div class="bg-white rounded-3xl shadow-luxury border border-slate-200/90 p-5 sm:p-7">
+                <h3 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2 mb-1">
+                    <i class="fa-solid fa-piggy-bank text-[#e5b243]"></i> QUỸ CẦU LÔNG
+                </h3>
+                <p class="text-xs sm:text-sm text-slate-500 mb-4">Quỹ chung của CLB và tiền của từng người được tách riêng. Quỹ chỉ chi để mua cầu (CLB không tính tiền sân).</p>
+                <div class="grid sm:grid-cols-3 gap-3 text-xs sm:text-sm">
+                    <div class="rounded-2xl bg-[#293879]/5 border border-[#293879]/15 p-3.5">
+                        <div class="font-extrabold text-[#293879] mb-1">🏸 Quỹ chung CLB</div>
+                        <p class="text-slate-600">Cầu đã mua và tiền đóng của mọi người. Cầu còn lại trong kho là tài sản của cả CLB.</p>
+                    </div>
+                    <div class="rounded-2xl bg-[#e5b243]/10 border border-[#e5b243]/30 p-3.5">
+                        <div class="font-extrabold text-[#293879] mb-1">👤 Tài khoản cá nhân</div>
+                        <p class="text-slate-600">Số dư mỗi người = tiền đã đóng − phí các buổi đã chơi. Dương là trả trước, âm là đang nợ.</p>
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 border border-slate-200 p-3.5">
+                        <div class="font-extrabold text-[#293879] mb-1">👑 Thủ quỹ (Kantan)</div>
+                        <p class="text-slate-600">Giữ tiền hộ CLB. Khoản "Kantan ứng" là tiền túi Kantan bỏ ra mua cầu, được trả lại dần từ tiền mọi người đóng.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="fund-summary-cards" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"></div>
+
+            <div id="fund-equation" class="rounded-2xl bg-[#293879] text-white/90 text-xs sm:text-sm px-4 py-3 leading-relaxed"></div>
+
+            <div class="grid lg:grid-cols-3 gap-4 sm:gap-6">
+                <div class="min-w-0 lg:col-span-2 bg-white rounded-3xl shadow-luxury border border-slate-200/90 p-5 sm:p-7">
+                    <h3 class="text-sm sm:text-base font-black text-slate-900 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-scale-balanced text-[#23b1dc]"></i> SỐ DƯ TỪNG NGƯỜI
+                    </h3>
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-sm text-left border-collapse min-w-[480px]">
+                            <thead class="bg-[#293879] text-white text-xs sm:text-sm">
+                                <tr>
+                                    <th class="p-2.5 font-semibold">Thành viên</th>
+                                    <th class="p-2.5 font-semibold text-right">Đã đóng</th>
+                                    <th class="p-2.5 font-semibold text-right">Phí đã chơi</th>
+                                    <th class="p-2.5 font-semibold text-right">Số dư</th>
+                                    <th class="p-2.5 font-semibold text-center">Tình trạng</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fund-balance-body" class="divide-y divide-slate-100"></tbody>
+                            <tfoot id="fund-balance-foot" class="bg-slate-50 font-bold border-t-2 border-slate-200 text-slate-800"></tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="fund-stock-card" class="min-w-0 bg-white rounded-3xl shadow-luxury border border-slate-200/90 p-5 sm:p-7"></div>
+            </div>
+        </section>
+
         <section id="tab-batches" class="hidden space-y-6">
             <div class="bg-white rounded-3xl shadow-luxury border border-slate-200/90 p-5 sm:p-7 flex flex-col">
                 <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
@@ -640,6 +698,10 @@
         <button id="mb-nav-payments" onclick="switchTab('payments')" class="flex flex-col items-center gap-1 text-white/70 py-1 px-2 rounded-2xl transition-all duration-200 active:scale-90">
             <i class="fa-solid fa-money-bill-wave text-base"></i>
             <span>Đóng tiền</span>
+        </button>
+        <button id="mb-nav-fund" onclick="switchTab('fund')" class="flex flex-col items-center gap-1 text-white/70 py-1 px-2 rounded-2xl transition-all duration-200 active:scale-90">
+            <i class="fa-solid fa-piggy-bank text-base text-[#e5b243]"></i>
+            <span>Quỹ</span>
         </button>
         <button id="mb-nav-qr" onclick="switchTab('qr')" class="flex flex-col items-center gap-1 text-white/70 py-1 px-2 rounded-2xl transition-all duration-200 active:scale-90">
             <i class="fa-solid fa-qrcode text-base text-[#23b1dc]"></i>
@@ -2300,6 +2362,7 @@
             renderSheetGrid();
             renderPaymentGrid();
             renderShuttleBatches();
+            renderFund();
             updateUIByRole();
         }
 
@@ -2727,6 +2790,142 @@
             fHtml += `</tr>`;
 
             tfoot.innerHTML = fHtml;
+        }
+
+        // ==========================================
+        // QUỸ: tổng hợp quỹ chung và số dư cá nhân (tính từ dữ liệu sẵn có, không ghi thêm gì)
+        // ==========================================
+        function computeFundSummary() {
+            const bought = shuttleBatches.reduce((sum, b) => {
+                const qty = Number(b.quantity) || 1;
+                return sum + (Number(b.totalPrice) || (qty * (Number(b.packPrice) || 0)));
+            }, 0);
+            const boughtPieces = shuttleBatches.reduce((sum, b) => sum + (Number(b.quantity) || 1) * 12, 0);
+            const usedPieces = sessions.reduce((sum, s) => sum + (Number(s.shuttles) || 0), 0);
+
+            // Chi phí đã chia cho người chơi (buổi không ai có mặt thì chưa chia được)
+            let allocated = 0, unallocated = 0;
+            sessions.forEach(s => {
+                const st = sessionStats[s.id];
+                if (st && st.totalWeight > 0) allocated += st.totalCost;
+                else if (st) unallocated += st.totalCost;
+            });
+
+            const rows = members.map(m => {
+                let bill = 0;
+                sessions.forEach(s => { bill += getMemberSessionCost(m, s.id); });
+                const paid = Number(m.paid) || 0;
+                return { m, bill, paid, balance: paid - bill, treasurer: isKantan(m) };
+            });
+            const others = rows.filter(r => !r.treasurer);
+            const collected = others.reduce((sum, r) => sum + r.paid, 0);
+            const treasurer = rows.find(r => r.treasurer) || null;
+            const fronted = bought - collected;     // > 0: Kantan ứng tiền túi; < 0: quỹ đang giữ tiền mặt
+            const prepaid = others.filter(r => r.balance > 0).reduce((sum, r) => sum + r.balance, 0);
+            const owed = others.filter(r => r.balance < 0).reduce((sum, r) => sum - r.balance, 0);
+
+            return {
+                bought, boughtPieces, usedPieces, allocated, unallocated,
+                stockValue: bought - allocated,
+                stockPieces: boughtPieces - usedPieces,
+                rows, collected, fronted, treasurer,
+                prepaid, owed,
+                prepaidCount: others.filter(r => r.balance > 1000).length,
+                owedCount: others.filter(r => r.balance < -1000).length
+            };
+        }
+
+        function renderFund() {
+            const cards = document.getElementById('fund-summary-cards');
+            if (!cards) return;
+            const f = computeFundSummary();
+
+            const card = (icon, label, value, sub, tone) => `
+                <div class="bg-white rounded-2xl border ${tone} shadow-sm p-3.5 sm:p-4">
+                    <div class="text-[11px] sm:text-xs font-bold text-slate-500 flex items-center gap-1.5"><i class="${icon}"></i> ${label}</div>
+                    <div class="text-lg sm:text-2xl font-black font-mono text-[#293879] mt-1 tracking-tight">${value}</div>
+                    <div class="text-[10px] sm:text-xs text-slate-400 mt-0.5">${sub}</div>
+                </div>`;
+
+            const cashOrFront = f.fronted > 0
+                ? card('fa-solid fa-hand-holding-dollar text-[#f08622]', 'Kantan đang ứng', formatVND(f.fronted) + 'đ', 'Tiền túi Kantan bỏ ra mua cầu, chưa được hoàn lại', 'border-[#f08622]/30')
+                : card('fa-solid fa-sack-dollar text-[#bcd331]', 'Tiền mặt quỹ', formatVND(-f.fronted) + 'đ', 'Tiền thành viên đóng còn lại sau khi mua cầu', 'border-[#bcd331]/40');
+
+            cards.innerHTML =
+                card('fa-solid fa-boxes-stacked text-[#e5b243]', 'Cầu tồn trong quỹ', formatVND(f.stockValue) + 'đ',
+                     `Khoảng ${formatVND(f.stockPieces)} trái (mua ${formatVND(f.boughtPieces)} − dùng ${formatVND(f.usedPieces)})`, 'border-[#e5b243]/40') +
+                cashOrFront +
+                card('fa-solid fa-circle-plus text-[#23b1dc]', 'Thành viên trả trước', formatVND(f.prepaid) + 'đ', `${f.prepaidCount} người đang dư tiền`, 'border-[#23b1dc]/30') +
+                card('fa-solid fa-circle-minus text-[#ef403e]', 'Thành viên đang nợ', (f.owedCount > 0 ? formatVND(f.owed) : '0') + 'đ', f.owedCount > 0 ? `${f.owedCount} người còn thiếu` : 'Hiện không ai nợ', 'border-[#ef403e]/30');
+
+            const kBalance = f.treasurer ? f.treasurer.balance : 0;
+            document.getElementById('fund-equation').innerHTML =
+                `<b>Cách các số khớp nhau:</b> cầu tồn <b>${formatVND(f.stockValue)}đ</b> = Kantan dư <b>${formatVND(kBalance)}đ</b> + thành viên trả trước <b>${formatVND(f.prepaid)}đ</b>` +
+                (f.owedCount > 0 ? ` − thành viên nợ <b>${formatVND(f.owed)}đ</b>` : '') +
+                `. Mua cầu tổng cộng ${formatVND(f.bought)}đ, đã chia cho người chơi ${formatVND(f.allocated)}đ.` +
+                (f.unallocated > 0 ? ` <span class="text-[#e5b243] font-bold">Có buổi chưa ai điểm danh (${formatVND(f.unallocated)}đ) nên chưa chia được.</span>` : '');
+
+            // Bảng số dư: thủ quỹ lên đầu, sau đó người nợ trước, người dư sau
+            const sorted = [...f.rows].sort((a, b) => (b.treasurer - a.treasurer) || (a.balance - b.balance));
+            document.getElementById('fund-balance-body').innerHTML = sorted.map(r => {
+                const st = r.balance < -1000 ? '<span class="text-[#ef403e] font-bold">Nợ</span>'
+                    : r.balance > 1000 ? '<span class="text-[#293879] font-bold">Trả trước</span>'
+                    : '<span class="text-slate-500 font-bold">Đã đủ</span>';
+                const balColor = r.balance < -1000 ? 'text-[#ef403e]' : 'text-[#293879]';
+                const label = r.treasurer ? `${r.m.name} <span class="text-[9px] font-extrabold bg-[#e5b243] text-[#293879] px-1.5 rounded ml-1">👑 Thủ quỹ</span>` : r.m.name;
+                const paidTitle = r.treasurer ? 'title="Tiền Kantan ứng mua cầu = tổng mua cầu − tiền mọi người đã đóng"' : '';
+                return `<tr class="${r.treasurer ? 'bg-[#e5b243]/10' : ''}">
+                    <td class="p-2.5 font-semibold text-slate-800">${label}</td>
+                    <td class="p-2.5 text-right font-mono" ${paidTitle}>${formatVND(r.paid)}</td>
+                    <td class="p-2.5 text-right font-mono text-slate-600">${formatVND(r.bill)}</td>
+                    <td class="p-2.5 text-right font-mono font-bold ${balColor}">${r.balance > 0 ? '+' : ''}${formatVND(r.balance)}</td>
+                    <td class="p-2.5 text-center text-xs">${st}</td>
+                </tr>`;
+            }).join('');
+            const totPaid = f.rows.reduce((a, r) => a + r.paid, 0), totBill = f.rows.reduce((a, r) => a + r.bill, 0);
+            document.getElementById('fund-balance-foot').innerHTML = `<tr>
+                <td class="p-2.5">Tổng cộng</td>
+                <td class="p-2.5 text-right font-mono">${formatVND(totPaid)}</td>
+                <td class="p-2.5 text-right font-mono">${formatVND(totBill)}</td>
+                <td class="p-2.5 text-right font-mono">${formatVND(totPaid - totBill)}</td>
+                <td></td></tr>`;
+
+            // Đếm cầu thực tế
+            const counted = (qrInfo.stockCount === undefined || qrInfo.stockCount === '' || qrInfo.stockCount === null) ? null : Number(qrInfo.stockCount);
+            let lastCount = '<p class="text-xs text-slate-400">Chưa có lần đếm nào. Sau mỗi buổi chơi, nên đếm số trái còn lại để đối chiếu với sổ.</p>';
+            if (counted !== null && !isNaN(counted)) {
+                const expectedThen = Number(qrInfo.stockCountExpected);
+                const diff = counted - expectedThen;
+                const verdict = isNaN(diff) ? '' : diff === 0
+                    ? '<span class="text-[#293879] font-bold">Khớp sổ ✓</span>'
+                    : `<span class="${diff < 0 ? 'text-[#ef403e]' : 'text-[#23b1dc]'} font-bold">${diff < 0 ? 'Thiếu' : 'Dư'} ${Math.abs(diff)} trái so với sổ</span>`;
+                lastCount = `<div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-xs sm:text-sm">
+                    <div class="text-slate-500">Lần đếm gần nhất${qrInfo.stockCountDate ? ' (' + qrInfo.stockCountDate + ')' : ''}</div>
+                    <div class="font-black text-[#293879] text-base mt-0.5">${formatVND(counted)} trái <span class="text-xs font-semibold text-slate-400">• sổ ghi ${isNaN(expectedThen) ? '?' : formatVND(expectedThen)}</span></div>
+                    <div class="mt-0.5">${verdict}</div></div>`;
+            }
+            document.getElementById('fund-stock-card').innerHTML = `
+                <h3 class="text-sm sm:text-base font-black text-slate-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-clipboard-check text-[#f08622]"></i> ĐẾM CẦU THỰC TẾ</h3>
+                <p class="text-xs text-slate-500 mb-3">Theo sổ, kho còn khoảng <b class="text-[#293879]">${formatVND(f.stockPieces)} trái</b> (mua − dùng).</p>
+                ${lastCount}
+                ${isAdmin ? `<div class="mt-3 flex gap-2">
+                    <input id="fund-stock-input" type="number" min="0" inputmode="numeric" placeholder="Số trái đang còn" onkeydown="if(event.key==='Enter') saveStockCount()" class="flex-1 min-w-0 p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#293879] outline-none text-sm font-bold text-center">
+                    <button onclick="saveStockCount()" class="px-4 py-2 bg-[#293879] hover:bg-[#1f2b5c] text-white rounded-xl text-sm font-semibold shadow transition shrink-0">Lưu</button>
+                </div>` : ''}`;
+        }
+
+        function saveStockCount() {
+            if (!isAdmin) return;
+            const raw = (document.getElementById('fund-stock-input').value || '').trim();
+            const v = Number(raw);
+            if (!raw || isNaN(v) || v < 0) return showToast('Nhập số trái cầu còn lại (số nguyên từ 0 trở lên)!', 'error');
+            const f = computeFundSummary();
+            qrInfo.stockCount = Math.round(v);
+            qrInfo.stockCountExpected = f.stockPieces;
+            qrInfo.stockCountDate = new Date().toLocaleDateString('vi-VN');
+            renderFund();
+            markUnsaved(true);
+            showToast('Đã lưu lần đếm cầu và đang lưu Google Sheets...', 'info');
         }
 
         function renderShuttleBatches() {
@@ -3436,7 +3635,7 @@
         }
 
         function switchTab(tabId) {
-            const allTabs = ['sheet', 'members', 'payments', 'batches', 'qr', 'ai', 'script'];
+            const allTabs = ['sheet', 'members', 'payments', 'fund', 'batches', 'qr', 'ai', 'script'];
             
             allTabs.forEach(id => {
                 document.getElementById('tab-' + id)?.classList.add('hidden');

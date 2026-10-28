@@ -346,7 +346,19 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
     ['bankAcc', (qrInfo && qrInfo.bankAcc) ? qrInfo.bankAcc : ''],
     ['bankOwner', (qrInfo && qrInfo.bankOwner) ? qrInfo.bankOwner : '']
   ];
-  if (!qrTooLarge) cData.push(['qrUrl', rawQrUrl]);
+  // Số liệu đếm cầu đặt SAU dòng qrUrl (dòng 5) để vị trí ảnh QR không đổi
+  const stockRows = [
+    ['stockCount', qrInfo && qrInfo.stockCount !== undefined ? qrInfo.stockCount : ''],
+    ['stockCountExpected', qrInfo && qrInfo.stockCountExpected !== undefined ? qrInfo.stockCountExpected : ''],
+    ['stockCountDate', qrInfo && qrInfo.stockCountDate ? qrInfo.stockCountDate : '']
+  ];
+  if (qrTooLarge) {
+    // Giữ nguyên dòng 5 (ảnh QR cũ), chỉ ghi phần trước và sau nó
+    cData.length = 4;
+  } else {
+    cData.push(['qrUrl', rawQrUrl]);
+    stockRows.forEach(r => cData.push(r));
+  }
 
   // D. Chuẩn bị dữ liệu Prices
   const pData = [['ID', 'Lần Mua', 'Số Hộp', 'Giá 1 Hộp (12 Trái)', 'Tổng Tiền Mua Cầu', 'Đơn Giá 1 Trái', 'Ghi chú', 'Tình trạng']];
@@ -382,7 +394,7 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
   const blocks = [
     { name: 'Sessions', values: sData },
     { name: 'Members', values: mData },
-    { name: 'Config', values: cData, keepRows: qrTooLarge ? 5 : 0 },
+    { name: 'Config', values: cData, keepRows: qrTooLarge ? 5 + stockRows.length : 0 },
     { name: 'Prices', values: pData },
     { name: 'Payments', values: payData }
   ];
@@ -393,6 +405,7 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
     requestBody: {
       valueInputOption: 'USER_ENTERED',
       data: blocks.map(b => ({ range: `${b.name}!A1`, values: b.values }))
+        .concat(qrTooLarge ? [{ range: 'Config!A6', values: stockRows }] : [])
     }
   });
 

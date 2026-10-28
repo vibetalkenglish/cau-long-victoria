@@ -352,7 +352,10 @@ function saveToSheets(payloadData, pin) {
     ['bankName', (qrInfo && qrInfo.bankName) ? qrInfo.bankName : ''],
     ['bankAcc', (qrInfo && qrInfo.bankAcc) ? qrInfo.bankAcc : ''],
     ['bankOwner', (qrInfo && qrInfo.bankOwner) ? qrInfo.bankOwner : ''],
-    ['qrUrl', rawQrUrl]
+    ['qrUrl', rawQrUrl],
+    ['stockCount', (qrInfo && qrInfo.stockCount !== undefined) ? qrInfo.stockCount : ''],
+    ['stockCountExpected', (qrInfo && qrInfo.stockCountExpected !== undefined) ? qrInfo.stockCountExpected : ''],
+    ['stockCountDate', (qrInfo && qrInfo.stockCountDate) ? qrInfo.stockCountDate : '']
   ];
   cSheet.getRange(1, 1, cData.length, cData[0].length).setValues(cData);
 
