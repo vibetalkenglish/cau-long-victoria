@@ -269,57 +269,23 @@ async function getFromSheets(sheets, spreadsheetId) {
     }
   }
 
-  // Tự động tính toán tiền đã nộp của Kantan (Chủ Quỹ)
+  // Tự động tính toán tiền đã nộp của Kantan (Chủ Quỹ):
+  // Tổng tiền cầu đã mua - Tổng tiền các thành viên khác đã đóng (kể cả đóng dư).
+  // Giữ khớp với calculateSheetMath() trong index.html.
   const isKantan = (m) => m && m.name && m.name.trim().toLowerCase() === 'kantan';
-  const getAttRatio = (m, sId) => {
-    if (!m || !m.attendance) return 0;
-    const v = m.attendance[sId];
-    if (v === true) return 1;
-    if (v === false || !v) return 0;
-    if (typeof v === 'number') return v;
-    return 0;
-  };
-
   const kantanMember = members.find(m => isKantan(m));
   if (kantanMember) {
-    let sessionStats = {};
-    sessions.forEach(s => {
-      let count = 0;
-      let totalWeight = 0;
-      members.forEach(m => {
-        const r = getAttRatio(m, s.id);
-        if (r > 0) {
-          count++;
-          totalWeight += r;
-        }
-      });
-      const totalCost = (Number(s.totalCost) > 0) ? Number(s.totalCost) : (Number(s.shuttles) || 0) * (Number(s.unitPrice) || 0);
-      const costPerUnit = totalWeight > 0 ? (totalCost / totalWeight) : 0;
-      sessionStats[s.id] = { count, totalWeight, totalCost, costPerUnit };
-    });
-
     const totalBoughtShuttles = shuttleBatches.reduce((sum, b) => {
       const qty = Number(b.quantity) || 1;
       const pack = Number(b.packPrice) || 0;
       return sum + (Number(b.totalPrice) || (qty * pack));
     }, 0);
 
-    let memberDeductions = 0;
-    members.forEach(m => {
-      if (isKantan(m)) return;
-      let mBill = 0;
-      sessions.forEach(s => {
-        const r = getAttRatio(m, s.id);
-        if (r > 0 && sessionStats[s.id]) {
-          mBill += r * sessionStats[s.id].costPerUnit;
-        }
-      });
-      const mPaid = Number(m.paid) || 0;
-      const deduction = (mPaid >= mBill) ? mBill : mPaid;
-      memberDeductions += deduction;
-    });
+    const collectedFromMembers = members.reduce((sum, m) => {
+      return isKantan(m) ? sum : sum + (Number(m.paid) || 0);
+    }, 0);
 
-    kantanMember.paid = totalBoughtShuttles - memberDeductions;
+    kantanMember.paid = totalBoughtShuttles - collectedFromMembers;
   }
 
   return { sessions, members, qrInfo, shuttleBatches };
