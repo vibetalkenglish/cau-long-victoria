@@ -111,7 +111,7 @@ async function getFromSheets(sheets, spreadsheetId) {
     'Sessions!A:E',
     'Members',
     'Config!A:B',
-    'Prices!A:H',
+    'Prices!A:I',
     'Payments'
   ];
 
@@ -264,7 +264,9 @@ async function getFromSheets(sheets, spreadsheetId) {
         totalPrice: totalPrice,
         unitPrice: unitPrice,
         note: note,
-        isDepleted: (valDepleted === true || valDepleted === 'true' || valDepleted === 'Hết' || valDepleted === 'Đã hết')
+        isDepleted: (valDepleted === true || valDepleted === 'true' || valDepleted === 'Hết' || valDepleted === 'Đã hết'),
+        // ID thành viên đã trả tiền lô này (cột I, trống = chưa ghi)
+        paidBy: (pValues[i][8] === undefined || pValues[i][8] === '') ? '' : (Number(pValues[i][8]) || pValues[i][8])
       });
     }
   }
@@ -361,14 +363,14 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
   }
 
   // D. Chuẩn bị dữ liệu Prices
-  const pData = [['ID', 'Lần Mua', 'Số Hộp', 'Giá 1 Hộp (12 Trái)', 'Tổng Tiền Mua Cầu', 'Đơn Giá 1 Trái', 'Ghi chú', 'Tình trạng']];
+  const pData = [['ID', 'Lần Mua', 'Số Hộp', 'Giá 1 Hộp (12 Trái)', 'Tổng Tiền Mua Cầu', 'Đơn Giá 1 Trái', 'Ghi chú', 'Tình trạng', 'Người trả (ID thành viên)']];
   if (shuttleBatches && Array.isArray(shuttleBatches)) {
     shuttleBatches.forEach(b => {
       const qty = Number(b.quantity) || 1;
       const pack = Number(b.packPrice) || 0;
       const total = Number(b.totalPrice) || (qty * pack);
       const unit = Number(b.unitPrice) || Math.round(pack / 12);
-      pData.push([b.id, b.label, qty, pack, total, unit, b.note || '', b.isDepleted ? 'Hết' : 'Còn']);
+      pData.push([b.id, b.label, qty, pack, total, unit, b.note || '', b.isDepleted ? 'Hết' : 'Còn', b.paidBy === undefined || b.paidBy === null ? '' : b.paidBy]);
     });
   }
 

@@ -557,7 +557,7 @@
                     </div>
                 </div>
                 <div class="overflow-x-auto flex-1 custom-scrollbar">
-                    <table class="w-full text-sm text-left border-collapse min-w-[550px]">
+                    <table class="w-full text-sm text-left border-collapse min-w-[640px]">
                         <thead class="bg-[#293879] text-white border-b border-[#1f2b5c] text-xs sm:text-sm">
                             <tr>
                                 <th class="p-3 font-semibold text-center w-20">Trạng Thái</th>
@@ -566,6 +566,7 @@
                                 <th class="p-3 font-semibold text-right">Giá 1 hộp</th>
                                 <th class="p-3 font-semibold text-right text-[#ef403e] bg-[#1f2b5c]">Tổng tiền mua</th>
                                 <th class="p-3 font-semibold text-right text-[#bcd331]">Giá 1 trái</th>
+                                <th class="p-3 font-semibold">Người trả</th>
                                 <th class="p-3 font-semibold">Ghi chú</th>
                             </tr>
                         </thead>
@@ -1083,6 +1084,10 @@
                 <div>
                     <label class="block font-semibold mb-1 text-[#293879]">Đơn giá 1 trái (Tự động chia 12):</label>
                     <input type="number" id="pb-unitprice" readonly class="w-full p-2.5 rounded-xl border border-[#bcd331]/40 bg-[#bcd331]/15 text-[#293879] font-bold outline-none text-right font-mono text-sm">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-700">Ai trả tiền lô này:</label>
+                    <select id="pb-paidby" class="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-[#293879] outline-none text-sm"></select>
                 </div>
                 <div>
                     <label class="block font-semibold mb-1 text-slate-700">Ghi chú thêm:</label>
@@ -2963,6 +2968,7 @@
                         <td class="p-3 lg:p-3.5 text-right font-mono text-slate-600 border-r border-slate-100 whitespace-nowrap">${formatVND(packPrice)}</td>
                         <td class="p-3 lg:p-3.5 text-right font-mono text-[#ef403e] font-bold border-r border-slate-100 whitespace-nowrap bg-[#ef403e]/10">${formatVND(total)}</td>
                         <td class="p-3 lg:p-3.5 text-right font-mono text-[#293879] font-bold border-r border-slate-100 whitespace-nowrap">${formatVND(unit)}</td>
+                        <td class="p-3 lg:p-3.5 border-r border-slate-100 whitespace-nowrap text-slate-800 font-semibold">${getBatchPayerHtml(b)}</td>
                         <td class="p-3 lg:p-3.5 text-slate-500 italic text-xs lg:text-sm">${b.note || '-'}</td>
                     </tr>
                 `;
@@ -2976,10 +2982,29 @@
                         <td class="p-3 lg:p-3.5 text-center text-[#293879] font-extrabold border-r border-slate-200">${grandTotalPacks}</td>
                         <td class="p-3 lg:p-3.5 border-r border-slate-200"></td>
                         <td class="p-3 lg:p-3.5 text-right font-mono text-[#ef403e] font-extrabold border-r border-slate-200 whitespace-nowrap bg-[#ef403e]/15">${formatVND(grandTotalMoney)}</td>
-                        <td colspan="2" class="p-3 lg:p-3.5"></td>
+                        <td colspan="3" class="p-3 lg:p-3.5"></td>
                     </tr>
                 `;
             }
+        }
+
+        // Người trả tiền lô cầu: chưa chọn thì coi là thủ quỹ (cách tính hiện tại mặc định như vậy)
+        function getBatchPayerHtml(b) {
+            const payer = (b.paidBy !== undefined && b.paidBy !== null && b.paidBy !== '')
+                ? members.find(m => String(m.id) === String(b.paidBy)) : null;
+            if (payer) return payer.name;
+            const treasurer = members.find(m => isKantan(m));
+            return treasurer
+                ? `<span class="text-slate-400 font-medium italic" title="Chưa chọn, mặc định là thủ quỹ">${treasurer.name}</span>`
+                : '<span class="text-slate-300">-</span>';
+        }
+
+        function fillBatchPayerOptions(selectedId) {
+            const sel = document.getElementById('pb-paidby');
+            const treasurer = members.find(m => isKantan(m));
+            const current = (selectedId !== undefined && selectedId !== null && selectedId !== '') ? String(selectedId)
+                : (treasurer ? String(treasurer.id) : '');
+            sel.innerHTML = members.map(m => `<option value="${m.id}" ${String(m.id) === current ? 'selected' : ''}>${m.name}${isKantan(m) ? ' (thủ quỹ)' : ''}</option>`).join('');
         }
 
         // ==========================================
@@ -3276,6 +3301,7 @@
                 document.getElementById('pb-unitprice').value = pack > 0 ? Math.round(pack / 12) : 0;
                 document.getElementById('pb-note').value = b.note || '';
                 document.getElementById('pb-depleted').checked = b.isDepleted || false;
+                fillBatchPayerOptions(b.paidBy);
             } else {
                 title.textContent = "Thêm Lô Cầu Mới";
                 document.getElementById('pb-id').value = '';
@@ -3286,6 +3312,7 @@
                 document.getElementById('pb-unitprice').value = '';
                 document.getElementById('pb-note').value = '';
                 document.getElementById('pb-depleted').checked = false;
+                fillBatchPayerOptions('');
             }
             openModal('modal-price-batch');
         }
@@ -3298,6 +3325,8 @@
             const totalPrice = quantity * packPrice;
             const note = document.getElementById('pb-note').value.trim();
             const isDepleted = document.getElementById('pb-depleted').checked;
+            const paidByRaw = document.getElementById('pb-paidby').value;
+            const paidBy = paidByRaw === '' ? '' : (Number(paidByRaw) || paidByRaw);
             const unitPrice = packPrice > 0 ? Math.round(packPrice / 12) : 0;
 
             if (!label) return showToast('Vui lòng nhập tên lô!', 'error');
@@ -3312,6 +3341,7 @@
                     b.unitPrice = unitPrice;
                     b.note = note;
                     b.isDepleted = isDepleted;
+                    b.paidBy = paidBy;
                 }
             } else {
                 shuttleBatches.push({
@@ -3322,7 +3352,8 @@
                     totalPrice,
                     unitPrice,
                     note,
-                    isDepleted
+                    isDepleted,
+                    paidBy
                 });
             }
 

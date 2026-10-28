@@ -268,7 +268,8 @@ function getFromSheets() {
          totalPrice: totalPrice,
          unitPrice: unitPrice,
          note: note,
-         isDepleted: (valDepleted === true || valDepleted === 'true' || valDepleted === 'TRUE' || valDepleted === 'Hết')
+         isDepleted: (valDepleted === true || valDepleted === 'true' || valDepleted === 'TRUE' || valDepleted === 'Hết'),
+         paidBy: (pValues[i][8] === undefined || pValues[i][8] === '') ? '' : (Number(pValues[i][8]) || pValues[i][8])
        });
     }
   }
@@ -362,14 +363,14 @@ function saveToSheets(payloadData, pin) {
   // 4. Lưu dữ liệu Bảng Giá Ống Cầu
   let pSheet = ss.getSheetByName('Prices');
   pSheet.clearContents();
-  let pData = [['ID', 'Lần Mua', 'Số Hộp', 'Giá 1 Hộp (12 Trái)', 'Tổng Tiền Mua Cầu', 'Đơn Giá 1 Trái', 'Ghi chú', 'Tình trạng']];
+  let pData = [['ID', 'Lần Mua', 'Số Hộp', 'Giá 1 Hộp (12 Trái)', 'Tổng Tiền Mua Cầu', 'Đơn Giá 1 Trái', 'Ghi chú', 'Tình trạng', 'Người trả (ID thành viên)']];
   if (shuttleBatches && shuttleBatches.length > 0) {
     shuttleBatches.forEach(b => {
       let qty = Number(b.quantity) || 1;
       let pack = Number(b.packPrice) || 0;
       let total = Number(b.totalPrice) || (qty * pack);
       let unit = Number(b.unitPrice) || Math.round(pack / 12);
-      pData.push([b.id, b.label, qty, pack, total, unit, b.note || '', b.isDepleted ? 'Hết' : 'Còn']);
+      pData.push([b.id, b.label, qty, pack, total, unit, b.note || '', b.isDepleted ? 'Hết' : 'Còn', b.paidBy === undefined || b.paidBy === null ? '' : b.paidBy]);
     });
   }
   if (pData.length > 0) {
