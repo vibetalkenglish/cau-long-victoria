@@ -1697,6 +1697,21 @@
             return (Number(m && m.paid) || 0) + (memberAdvance[m && m.id] || 0);
         }
 
+        // Tiền ứng mua cầu để hiển thị dưới tên: thành viên thường = tổng các lô họ trả;
+        // Kantan = phần tiền túi đã ứng (tiền cầu Kantan trả − tiền mặt thành viên đóng), chỉ khi dương
+        function getMemberAdvanceAmount(m) {
+            if (!m) return 0;
+            if (isKantan(m)) return Math.max(0, Number(m.paid) || 0);
+            return memberAdvance[m.id] || 0;
+        }
+
+        function advanceNoteHtml(m, extraClass = '') {
+            const amount = getMemberAdvanceAmount(m);
+            return amount > 0
+                ? `<span class="block text-[9px] sm:text-[10px] leading-tight font-semibold text-[#8b499c] whitespace-normal ${extraClass}">gồm ${formatVND(amount)} tiền ứng mua cầu</span>`
+                : '';
+        }
+
         function getMemberSessionCost(m, sId) {
             if (!m || !sessionStats[sId]) return 0;
             const ratio = getAttRatio(m, sId);
@@ -2181,7 +2196,7 @@
                 bodyHTML += `
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="p-1.5 sm:p-2 text-center text-slate-500 font-mono text-xs sm:text-sm bg-slate-50 sticky-col-left-1 border-r border-slate-200">${idx + 1}</td>
-                        <td class="p-1.5 sm:p-2 font-bold text-slate-900 bg-white sticky-col-left-2 border-r border-slate-200 text-xs sm:text-sm px-1.5 sm:px-2.5">${nameHtml}</td>
+                        <td class="p-1.5 sm:p-2 font-bold text-slate-900 bg-white sticky-col-left-2 border-r border-slate-200 text-xs sm:text-sm px-1.5 sm:px-2.5">${nameHtml}${advanceNoteHtml(m, 'pl-4 sm:pl-[18px]')}</td>
                         ${financialCells}
                         ${sessionCells}
                     </tr>
@@ -2422,7 +2437,7 @@
                 let bill = 0;
                 sessions.forEach(s => { bill += getMemberSessionCost(m, s.id); });
                 const paid = getMemberPaid(m);
-                return { m, bill, paid, advance: memberAdvance[m.id] || 0, balance: paid - bill, treasurer: isKantan(m) };
+                return { m, bill, paid, advance: isKantan(m) ? 0 : (memberAdvance[m.id] || 0), balance: paid - bill, treasurer: isKantan(m) };
             });
             const others = rows.filter(r => !r.treasurer);
             const treasurer = rows.find(r => r.treasurer) || null;
@@ -2496,7 +2511,7 @@
                 const balColor = r.balance < -1000 ? 'text-[#ef403e]' : 'text-[#293879]';
                 const label = r.treasurer ? `${r.m.name} <span class="text-[9px] font-extrabold bg-[#e5b243] text-[#293879] px-1.5 rounded ml-1">👑 Thủ quỹ</span>` : r.m.name;
                 const paidTitle = r.treasurer ? 'title="Tiền cầu Kantan đã trả − tiền mặt thành viên đưa cho Kantan"' : '';
-                const advNote = r.advance > 0 ? `<span class="block text-[10px] font-sans text-[#8b499c] font-semibold">gồm ${formatVND(r.advance)} ứng mua cầu</span>` : '';
+                const advNote = advanceNoteHtml(r.m).replace('<span class="block', '<span class="block font-sans');
                 return `<tr class="${r.treasurer ? 'bg-[#e5b243]/10' : ''}">
                     <td class="p-2.5 font-semibold text-slate-800">${label}</td>
                     <td class="p-2.5 text-right font-mono" ${paidTitle}>${formatVND(r.paid)}${advNote}</td>
