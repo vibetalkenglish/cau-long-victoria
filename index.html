@@ -234,9 +234,6 @@
                     <button id="btn-tab-sheet" onclick="switchTab('sheet')" class="px-4 py-2 text-sm font-extrabold rounded-xl bg-[#e5b243] text-[#293879] transition flex items-center gap-1.5 shadow-md shrink-0">
                         <i class="fa-solid fa-calendar-check"></i> <span>Điểm Danh</span>
                     </button>
-                    <button id="btn-tab-members" onclick="switchTab('members')" class="px-4 py-2 text-sm font-semibold rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition flex items-center gap-1.5 shrink-0">
-                        <i class="fa-solid fa-users text-[#23b1dc]"></i> <span>Thành Viên</span>
-                    </button>
                     <button id="btn-tab-payments" onclick="switchTab('payments')" class="px-4 py-2 text-sm font-semibold rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition flex items-center gap-1.5 shrink-0">
                         <i class="fa-solid fa-money-bill-wave text-[#bcd331]"></i> <span>Đóng Tiền</span>
                     </button>
@@ -368,85 +365,6 @@
 
                 <!-- Footer Bar for Expanding/Collapsing Sessions -->
                 <div id="sheet-expand-footer-bar" class="hidden"></div>
-            </div>
-        </section>
-
-        <!-- ============================================================== -->
-        <!-- TAB 2: 🏠 TỔNG QUAN & THẺ THÀNH VIÊN (COMPACT MODERN VIEW) -->
-        <!-- ============================================================== -->
-        <section id="tab-members" class="hidden space-y-4">
-            
-            <!-- 4 COMPACT KPI DASHBOARD CARDS -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
-                <!-- Card 1: Tổng Chi -->
-                <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-[#e5b243]/40 shadow-sm flex items-center gap-3">
-                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#e5b243]/20 text-[#293879] flex items-center justify-center text-base shrink-0">
-                        <i class="fa-solid fa-receipt text-[#e5b243]"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Tổng Chi</p>
-                        <p id="kpi-total-cost" class="text-base sm:text-lg font-black text-[#293879] font-mono truncate">0đ</p>
-                    </div>
-                </div>
-
-                <!-- Card 2: Đã Thu -->
-                <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-[#bcd331]/40 shadow-sm flex items-center gap-3">
-                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#bcd331]/20 text-[#293879] flex items-center justify-center text-base shrink-0">
-                        <i class="fa-solid fa-hand-holding-dollar text-[#647413]"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Đã Thu</p>
-                        <p id="kpi-total-paid" class="text-base sm:text-lg font-black text-[#293879] font-mono truncate">0đ</p>
-                    </div>
-                </div>
-
-                <!-- Card 3: Còn Nợ -->
-                <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-[#ef403e]/30 shadow-sm flex items-center gap-3">
-                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#ef403e]/15 text-[#ef403e] flex items-center justify-center text-base shrink-0">
-                        <i class="fa-solid fa-circle-exclamation"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Chưa Thu</p>
-                        <p id="kpi-total-debt" class="text-base sm:text-lg font-black text-[#ef403e] font-mono truncate">0đ</p>
-                    </div>
-                </div>
-
-                <!-- Card 4: Thành Viên -->
-                <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-[#23b1dc]/30 shadow-sm flex items-center gap-3">
-                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#23b1dc]/15 text-[#23b1dc] flex items-center justify-center text-base shrink-0">
-                        <i class="fa-solid fa-users"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Thành Viên</p>
-                        <p id="kpi-total-members" class="text-base sm:text-lg font-black text-[#293879] font-mono truncate">0 người</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SEARCH & QUICK FILTER CONTROLS -->
-            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div class="relative flex-1 max-w-md">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                    <input type="text" id="member-card-search" oninput="renderMemberCards()" placeholder="🔍 Tìm tên thành viên..." class="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#293879] focus:outline-none transition font-medium">
-                </div>
-                
-                <!-- Filter Pills -->
-                <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar shrink-0">
-                    <button id="filter-btn-all" onclick="setMemberFilter('all')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-[#293879] text-white transition shadow-xs active:scale-95">
-                        Tất cả (<span id="count-all">0</span>)
-                    </button>
-                    <button id="filter-btn-debt" onclick="setMemberFilter('debt')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-[#ef403e]/10 text-[#ef403e] hover:bg-[#ef403e]/20 transition border border-[#ef403e]/30 active:scale-95 shadow-xs">
-                        🔴 Nợ (<span id="count-debt">0</span>)
-                    </button>
-                    <button id="filter-btn-paid" onclick="setMemberFilter('paid')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-[#bcd331]/15 text-[#293879] hover:bg-[#bcd331]/25 transition border border-[#bcd331]/40 active:scale-95 shadow-xs">
-                        🟢 Đủ (<span id="count-paid">0</span>)
-                    </button>
-                </div>
-            </div>
-
-            <!-- LEADERBOARD RANKING LIST CONTAINER -->
-            <div id="member-cards-container" class="space-y-2 sm:space-y-2.5">
-                <!-- Rendered dynamically by renderMemberCards() -->
             </div>
         </section>
 
@@ -691,10 +609,6 @@
         <button id="mb-nav-sheet" onclick="switchTab('sheet')" class="flex flex-col items-center gap-1 text-[#e5b243] scale-105 font-black py-1 px-2 rounded-2xl transition-all duration-200 active:scale-90">
             <i class="fa-solid fa-calendar-check text-base"></i>
             <span>Điểm danh</span>
-        </button>
-        <button id="mb-nav-members" onclick="switchTab('members')" class="flex flex-col items-center gap-1 text-white/70 font-bold py-1 px-2 rounded-2xl transition-all duration-200 active:scale-90">
-            <i class="fa-solid fa-users text-base"></i>
-            <span>Thành viên</span>
         </button>
         <button id="mb-nav-payments" onclick="switchTab('payments')" class="flex flex-col items-center gap-1 text-white/70 py-1 px-2 rounded-2xl transition-all duration-200 active:scale-90">
             <i class="fa-solid fa-money-bill-wave text-base"></i>
@@ -1851,169 +1765,6 @@
             return th;
         }
 
-        let currentMemberFilter = 'all';
-
-        function setMemberFilter(type) {
-            currentMemberFilter = type;
-            ['all', 'debt', 'paid'].forEach(t => {
-                const btn = document.getElementById('filter-btn-' + t);
-                if (btn) {
-                    if (t === type) {
-                        btn.className = "px-3 py-1.5 text-xs font-bold rounded-xl bg-[#293879] text-white transition shadow-xs active:scale-95";
-                    } else if (t === 'debt') {
-                        btn.className = "px-3 py-1.5 text-xs font-bold rounded-xl bg-[#ef403e]/10 text-[#ef403e] hover:bg-[#ef403e]/20 transition border border-[#ef403e]/30 active:scale-95 shadow-xs";
-                    } else if (t === 'paid') {
-                        btn.className = "px-3 py-1.5 text-xs font-bold rounded-xl bg-[#bcd331]/15 text-[#293879] hover:bg-[#bcd331]/25 transition border border-[#bcd331]/40 active:scale-95 shadow-xs";
-                    } else {
-                        btn.className = "px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition border border-slate-200 active:scale-95";
-                    }
-                }
-            });
-            renderMemberCards();
-        }
-
-        function getMemberAvatarColors(name) {
-            const colors = [
-                'bg-[#293879] text-white',
-                'bg-[#e5b243] text-[#293879]',
-                'bg-[#8b499c] text-white',
-                'bg-[#23b1dc] text-white',
-                'bg-[#bcd331] text-[#293879]',
-                'bg-[#ef403e] text-white',
-                'bg-[#f08622] text-white'
-            ];
-            let hash = 0;
-            for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-            const index = Math.abs(hash) % colors.length;
-            return colors[index];
-        }
-
-        // ==============================================================
-        // CÁC BỘ BIỆT DANH CHUYÊN ĐỀ CẦU LÔNG (10 BIỆT DANH / BỘ - TỰ ĐỔI MỖI BUỔI)
-        // ==============================================================
-        const NICKNAME_THEME_SETS = [
-            {
-                theme: "🏸 Kỹ Thuật Đỉnh Cao Sân Cầu",
-                nicknames: [
-                    "⚡ Thánh Smash Cháy Sàn",
-                    "🪶 Phù Thủy Bỏ Nhỏ Sát Lưới",
-                    "🎯 Vua Phản Tạt Tốc Độ",
-                    "🛡️ Bức Tường Thủ Cuối Sân",
-                    "🌪️ Cơn Lốc Nhảy Đập Jump Smash",
-                    "🪄 Nghệ Sĩ Chém Cầu Lừa Kèo",
-                    "🏹 Xạ Thủ Phông Cầu Sát Vạch",
-                    "🥷 Sát Thủ Đè Lưới Bắt Bước",
-                    "🚀 Cỗ Máy Lốp Cầu Đảo Hướng",
-                    "👑 Bậc Thầy Ve Cầu Trái Tay"
-                ]
-            },
-            {
-                theme: "🏸 Phong Cách & Chiến Thuật Sân Cầu",
-                nicknames: [
-                    "🦅 Bay Lượn Bắt Cầu Vạch Cuối",
-                    "🌪️ Chân Trục Đảo Sân Bất Tử",
-                    "🎯 Chuyên Gia Kê Cầu Sát Lưới",
-                    "⚡ Máy Chém Cầu 2 Nhịp",
-                    "🛡️ Lá Chắn Thép Cứu Cầu Sát Đất",
-                    "🦁 Đập Cầu Rung Rinh Cột Lưới",
-                    "🎩 Ảo Thuật Gia Kéo Lưới Chéo Sân",
-                    "🚀 Đột Phá Bắt Bài Cầu Nhú",
-                    "💥 Chiến Thần Cứu Cầu Lăn Xả",
-                    "🏆 Đôi Nam Nữ Phối Hợp Đỉnh Cao"
-                ]
-            },
-            {
-                theme: "🏸 Khoảnh Khắc Hài Hước Sân Cầu",
-                nicknames: [
-                    "🏸 Đập Cầu Trúng Khung Vợt",
-                    "💨 Quạt Gió Mát Sân Cầu",
-                    "🎯 Đập Cầu Trúng Người Đồng Đội",
-                    "🪶 Thánh Cầu Dính Lưới Không Rơi",
-                    "🏃‍♂️ Chạy Cầu Hụt Hơi Thở Dốc",
-                    "👀 Camera Bắt Lỗi Giẫm Vạch",
-                    "🏸 Tay Vợt Đứt Cước Liên Tục",
-                    "🌪️ Xoay Vợt 360 Độ Múa Lửa",
-                    "💥 Đập Cầu Ra Ngoài 2 Mét",
-                    "🍗 Đánh Xong Đi Nhậu Luôn"
-                ]
-            },
-            {
-                theme: "🏸 Danh Hiệu Huyền Thoại Sân Cầu",
-                nicknames: [
-                    "👑 Vua Sân Cầu Victoria",
-                    "💎 Cơ Trưởng Cầm Nhịp Trận Đấu",
-                    "⚡ Đệ Nhất Đập Cầu Uy Lực",
-                    "🥷 Sát Thủ Lưới Bất Khả Xâm Phạm",
-                    "🛡️ Bức Tường Bê Tông Thủ Cầu",
-                    "🌪️ Cơn Lốc Đổi Sân 3 Set",
-                    "🎯 Bắt Bài Từng Quả Giao Cầu",
-                    "🚀 Đạn Pháo Hạng Nặng Cuối Sân",
-                    "🪄 Phù Thủy Cắt Cầu Chéo Cánh",
-                    "🏆 Tay Vợt Toàn Diện Công Thủ"
-                ]
-            },
-            {
-                theme: "🏸 Thể Lực & Bền Bỉ Sân Cầu",
-                nicknames: [
-                    "🔋 Cục Pin 3 Set Không Hết Lực",
-                    "🏃‍♂️ Đôi Chân Tên Lửa Di Chuyển",
-                    "⚡ Phản Xạ Nhanh Như Điện Giật",
-                    "🛡️ Thánh Đỡ Đập Cầu Cự Ly Gần",
-                    "🌪️ Đập Cầu Cắm Thẳng Vạch Chữ T",
-                    "🎯 Chuyên Gia Bỏ Nhỏ Rơi Tự Do",
-                    "🏹 Tay Phông Cầu Đỉnh Nóc Sân",
-                    "🦁 Chúa Tể Vạch Cuối Bất Bại",
-                    "🪶 Đôi Cổ Tay Dẻo Như Kẹo Kéo",
-                    "💥 Tay Đập Uy Lực Nát Cầu"
-                ]
-            },
-            {
-                theme: "🏸 Giao Cầu & Đấu Trí Sân Cầu",
-                nicknames: [
-                    "🎯 Bậc Thầy Giao Cầu Sát Mép",
-                    "🥷 Bắt Bài Giao Cầu Chớp Nhoáng",
-                    "⚡ Giao Cầu Bắn Nhanh Vạch Cuối",
-                    "🪄 Cắt Cầu Đổi Hướng Cực Gắt",
-                    "🛡️ Bức Tường Thủ Đẩy Cầu Đáy",
-                    "🌪️ Xoay Chuyển Thế Trận Thần Tốc",
-                    "🦅 Cú Nhảy Đập Jump Smash",
-                    "🚀 Phóng Cầu Căng Ngang Mặt Lưới",
-                    "🎩 Lừa Hướng Vợt Đánh Đố Đối Thủ",
-                    "🏆 Chuyên Gia Thắng Điểm Quyết Định"
-                ]
-            },
-            {
-                theme: "🏸 Cảm Xúc & Đam Mê Sân Cầu",
-                nicknames: [
-                    "🔥 Đam Mê Cầu Lông Cháy Bỏng",
-                    "⚡ Chiến Binh Không Bỏ Quả Cầu Nào",
-                    "🎯 Tay Vợt Thép Tâm Lý Vững Vàng",
-                    "🪶 Kê Cầu Nhẹ Nhàng Tinh Tế",
-                    "🛡️ Lá Chắn Vững Vàng Cho Đồng Đội",
-                    "🌪️ Đập Cầu Tiếng Nổ Như Sấm",
-                    "🏹 Cú Đánh Xuyên Thấu Hàng Thủ",
-                    "🦁 Gầm Thét Sau Pha Cầu Đẹp",
-                    "🚀 Đẩy Cầu Nhanh Ép Đối Thủ",
-                    "✨ Nghệ Sĩ Vung Vợt Đẹp Mắt"
-                ]
-            },
-            {
-                theme: "🏸 Dân Chuyên & Đồ Nghề Sân Cầu",
-                nicknames: [
-                    "🏸 Vợt Thủ Căng 12kg Cực Căng",
-                    "👟 Đôi Giày Bay Lượn Bám Sân",
-                    "🪶 Thánh Đập Nát Cầu Hải Yến",
-                    "⚡ Quấn Cán Vợt Mới Mỗi Trận",
-                    "🎯 Chuyên Gia Kiểm Tra Độ Nảy Cầu",
-                    "🛡️ Bọc Khung Vợt Chống Xước",
-                    "🌪️ Tay Đập Vợt 3U Nặng Đầu",
-                    "🚀 Cú Quất Vợt 4U Siêu Nhẹ Bứt Tốc",
-                    "🎩 Tay Vợt Vừa Đánh Vừa Nhún Nhảy",
-                    "🏆 Quán Quân Trận Chung Kết"
-                ]
-            }
-        ];
-
         function getMemberNicknameMap() {
             // Lọc ra các thành viên thường (Kantan không nhận biệt danh)
             const regularMembers = members.filter(m => !isKantan(m));
@@ -2045,178 +1796,6 @@
                 map[m.id] = nicknames[idx % nicknames.length];
             });
             return map;
-        }
-
-        function renderMemberCards() {
-            calculateSheetMath();
-            const container = document.getElementById('member-cards-container');
-            if (!container) return;
-
-            const nicknameMap = getMemberNicknameMap();
-
-            let totalClubCost = 0;
-            let totalClubPaid = 0;
-            let totalClubDebt = 0;
-            let debtCount = 0;
-            let paidCount = 0;
-
-            const memberStats = members.map(m => {
-                let bill = 0;
-                let attendedSessions = 0;
-                sessions.forEach(s => {
-                    if (isAttending(m, s.id)) {
-                        bill += getMemberSessionCost(m, s.id);
-                        attendedSessions++;
-                    }
-                });
-                const paid = getMemberPaid(m);
-                const remaining = paid - bill; // < 0 => nợ, > 0 => dư
-                
-                totalClubCost += bill;
-                totalClubPaid += paid;
-                if (remaining < -1000) {
-                    totalClubDebt += Math.abs(remaining);
-                    debtCount++;
-                } else {
-                    paidCount++;
-                }
-
-                return {
-                    member: m,
-                    bill,
-                    paid,
-                    remaining,
-                    attendedSessions
-                };
-            });
-
-            // Update KPI Dashboard
-            const elTotalCost = document.getElementById('kpi-total-cost');
-            const elTotalPaid = document.getElementById('kpi-total-paid');
-            const elTotalDebt = document.getElementById('kpi-total-debt');
-            const elTotalMembers = document.getElementById('kpi-total-members');
-            if (elTotalCost) elTotalCost.textContent = formatVND(totalClubCost) + 'đ';
-            if (elTotalPaid) elTotalPaid.textContent = formatVND(totalClubPaid) + 'đ';
-            if (elTotalDebt) elTotalDebt.textContent = formatVND(totalClubDebt) + 'đ';
-            if (elTotalMembers) elTotalMembers.textContent = members.length + ' người';
-
-            // Cập nhật Banner tiến độ thu quỹ thời gian thực
-            const fundPct = totalClubCost > 0 ? Math.min(100, Math.round((totalClubPaid / totalClubCost) * 100)) : 100;
-            const elFundPct = document.getElementById('kpi-fund-percent');
-            const elFundBar = document.getElementById('kpi-fund-bar');
-            const elBannerSessions = document.getElementById('kpi-banner-sessions');
-            const elBannerMembers = document.getElementById('kpi-banner-members');
-            if (elFundPct) elFundPct.textContent = fundPct + '%';
-            if (elFundBar) elFundBar.style.width = fundPct + '%';
-            if (elBannerSessions) elBannerSessions.innerHTML = `🏸 <strong class="text-slate-200">${sessions.length}</strong> buổi chơi`;
-            if (elBannerMembers) elBannerMembers.innerHTML = `👥 <strong class="text-slate-200">${members.length}</strong> thành viên`;
-
-            // Cập nhật số lượng trên các nút lọc
-            const elCountAll = document.getElementById('count-all');
-            const elCountDebt = document.getElementById('count-debt');
-            const elCountPaid = document.getElementById('count-paid');
-            if (elCountAll) elCountAll.textContent = members.length;
-            if (elCountDebt) elCountDebt.textContent = debtCount;
-            if (elCountPaid) elCountPaid.textContent = paidCount;
-
-            // Sắp xếp: Nợ nhiều nhất lên đầu (Số âm nhỏ nhất -> đứng #1)
-            memberStats.sort((a, b) => a.remaining - b.remaining);
-
-            // Tìm kiếm & Lọc cho danh sách bảng xếp hạng bên dưới
-            const searchVal = document.getElementById('member-card-search')?.value.toLowerCase().trim() || '';
-            const filtered = memberStats.filter(item => {
-                const matchSearch = !searchVal || item.member.name.toLowerCase().includes(searchVal);
-                if (!matchSearch) return false;
-                if (currentMemberFilter === 'debt') return item.remaining < -1000;
-                if (currentMemberFilter === 'paid') return item.remaining >= -1000;
-                return true;
-            });
-
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full py-16 text-center text-slate-400 bg-white rounded-3xl border border-slate-200/90 p-8 shadow-luxury">
-                        <div class="w-16 h-16 rounded-3xl bg-slate-100 text-slate-400 flex items-center justify-center text-2xl mx-auto mb-3">
-                            <i class="fa-solid fa-user-slash"></i>
-                        </div>
-                        <p class="text-sm font-bold text-slate-700">Không tìm thấy thành viên nào phù hợp bộ lọc.</p>
-                        <p class="text-xs text-slate-400 mt-1">Hãy thử xóa bộ lọc hoặc tìm kiếm bằng từ khóa khác.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = '';
-            filtered.forEach((item, idx) => {
-                const m = item.member;
-                const initials = m.name.split(' ').map(w => w[0]).slice(-2).join('').toUpperCase();
-                const avatarGrad = getMemberAvatarColors(m.name);
-                const isDebt = item.remaining < -1000;
-                const isSurplus = item.remaining > 1000;
-                const nickname = isKantan(m) ? '' : (nicknameMap[m.id] || '');
-                const rankNum = idx + 1;
-
-                let rankBadge = '';
-                if (rankNum === 1) {
-                    rankBadge = `<span class="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-[#e5b243] text-[#293879] font-black flex items-center justify-center text-[10px] sm:text-[11px] shadow-2xs shrink-0">1</span>`;
-                } else if (rankNum === 2) {
-                    rankBadge = `<span class="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-[#293879]/15 text-[#293879] font-black flex items-center justify-center text-[10px] sm:text-[11px] shrink-0">2</span>`;
-                } else if (rankNum === 3) {
-                    rankBadge = `<span class="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-[#23b1dc]/20 text-[#293879] font-black flex items-center justify-center text-[10px] sm:text-[11px] shrink-0">3</span>`;
-                } else {
-                    rankBadge = `<span class="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-slate-100 text-[#293879]/70 font-bold flex items-center justify-center text-[10px] sm:text-[11px] shrink-0">${rankNum}</span>`;
-                }
-
-                const card = document.createElement('div');
-                card.className = `bg-white rounded-2xl border ${isDebt ? 'border-[#ef403e]/30 hover:border-[#ef403e]/60 shadow-sm' : 'border-slate-200 hover:border-[#293879]/30 shadow-sm'} p-3 sm:p-3.5 transition-all duration-150 flex flex-col gap-2 hover:bg-slate-50/80 cursor-pointer active:scale-[0.995]`;
-                card.onclick = () => openMemberDetails(m.id);
-
-                card.innerHTML = `
-                    <!-- DÒNG 1: Thứ hạng, Avatar, Tên, Biệt danh & Trạng thái Tài chính -->
-                    <div class="flex items-center justify-between gap-2">
-                        <div class="flex items-center gap-2 min-w-0 flex-1">
-                            ${rankBadge}
-                            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full ${avatarGrad} flex items-center justify-center font-black text-[11px] sm:text-xs shrink-0 shadow-2xs border border-white/80">
-                                ${initials}
-                            </div>
-                            <div class="flex items-center gap-1.5 min-w-0 flex-1 truncate">
-                                <h4 class="text-sm font-bold text-slate-900 truncate">${m.name}</h4>
-                                ${isKantan(m) ? '<span class="text-[9px] font-extrabold bg-[#e5b243] text-[#293879] px-1.5 py-0.2 rounded shadow-2xs shrink-0">👑 Chủ Quỹ</span>' : (nickname ? `<span class="text-xs text-[#293879]/70 font-medium truncate">(${nickname})</span>` : '')}
-                            </div>
-                        </div>
-
-                        <!-- Trạng thái tài chính nổi bật bên phải dòng 1 -->
-                        <div class="shrink-0 text-right">
-                            ${isKantan(m) ? `
-                                <span class="text-xs sm:text-sm font-black text-[#293879] font-mono tracking-tight block">Đã nộp: ${formatVND(getMemberPaid(m))}đ</span>
-                            ` : isDebt ? `
-                                <span class="text-xs sm:text-sm font-black text-[#ef403e] font-mono tracking-tight bg-[#ef403e]/10 px-2 py-0.5 rounded-lg border border-[#ef403e]/20 inline-block">Nợ: ${formatVND(item.remaining)}đ</span>
-                            ` : isSurplus ? `
-                                <span class="text-xs sm:text-sm font-black text-[#293879] font-mono tracking-tight bg-[#293879]/10 px-2 py-0.5 rounded-lg border border-[#293879]/20 inline-block">Dư: +${formatVND(item.remaining)}đ</span>
-                            ` : `
-                                <span class="text-xs sm:text-sm font-bold text-[#293879] font-mono bg-[#bcd331]/30 px-2 py-0.5 rounded-lg border border-[#bcd331]/50 inline-block">Đã đủ 🟢</span>
-                            `}
-                        </div>
-                    </div>
-
-                    <!-- DÒNG 2: Số buổi tham gia, Chi tiết tiền & Nút Quét QR -->
-                    <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-slate-100 text-xs text-slate-500 font-medium">
-                        <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 truncate">
-                            <span>🏸 Đánh <strong class="text-slate-800 font-bold">${item.attendedSessions}/${sessions.length}</strong> buổi</span>
-                            <span class="text-slate-300">•</span>
-                            <span>Phát sinh: <strong class="font-mono text-slate-700">${formatVND(item.bill)}đ</strong></span>
-                            <span class="text-slate-300">•</span>
-                            <span>Đã nộp: <strong class="font-mono text-[#293879]">${formatVND(getMemberPaid(m))}đ</strong></span>
-                            ${isKantan(m) ? `<span class="text-slate-300">•</span><span class="text-[#23b1dc] font-bold">Dư: +${formatVND(item.remaining)}đ</span>` : ''}
-                        </div>
-
-                        <button onclick="event.stopPropagation(); openPersonalQR(${m.id})" class="px-2.5 py-1 bg-[#e5b243] hover:bg-[#d9a334] text-[#293879] font-bold text-xs rounded-lg shadow-2xs flex items-center gap-1 active:scale-95 transition shrink-0" title="Quét QR nộp tiền">
-                            <i class="fa-solid fa-qrcode text-[11px]"></i> <span>QR</span>
-                        </button>
-                    </div>
-                `;
-
-                container.appendChild(card);
-            });
         }
 
         function openPersonalQR(memberId) {
@@ -2389,7 +1968,6 @@
 
         function renderAll() {
             calculateSheetMath();
-            renderMemberCards();
             renderSheetGrid();
             renderPaymentGrid();
             renderShuttleBatches();
@@ -3704,7 +3282,7 @@
         }
 
         function switchTab(tabId) {
-            const allTabs = ['sheet', 'members', 'payments', 'fund', 'batches', 'qr', 'ai', 'script'];
+            const allTabs = ['sheet', 'payments', 'fund', 'batches', 'qr', 'ai', 'script'];
             
             allTabs.forEach(id => {
                 document.getElementById('tab-' + id)?.classList.add('hidden');
