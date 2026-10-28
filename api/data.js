@@ -272,22 +272,27 @@ async function getFromSheets(sheets, spreadsheetId) {
   }
 
   // Tự động tính toán tiền đã nộp của Kantan (Chủ Quỹ):
-  // Tổng tiền cầu đã mua - Tổng tiền các thành viên khác đã đóng (kể cả đóng dư).
+  // Kantan đã nộp = tiền các lô cầu Kantan trả - tiền mặt các thành viên khác đã đóng (kể cả đóng dư).
+  // Lô cầu do người khác trả được ghi có cho người đó ở giao diện, không tính cho Kantan.
   // Giữ khớp với calculateSheetMath() trong index.html.
   const isKantan = (m) => m && m.name && m.name.trim().toLowerCase() === 'kantan';
   const kantanMember = members.find(m => isKantan(m));
   if (kantanMember) {
-    const totalBoughtShuttles = shuttleBatches.reduce((sum, b) => {
+    const boughtByTreasurer = shuttleBatches.reduce((sum, b) => {
       const qty = Number(b.quantity) || 1;
       const pack = Number(b.packPrice) || 0;
-      return sum + (Number(b.totalPrice) || (qty * pack));
+      const total = Number(b.totalPrice) || (qty * pack);
+      const hasPayer = b.paidBy !== undefined && b.paidBy !== null && b.paidBy !== '';
+      const payer = hasPayer ? members.find(m => String(m.id) === String(b.paidBy)) : null;
+      // Người khác trả thì không tính vào phần Kantan trả
+      return (payer && !isKantan(payer)) ? sum : sum + total;
     }, 0);
 
     const collectedFromMembers = members.reduce((sum, m) => {
       return isKantan(m) ? sum : sum + (Number(m.paid) || 0);
     }, 0);
 
-    kantanMember.paid = totalBoughtShuttles - collectedFromMembers;
+    kantanMember.paid = boughtByTreasurer - collectedFromMembers;
   }
 
   return { sessions, members, qrInfo, shuttleBatches };

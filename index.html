@@ -511,12 +511,12 @@
                     </div>
                     <div class="rounded-2xl bg-slate-50 border border-slate-200 p-3.5">
                         <div class="font-extrabold text-[#293879] mb-1">👑 Thủ quỹ (Kantan)</div>
-                        <p class="text-slate-600">Giữ tiền hộ CLB. Khoản "Kantan ứng" là tiền túi Kantan bỏ ra mua cầu, được trả lại dần từ tiền mọi người đóng.</p>
+                        <p class="text-slate-600">Giữ tiền hộ CLB. Số dư tiền quỹ âm nghĩa là Kantan đang ứng tiền túi mua cầu. Ai trả tiền một lô cầu thì được cộng vào số dư của người đó.</p>
                     </div>
                 </div>
             </div>
 
-            <div id="fund-summary-cards" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"></div>
+            <div id="fund-summary-cards" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
 
             <div id="fund-equation" class="rounded-2xl bg-[#293879] text-white/90 text-xs sm:text-sm px-4 py-3 leading-relaxed"></div>
 
@@ -1766,6 +1766,23 @@
             return (Number(s && s.totalCost) || 0) > 0;
         }
 
+        // Tiền ứng mua cầu theo từng thành viên (tính lại mỗi lần render, không lưu lên Sheet)
+        let memberAdvance = {};
+
+        function getBatchTotal(b) {
+            const qty = Number(b && b.quantity) || 1;
+            return Number(b && b.totalPrice) || (qty * (Number(b && b.packPrice) || 0));
+        }
+
+        function hasBatchPayer(b) {
+            return b && b.paidBy !== undefined && b.paidBy !== null && b.paidBy !== '';
+        }
+
+        // Tổng tiền thành viên đã bỏ vào CLB = tiền đóng + tiền ứng mua cầu
+        function getMemberPaid(m) {
+            return (Number(m && m.paid) || 0) + (memberAdvance[m && m.id] || 0);
+        }
+
         function getMemberSessionCost(m, sId) {
             if (!m || !sessionStats[sId]) return 0;
             const ratio = getAttRatio(m, sId);
@@ -1800,21 +1817,30 @@
             // Tiền đã nộp của Kantan = Tổng tiền cầu đã mua - Tổng tiền các thành viên khác đã đóng.
             // Tính cả phần thành viên đóng dư: Kantan đã cầm số tiền đó, còn phần dư vẫn hiện
             // là "Dư" của thành viên. Nếu không trừ, phần dư bị tính hai lần (cho cả hai bên).
+            // Người trả tiền từng lô cầu được ghi có vào tài khoản của họ (như một khoản đóng tiền).
+            // Lô chưa chọn người trả (hoặc người trả không còn trong danh sách) tính cho thủ quỹ Kantan.
             const kantanMember = members.find(m => isKantan(m));
-            if (kantanMember) {
-                // 1. Tổng tiền cầu đã mua (Tổng các lô cầu trong bảng Giá cầu)
-                const totalBoughtShuttles = shuttleBatches.reduce((sum, b) => {
-                    const qty = Number(b.quantity) || 1;
-                    const pack = Number(b.packPrice) || 0;
-                    return sum + (Number(b.totalPrice) || (qty * pack));
-                }, 0);
+            memberAdvance = {};
+            let boughtByTreasurer = 0;
+            shuttleBatches.forEach(b => {
+                const total = getBatchTotal(b);
+                const payer = hasBatchPayer(b) ? members.find(m => String(m.id) === String(b.paidBy)) : null;
+                if (payer && !isKantan(payer)) {
+                    memberAdvance[payer.id] = (memberAdvance[payer.id] || 0) + total;
+                } else {
+                    boughtByTreasurer += total;
+                }
+            });
 
-                // 2. Tổng tiền các thành viên khác đã đóng cho Kantan
+            if (kantanMember) {
+                // Tiền thành viên đã đóng (không tính tiền họ ứng mua cầu) = tiền mặt Kantan đang giữ hộ quỹ
                 const collectedFromMembers = members.reduce((sum, m) => {
                     return isKantan(m) ? sum : sum + (Number(m.paid) || 0);
                 }, 0);
 
-                kantanMember.paid = totalBoughtShuttles - collectedFromMembers;
+                // Kantan đã nộp = tiền cầu Kantan trả - tiền mặt thành viên đưa cho Kantan
+                // (âm nghĩa là Kantan đang giữ tiền mặt dư của quỹ)
+                kantanMember.paid = boughtByTreasurer - collectedFromMembers;
             }
         }
 
@@ -2043,7 +2069,7 @@
                         attendedSessions++;
                     }
                 });
-                const paid = Number(m.paid) || 0;
+                const paid = getMemberPaid(m);
                 const remaining = paid - bill; // < 0 => nợ, > 0 => dư
                 
                 totalClubCost += bill;
@@ -2161,7 +2187,7 @@
                         <!-- Trạng thái tài chính nổi bật bên phải dòng 1 -->
                         <div class="shrink-0 text-right">
                             ${isKantan(m) ? `
-                                <span class="text-xs sm:text-sm font-black text-[#293879] font-mono tracking-tight block">Đã nộp: ${formatVND(m.paid)}đ</span>
+                                <span class="text-xs sm:text-sm font-black text-[#293879] font-mono tracking-tight block">Đã nộp: ${formatVND(getMemberPaid(m))}đ</span>
                             ` : isDebt ? `
                                 <span class="text-xs sm:text-sm font-black text-[#ef403e] font-mono tracking-tight bg-[#ef403e]/10 px-2 py-0.5 rounded-lg border border-[#ef403e]/20 inline-block">Nợ: ${formatVND(item.remaining)}đ</span>
                             ` : isSurplus ? `
@@ -2179,7 +2205,7 @@
                             <span class="text-slate-300">•</span>
                             <span>Phát sinh: <strong class="font-mono text-slate-700">${formatVND(item.bill)}đ</strong></span>
                             <span class="text-slate-300">•</span>
-                            <span>Đã nộp: <strong class="font-mono text-[#293879]">${formatVND(m.paid)}đ</strong></span>
+                            <span>Đã nộp: <strong class="font-mono text-[#293879]">${formatVND(getMemberPaid(m))}đ</strong></span>
                             ${isKantan(m) ? `<span class="text-slate-300">•</span><span class="text-[#23b1dc] font-bold">Dư: +${formatVND(item.remaining)}đ</span>` : ''}
                         </div>
 
@@ -2201,7 +2227,7 @@
             sessions.forEach(s => {
                 bill += getMemberSessionCost(m, s.id);
             });
-            const paid = Number(m.paid) || 0;
+            const paid = getMemberPaid(m);
             const remaining = paid - bill;
             const debt = remaining < 0 ? Math.abs(remaining) : 0;
 
@@ -2423,7 +2449,7 @@
                     aBill += getMemberSessionCost(a, s.id); 
                     bBill += getMemberSessionCost(b, s.id);
                 });
-                return (a.paid - aBill) - (b.paid - bBill);
+                return (getMemberPaid(a) - aBill) - (getMemberPaid(b) - bBill);
             });
 
             // SẮP XẾP CÁC BUỔI CHƠI: TỪ MỚI NHẤT ĐẾN CŨ NHẤT (Cột sau thông tin thành viên)
@@ -2547,19 +2573,20 @@
                     `;
                 });
 
-                const remaining = m.paid - memberTotalBill;
+                const mPaidTotal = getMemberPaid(m);
+                const remaining = mPaidTotal - memberTotalBill;
                 globalCost += memberTotalBill;
-                globalPaid += m.paid;
+                globalPaid += mPaidTotal;
 
                 const remainingColor = remaining < 0 ? 'text-[#ef403e] font-bold bg-[#ef403e]/10' : (remaining > 0 ? 'text-[#293879] font-bold bg-[#293879]/10' : 'text-[#293879] font-bold');
                 
                 let paidCellHTML = '';
                 if (isKantan(m)) {
-                    paidCellHTML = `<span class="text-[#293879] font-extrabold font-mono block text-right px-1 sm:px-2 w-full text-xs sm:text-sm" title="Tự động tính = Tổng tiền cầu đã mua - Tiền thu từ các thành viên">${formatVND(m.paid)}</span>`;
+                    paidCellHTML = `<span class="text-[#293879] font-extrabold font-mono block text-right px-1 sm:px-2 w-full text-xs sm:text-sm" title="Tự động tính = Tiền cầu Kantan đã trả - Tiền mặt thành viên đóng cho Kantan">${formatVND(m.paid)}</span>`;
                 } else if (isAdmin) {
-                    paidCellHTML = `<input type="text" value="${formatVND(m.paid)}" onfocus="this.value=${m.paid}; this.select();" onblur="updatePaid(${m.id}, this.value)" onkeydown="if(event.key==='Enter') this.blur();" class="currency-input text-[#293879] font-bold font-mono text-right w-full text-xs sm:text-sm">`;
+                    paidCellHTML = `<input type="text" value="${formatVND(mPaidTotal)}" onfocus="this.value=${mPaidTotal}; this.select();" onblur="updatePaid(${m.id}, this.value)" onkeydown="if(event.key==='Enter') this.blur();" class="currency-input text-[#293879] font-bold font-mono text-right w-full text-xs sm:text-sm">`;
                 } else {
-                    paidCellHTML = `<span class="text-[#293879] font-bold font-mono block text-right px-1 sm:px-2 w-full text-xs sm:text-sm">${formatVND(m.paid)}</span>`;
+                    paidCellHTML = `<span class="text-[#293879] font-bold font-mono block text-right px-1 sm:px-2 w-full text-xs sm:text-sm">${formatVND(mPaidTotal)}</span>`;
                 }
 
                 const nameHtml = `<span onclick="openMemberDetails(${m.id})" class="cursor-pointer hover:text-[#23b1dc] transition text-[#293879] flex items-center gap-1 truncate text-xs sm:text-sm" title="Xem chi tiết ${m.name}"><i class="fa-solid fa-circle-info text-[10px] sm:text-xs text-[#23b1dc] shrink-0"></i> <span class="truncate font-semibold">${m.name}</span></span>`;
@@ -2651,7 +2678,7 @@
                     aBill += getMemberSessionCost(a, s.id); 
                     bBill += getMemberSessionCost(b, s.id);
                 });
-                return (a.paid - aBill) - (b.paid - bBill);
+                return (getMemberPaid(a) - aBill) - (getMemberPaid(b) - bBill);
             });
 
             // 2. SẮP XẾP CÁC BUỔI CHƠI: TỪ CŨ TỚI MỚI (Tăng dần theo thời gian)
@@ -2748,7 +2775,7 @@
                     }
                 });
 
-                const displayPaid = isKantan(m) ? m.paid : (mTotalPaid > 0 ? mTotalPaid : m.paid);
+                const displayPaid = isKantan(m) ? m.paid : ((mTotalPaid > 0 ? mTotalPaid : m.paid) + (memberAdvance[m.id] || 0));
 
                 fHtml += `
                     <td class="p-3 border-r border-slate-200 text-right font-extrabold font-mono bg-[#e5b243]/15 text-[#293879] whitespace-nowrap text-sm px-3" title="Tổng tiền cầu của ${m.name}: ${formatVND(mTotalCost)}">${formatVND(mTotalCost)}</td>
@@ -2774,7 +2801,7 @@
                     }
                 });
 
-                const displayPaid = isKantan(m) ? m.paid : (mTotalPaid > 0 ? mTotalPaid : m.paid);
+                const displayPaid = isKantan(m) ? m.paid : ((mTotalPaid > 0 ? mTotalPaid : m.paid) + (memberAdvance[m.id] || 0));
                 const rem = displayPaid - mTotalCost;
 
                 let cellContent = '';
@@ -2801,10 +2828,7 @@
         // QUỸ: tổng hợp quỹ chung và số dư cá nhân (tính từ dữ liệu sẵn có, không ghi thêm gì)
         // ==========================================
         function computeFundSummary() {
-            const bought = shuttleBatches.reduce((sum, b) => {
-                const qty = Number(b.quantity) || 1;
-                return sum + (Number(b.totalPrice) || (qty * (Number(b.packPrice) || 0)));
-            }, 0);
+            const bought = shuttleBatches.reduce((sum, b) => sum + getBatchTotal(b), 0);
             const boughtPieces = shuttleBatches.reduce((sum, b) => sum + (Number(b.quantity) || 1) * 12, 0);
             const usedPieces = sessions.reduce((sum, s) => sum + (Number(s.shuttles) || 0), 0);
 
@@ -2819,13 +2843,19 @@
             const rows = members.map(m => {
                 let bill = 0;
                 sessions.forEach(s => { bill += getMemberSessionCost(m, s.id); });
-                const paid = Number(m.paid) || 0;
-                return { m, bill, paid, balance: paid - bill, treasurer: isKantan(m) };
+                const paid = getMemberPaid(m);
+                return { m, bill, paid, advance: memberAdvance[m.id] || 0, balance: paid - bill, treasurer: isKantan(m) };
             });
             const others = rows.filter(r => !r.treasurer);
-            const collected = others.reduce((sum, r) => sum + r.paid, 0);
             const treasurer = rows.find(r => r.treasurer) || null;
-            const fronted = bought - collected;     // > 0: Kantan ứng tiền túi; < 0: quỹ đang giữ tiền mặt
+
+            // Tiền mặt thành viên đã đưa cho thủ quỹ (không gồm tiền họ tự ứng mua cầu)
+            const deposits = others.reduce((sum, r) => sum + (Number(r.m.paid) || 0), 0);
+            const advancedByOthers = others.reduce((sum, r) => sum + r.advance, 0);
+            const boughtByTreasurer = bought - advancedByOthers;
+            // Số dư tiền quỹ: > 0 là tiền mặt quỹ đang giữ, < 0 là Kantan đang ứng tiền túi
+            const cashBalance = deposits - boughtByTreasurer;
+
             const prepaid = others.filter(r => r.balance > 0).reduce((sum, r) => sum + r.balance, 0);
             const owed = others.filter(r => r.balance < 0).reduce((sum, r) => sum - r.balance, 0);
 
@@ -2833,7 +2863,8 @@
                 bought, boughtPieces, usedPieces, allocated, unallocated,
                 stockValue: bought - allocated,
                 stockPieces: boughtPieces - usedPieces,
-                rows, collected, fronted, treasurer,
+                rows, treasurer, deposits, advancedByOthers, boughtByTreasurer, cashBalance,
+                advancersCount: others.filter(r => r.advance > 0).length,
                 prepaid, owed,
                 prepaidCount: others.filter(r => r.balance > 1000).length,
                 owedCount: others.filter(r => r.balance < -1000).length
@@ -2852,20 +2883,24 @@
                     <div class="text-[10px] sm:text-xs text-slate-400 mt-0.5">${sub}</div>
                 </div>`;
 
-            const cashOrFront = f.fronted > 0
-                ? card('fa-solid fa-hand-holding-dollar text-[#f08622]', 'Kantan đang ứng', formatVND(f.fronted) + 'đ', 'Tiền túi Kantan bỏ ra mua cầu, chưa được hoàn lại', 'border-[#f08622]/30')
-                : card('fa-solid fa-sack-dollar text-[#bcd331]', 'Tiền mặt quỹ', formatVND(-f.fronted) + 'đ', 'Tiền thành viên đóng còn lại sau khi mua cầu', 'border-[#bcd331]/40');
+            const cashLabel = f.cashBalance >= 0 ? 'Quỹ đang giữ tiền mặt' : 'Kantan đang ứng tiền túi';
+            const cashTone = f.cashBalance >= 0 ? 'border-[#bcd331]/40' : 'border-[#f08622]/30';
 
             cards.innerHTML =
-                card('fa-solid fa-boxes-stacked text-[#e5b243]', 'Cầu tồn trong quỹ', formatVND(f.stockValue) + 'đ',
-                     `Khoảng ${formatVND(f.stockPieces)} trái (mua ${formatVND(f.boughtPieces)} − dùng ${formatVND(f.usedPieces)})`, 'border-[#e5b243]/40') +
-                cashOrFront +
+                card('fa-solid fa-feather text-[#e5b243]', 'Số dư trái cầu', `${formatVND(f.stockPieces)} trái`,
+                     `Mua ${formatVND(f.boughtPieces)} − đã dùng ${formatVND(f.usedPieces)}`, 'border-[#e5b243]/40') +
+                card('fa-solid fa-boxes-stacked text-[#e5b243]', 'Giá trị cầu tồn', formatVND(f.stockValue) + 'đ',
+                     'Tiền mua cầu chưa dùng đến', 'border-[#e5b243]/40') +
+                card('fa-solid fa-sack-dollar text-[#bcd331]', 'Số dư tiền quỹ', (f.cashBalance > 0 ? '+' : '') + formatVND(f.cashBalance) + 'đ',
+                     `${cashLabel}. Thành viên đã đưa ${formatVND(f.deposits)}đ, Kantan trả tiền cầu ${formatVND(f.boughtByTreasurer)}đ`, cashTone) +
                 card('fa-solid fa-circle-plus text-[#23b1dc]', 'Thành viên trả trước', formatVND(f.prepaid) + 'đ', `${f.prepaidCount} người đang dư tiền`, 'border-[#23b1dc]/30') +
-                card('fa-solid fa-circle-minus text-[#ef403e]', 'Thành viên đang nợ', (f.owedCount > 0 ? formatVND(f.owed) : '0') + 'đ', f.owedCount > 0 ? `${f.owedCount} người còn thiếu` : 'Hiện không ai nợ', 'border-[#ef403e]/30');
+                card('fa-solid fa-circle-minus text-[#ef403e]', 'Thành viên đang nợ', (f.owedCount > 0 ? formatVND(f.owed) : '0') + 'đ', f.owedCount > 0 ? `${f.owedCount} người còn thiếu` : 'Hiện không ai nợ', 'border-[#ef403e]/30') +
+                card('fa-solid fa-hand-holding-dollar text-[#8b499c]', 'Người khác đã ứng mua cầu', formatVND(f.advancedByOthers) + 'đ',
+                     f.advancersCount > 0 ? `${f.advancersCount} người, được cộng vào số dư của họ` : 'Chưa có lô nào do người khác trả', 'border-[#8b499c]/30');
 
             const kBalance = f.treasurer ? f.treasurer.balance : 0;
             document.getElementById('fund-equation').innerHTML =
-                `<b>Cách các số khớp nhau:</b> cầu tồn <b>${formatVND(f.stockValue)}đ</b> = Kantan dư <b>${formatVND(kBalance)}đ</b> + thành viên trả trước <b>${formatVND(f.prepaid)}đ</b>` +
+                `<b>Cách các số khớp nhau:</b> cầu tồn <b>${formatVND(f.stockValue)}đ</b> = ${kBalance >= 0 ? 'Kantan dư' : '− Kantan nợ'} <b>${formatVND(Math.abs(kBalance))}đ</b> + thành viên trả trước <b>${formatVND(f.prepaid)}đ</b>` +
                 (f.owedCount > 0 ? ` − thành viên nợ <b>${formatVND(f.owed)}đ</b>` : '') +
                 `. Mua cầu tổng cộng ${formatVND(f.bought)}đ, đã chia cho người chơi ${formatVND(f.allocated)}đ.` +
                 (f.unallocated > 0 ? ` <span class="text-[#e5b243] font-bold">Có buổi chưa ai điểm danh (${formatVND(f.unallocated)}đ) nên chưa chia được.</span>` : '');
@@ -2878,10 +2913,11 @@
                     : '<span class="text-slate-500 font-bold">Đã đủ</span>';
                 const balColor = r.balance < -1000 ? 'text-[#ef403e]' : 'text-[#293879]';
                 const label = r.treasurer ? `${r.m.name} <span class="text-[9px] font-extrabold bg-[#e5b243] text-[#293879] px-1.5 rounded ml-1">👑 Thủ quỹ</span>` : r.m.name;
-                const paidTitle = r.treasurer ? 'title="Tiền Kantan ứng mua cầu = tổng mua cầu − tiền mọi người đã đóng"' : '';
+                const paidTitle = r.treasurer ? 'title="Tiền cầu Kantan đã trả − tiền mặt thành viên đưa cho Kantan"' : '';
+                const advNote = r.advance > 0 ? `<span class="block text-[10px] font-sans text-[#8b499c] font-semibold">gồm ${formatVND(r.advance)} ứng mua cầu</span>` : '';
                 return `<tr class="${r.treasurer ? 'bg-[#e5b243]/10' : ''}">
                     <td class="p-2.5 font-semibold text-slate-800">${label}</td>
-                    <td class="p-2.5 text-right font-mono" ${paidTitle}>${formatVND(r.paid)}</td>
+                    <td class="p-2.5 text-right font-mono" ${paidTitle}>${formatVND(r.paid)}${advNote}</td>
                     <td class="p-2.5 text-right font-mono text-slate-600">${formatVND(r.bill)}</td>
                     <td class="p-2.5 text-right font-mono font-bold ${balColor}">${r.balance > 0 ? '+' : ''}${formatVND(r.balance)}</td>
                     <td class="p-2.5 text-center text-xs">${st}</td>
@@ -3133,8 +3169,10 @@
                 if (isKantan(m)) return; // Tiền của Kantan được hệ thống tự động tính toán
                 const clean = typeof val === 'string' ? val.replace(/[^\d-]/g, '') : val;
                 const newPaid = Number(clean) || 0;
-                if (m.paid !== newPaid) {
-                    m.paid = newPaid;
+                // Ô hiển thị tổng (đóng tiền + ứng mua cầu): phần đóng tiền = tổng nhập vào - phần ứng mua cầu
+                const basePaid = newPaid - (memberAdvance[m.id] || 0);
+                if (m.paid !== basePaid) {
+                    m.paid = basePaid;
                     renderAll();
                     markUnsaved(true);
                 }
@@ -3415,7 +3453,7 @@
                 `;
             });
 
-            const remaining = m.paid - memberTotalBill;
+            const remaining = getMemberPaid(m) - memberTotalBill;
             const isDebt = remaining < -1000;
             const isOverpaid = remaining > 1000;
 
@@ -3424,7 +3462,7 @@
             document.getElementById('md-sessions-count').textContent = `${attendedSessions} buổi`;
             document.getElementById('md-session-list').innerHTML = sessionListHTML || '<p class="text-xs text-slate-400 text-center py-4">Chưa có dữ liệu buổi chơi</p>';
             document.getElementById('md-total').textContent = formatVND(memberTotalBill) + 'đ';
-            document.getElementById('md-paid').textContent = formatVND(m.paid) + 'đ';
+            document.getElementById('md-paid').textContent = formatVND(getMemberPaid(m)) + 'đ';
             
             const remBox = document.getElementById('md-remaining-box');
             const remLabel = document.getElementById('md-remaining-label');
@@ -3853,8 +3891,9 @@
             members.forEach(m => {
                 let memberTotalBill = 0;
                 sessions.forEach(s => { memberTotalBill += getMemberSessionCost(m, s.id); });
-                const remaining = m.paid - memberTotalBill;
-                totalCost += memberTotalBill; totalPaid += m.paid;
+                const mPaidTotal = getMemberPaid(m);
+                const remaining = mPaidTotal - memberTotalBill;
+                totalCost += memberTotalBill; totalPaid += mPaidTotal;
                 
                 if (remaining < -1000) debtList.push(`- ${m.name}: Nợ ${formatVND(Math.abs(remaining))}`);
                 else if (remaining > 1000) overpaidList.push(`- ${m.name}: Đang dư ${formatVND(remaining)}`);
