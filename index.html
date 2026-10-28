@@ -417,19 +417,19 @@
                 <h3 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2 mb-1">
                     <i class="fa-solid fa-piggy-bank text-[#e5b243]"></i> QUỸ CẦU LÔNG
                 </h3>
-                <p class="text-xs sm:text-sm text-slate-500 mb-4">Quỹ chung của CLB và tiền của từng người được tách riêng. Quỹ chỉ chi để mua cầu (CLB không tính tiền sân).</p>
+                <p class="text-xs sm:text-sm text-slate-500 mb-4">Tiền quỹ chung của CLB và số dư của từng người được ghi riêng. Quỹ chỉ dùng để mua cầu (CLB không tính tiền sân).</p>
                 <div class="grid sm:grid-cols-3 gap-3 text-xs sm:text-sm">
                     <div class="rounded-2xl bg-[#293879]/5 border border-[#293879]/15 p-3.5">
                         <div class="font-extrabold text-[#293879] mb-1">🏸 Quỹ chung CLB</div>
-                        <p class="text-slate-600">Cầu đã mua và tiền đóng của mọi người. Cầu còn lại trong kho là tài sản của cả CLB.</p>
+                        <p class="text-slate-600">Gồm số cầu còn trong kho và tiền mặt do thủ quỹ giữ. Cả hai thuộc về CLB, không thuộc riêng ai.</p>
                     </div>
                     <div class="rounded-2xl bg-[#e5b243]/10 border border-[#e5b243]/30 p-3.5">
                         <div class="font-extrabold text-[#293879] mb-1">👤 Tài khoản cá nhân</div>
-                        <p class="text-slate-600">Số dư mỗi người = tiền đã đóng − phí các buổi đã chơi. Dương là trả trước, âm là đang nợ.</p>
+                        <p class="text-slate-600">Số dư = tiền đã đóng + tiền tự trả mua cầu (nếu có) − phí các buổi đã chơi. Dương là trả trước, âm là đang nợ.</p>
                     </div>
                     <div class="rounded-2xl bg-slate-50 border border-slate-200 p-3.5">
                         <div class="font-extrabold text-[#293879] mb-1">👑 Thủ quỹ (Kantan)</div>
-                        <p class="text-slate-600">Giữ tiền hộ CLB. Số dư tiền quỹ âm nghĩa là Kantan đang ứng tiền túi mua cầu. Ai trả tiền một lô cầu thì được cộng vào số dư của người đó.</p>
+                        <p class="text-slate-600">Giữ tiền mặt hộ CLB; Kantan cũng có số dư cá nhân như mọi người. Khi quỹ hết tiền mà Kantan bỏ tiền túi mua cầu thì quỹ nợ lại Kantan khoản đó.</p>
                     </div>
                 </div>
             </div>
@@ -2461,20 +2461,24 @@
                     <div class="text-[10px] sm:text-xs text-slate-400 mt-0.5">${sub}</div>
                 </div>`;
 
-            const cashLabel = f.cashBalance >= 0 ? 'Quỹ đang giữ tiền mặt' : 'Kantan đang ứng tiền túi';
-            const cashTone = f.cashBalance >= 0 ? 'border-[#bcd331]/40' : 'border-[#f08622]/30';
+            // Tiền mặt không thể âm: nếu thành viên đóng không đủ trả tiền cầu thì phần thiếu là Kantan ứng tiền túi
+            const cashHeld = Math.max(0, f.cashBalance);
+            const owedToTreasurer = Math.max(0, -f.cashBalance);
+            const cashSub = owedToTreasurer > 0
+                ? `Quỹ hết tiền mặt và đang nợ Kantan <b class="text-[#f08622]">${formatVND(owedToTreasurer)}đ</b> (tiền túi Kantan đã ứng mua cầu). Thành viên đã đóng ${formatVND(f.deposits)}đ, Kantan trả tiền cầu ${formatVND(f.boughtByTreasurer)}đ`
+                : `Tiền mặt thủ quỹ đang giữ hộ CLB. Thành viên đã đóng ${formatVND(f.deposits)}đ, Kantan trả tiền cầu ${formatVND(f.boughtByTreasurer)}đ`;
+            const cashTone = owedToTreasurer > 0 ? 'border-[#f08622]/30' : 'border-[#bcd331]/40';
 
             cards.innerHTML =
                 card('fa-solid fa-feather text-[#e5b243]', 'Số dư trái cầu', `${formatVND(f.stockPieces)} trái`,
-                     `Mua ${formatVND(f.boughtPieces)} − đã dùng ${formatVND(f.usedPieces)}`, 'border-[#e5b243]/40') +
+                     `Đã mua ${formatVND(f.boughtPieces)} − đã dùng ${formatVND(f.usedPieces)}`, 'border-[#e5b243]/40') +
                 card('fa-solid fa-boxes-stacked text-[#e5b243]', 'Giá trị cầu tồn', formatVND(f.stockValue) + 'đ',
                      'Tiền mua cầu chưa dùng đến', 'border-[#e5b243]/40') +
-                card('fa-solid fa-sack-dollar text-[#bcd331]', 'Số dư tiền quỹ', (f.cashBalance > 0 ? '+' : '') + formatVND(f.cashBalance) + 'đ',
-                     `${cashLabel}. Thành viên đã đưa ${formatVND(f.deposits)}đ, Kantan trả tiền cầu ${formatVND(f.boughtByTreasurer)}đ`, cashTone) +
-                card('fa-solid fa-circle-plus text-[#23b1dc]', 'Thành viên trả trước', formatVND(f.prepaid) + 'đ', `${f.prepaidCount} người đang dư tiền`, 'border-[#23b1dc]/30') +
-                card('fa-solid fa-circle-minus text-[#ef403e]', 'Thành viên đang nợ', (f.owedCount > 0 ? formatVND(f.owed) : '0') + 'đ', f.owedCount > 0 ? `${f.owedCount} người còn thiếu` : 'Hiện không ai nợ', 'border-[#ef403e]/30') +
-                card('fa-solid fa-hand-holding-dollar text-[#8b499c]', 'Người khác đã ứng mua cầu', formatVND(f.advancedByOthers) + 'đ',
-                     f.advancersCount > 0 ? `${f.advancersCount} người, được cộng vào số dư của họ` : 'Chưa có lô nào do người khác trả', 'border-[#8b499c]/30');
+                card('fa-solid fa-sack-dollar text-[#bcd331]', 'Số dư tiền quỹ', formatVND(cashHeld) + 'đ', cashSub, cashTone) +
+                card('fa-solid fa-circle-plus text-[#23b1dc]', 'Thành viên trả trước', formatVND(f.prepaid) + 'đ', `${f.prepaidCount} người đang có số dư dương`, 'border-[#23b1dc]/30') +
+                card('fa-solid fa-circle-minus text-[#ef403e]', 'Thành viên đang nợ', (f.owedCount > 0 ? formatVND(f.owed) : '0') + 'đ', f.owedCount > 0 ? `${f.owedCount} người có số dư âm` : 'Hiện không ai nợ quỹ', 'border-[#ef403e]/30') +
+                card('fa-solid fa-hand-holding-dollar text-[#8b499c]', 'Thành viên tự trả mua cầu', formatVND(f.advancedByOthers) + 'đ',
+                     f.advancersCount > 0 ? `${f.advancersCount} người trả tiền lô cầu, được cộng vào số dư của họ` : 'Chưa có lô nào do thành viên khác trả', 'border-[#8b499c]/30');
 
             const kBalance = f.treasurer ? f.treasurer.balance : 0;
             document.getElementById('fund-equation').innerHTML =
