@@ -463,6 +463,8 @@
 
                 <div id="fund-stock-card" class="min-w-0 bg-white rounded-3xl shadow-luxury border border-slate-200/90 p-5 sm:p-7"></div>
             </div>
+
+            <div id="fund-refund-card" class="min-w-0 bg-white rounded-3xl shadow-luxury border border-slate-200/90 p-5 sm:p-7"></div>
         </section>
 
         <section id="tab-batches" class="hidden space-y-6">
@@ -970,6 +972,39 @@
     </div>
 
     <!-- MODAL: PRICE BATCH CONFIG -->
+    <!-- MODAL: HOÀN TIỀN (QUỸ HOÀN LẠI TIỀN CHO THÀNH VIÊN) -->
+    <div id="modal-refund" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] hidden items-center justify-center p-4" onclick="if(event.target===this) closeModal('modal-refund')">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center pb-3 border-b mb-4">
+                <h3 class="text-base font-bold text-slate-900">Ghi Hoàn Tiền</h3>
+                <button onclick="closeModal('modal-refund')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3.5 text-sm">
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-700">Quỹ hoàn tiền cho:</label>
+                    <select id="rf-member" onchange="updateRefundHint()" class="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-[#293879] outline-none text-sm"></select>
+                    <p id="rf-hint" class="text-[11px] text-slate-500 mt-1"></p>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-700">Số tiền hoàn (VNĐ):</label>
+                    <input type="text" inputmode="numeric" id="rf-amount" placeholder="VD: 300.000" oninput="formatSessionTotalInput(this)" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#293879] outline-none text-sm font-bold text-center">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-700">Ngày hoàn:</label>
+                    <input type="date" id="rf-date" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#293879] outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-700">Ghi chú:</label>
+                    <input type="text" id="rf-note" placeholder="VD: nghỉ hẳn, hoàn số dư" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#293879] outline-none text-sm">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2.5 text-sm font-semibold">
+                <button onclick="closeModal('modal-refund')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition">Hủy</button>
+                <button onclick="saveRefund()" class="px-5 py-2 bg-[#293879] hover:bg-[#1f2b5c] text-white rounded-xl shadow transition">Lưu Hoàn Tiền</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-price-batch" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] hidden items-center justify-center p-4" onclick="if(event.target===this) closeModal('modal-price-batch')">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
             <div class="flex justify-between items-center pb-3 border-b mb-4">
@@ -1171,12 +1206,13 @@
                     return;
                 }
 
-                const prevSnapshot = JSON.stringify({ sessions, members, qrInfo, shuttleBatches });
+                const prevSnapshot = JSON.stringify({ sessions, members, qrInfo, shuttleBatches, refunds });
                 const newSnapshot = JSON.stringify({ 
                     sessions: d.sessions || [], 
                     members: d.members || [], 
                     qrInfo: d.qrInfo || qrInfo, 
-                    shuttleBatches: d.shuttleBatches || [] 
+                    shuttleBatches: d.shuttleBatches || [],
+                    refunds: d.refunds || []
                 });
 
                 const hasDiff = prevSnapshot !== newSnapshot;
@@ -1185,6 +1221,7 @@
                 members = d.members || [];
                 if (d.qrInfo && Object.keys(d.qrInfo).length > 0) qrInfo = d.qrInfo;
                 shuttleBatches = d.shuttleBatches || [];
+                refunds = d.refunds || [];
 
                 safeSetStorage('CLB_CACHED_DATA', newSnapshot);
                 backupState();
@@ -1282,10 +1319,11 @@
         let sessions = [];
         let members = [];
         let shuttleBatches = [];
+        let refunds = [];   // sổ hoàn tiền: { id, memberId, amount, date (YYYY-MM-DD), note }
         let sessionStats = {}; 
 
         function backupState() {
-            originalState = JSON.stringify({sessions, members, shuttleBatches, qrInfo});
+            originalState = JSON.stringify({sessions, members, shuttleBatches, qrInfo, refunds});
             hasUnsavedChanges = false;
             updateSaveUI();
         }
@@ -1296,6 +1334,7 @@
                 sessions = parsed.sessions;
                 members = parsed.members;
                 shuttleBatches = parsed.shuttleBatches;
+                refunds = parsed.refunds || [];
                 qrInfo = parsed.qrInfo;
                 hasUnsavedChanges = false;
                 if (autoSaveTimer) {
@@ -1353,7 +1392,7 @@
         let saveQueued = false;
 
         function currentSnapshot() {
-            return JSON.stringify({ sessions, members, qrInfo, shuttleBatches });
+            return JSON.stringify({ sessions, members, qrInfo, shuttleBatches, refunds });
         }
 
         function commitChanges(isAutoSave = false) {
@@ -1382,7 +1421,7 @@
             if (syncIcon) syncIcon.className = "fa-solid fa-arrows-rotate fa-spin text-[#e5b243] text-xs shrink-0";
             if (syncText) syncText.textContent = "Đang lưu...";
 
-            const payload = { sessions, members, qrInfo, shuttleBatches };
+            const payload = { sessions, members, qrInfo, shuttleBatches, refunds };
             // Ảnh chụp đúng dữ liệu được gửi đi, để biết sau khi lưu xong còn thay đổi nào chưa lưu không
             const sentSnapshot = JSON.stringify(payload);
 
@@ -1542,6 +1581,7 @@
                     if (d.members?.length > 0) members = d.members;
                     if (d.qrInfo) qrInfo = d.qrInfo;
                     if (d.shuttleBatches?.length > 0) shuttleBatches = d.shuttleBatches;
+                    if (Array.isArray(d.refunds)) refunds = d.refunds;
                 } catch(e) {}
             }
 
@@ -1576,7 +1616,8 @@
                             members = data.members || [];
                             if (data.qrInfo && Object.keys(data.qrInfo).length > 0) qrInfo = data.qrInfo;
                             shuttleBatches = data.shuttleBatches || [];
-                            safeSetStorage('CLB_CACHED_DATA', JSON.stringify({ sessions, members, qrInfo, shuttleBatches }));
+                            refunds = data.refunds || [];
+                            safeSetStorage('CLB_CACHED_DATA', JSON.stringify({ sessions, members, qrInfo, shuttleBatches, refunds }));
                             backupState();
                             updateQRDisplay();
                             renderAll();
@@ -1693,9 +1734,16 @@
             return b && b.paidBy !== undefined && b.paidBy !== null && b.paidBy !== '';
         }
 
-        // Tổng tiền thành viên đã bỏ vào CLB = tiền đóng + tiền ứng mua cầu
+        // Tiền quỹ đã hoàn lại cho một người (tổng các khoản trong sổ hoàn tiền)
+        function getMemberRefund(m) {
+            if (!m) return 0;
+            return refunds.reduce((sum, r) => String(r.memberId) === String(m.id) ? sum + (Number(r.amount) || 0) : sum, 0);
+        }
+
+        // Tổng tiền thành viên đã bỏ vào CLB = tiền đóng + tiền ứng mua cầu - tiền quỹ đã hoàn lại.
+        // Với Kantan, m.paid là số tự tính (đã trừ tiền hoàn) nên không trừ lần nữa.
         function getMemberPaid(m) {
-            return (Number(m && m.paid) || 0) + (memberAdvance[m && m.id] || 0);
+            return (Number(m && m.paid) || 0) + (memberAdvance[m && m.id] || 0) - (isKantan(m) ? 0 : getMemberRefund(m));
         }
 
         // Tiền ứng mua cầu để hiển thị dưới tên: thành viên thường = tổng các lô họ trả;
@@ -1710,6 +1758,13 @@
             const amount = getMemberAdvanceAmount(m);
             return amount > 0
                 ? `<span class="block text-[9px] sm:text-[10px] leading-tight font-semibold text-[#8b499c] whitespace-normal ${extraClass}">gồm ${formatVND(amount)} tiền ứng mua cầu</span>`
+                : '';
+        }
+
+        function refundNoteHtml(m, extraClass = '') {
+            const amount = getMemberRefund(m);
+            return amount > 0
+                ? `<span class="block text-[9px] sm:text-[10px] leading-tight font-semibold text-[#23b1dc] whitespace-normal ${extraClass}">quỹ đã hoàn ${formatVND(amount)}</span>`
                 : '';
         }
 
@@ -1764,13 +1819,14 @@
 
             if (kantanMember) {
                 // Tiền thành viên đã đóng (không tính tiền họ ứng mua cầu) = tiền mặt Kantan đang giữ hộ quỹ
+                // (đã trừ phần quỹ hoàn lại cho từng người: tiền đã hoàn thì không còn nằm ở quỹ)
                 const collectedFromMembers = members.reduce((sum, m) => {
-                    return isKantan(m) ? sum : sum + (Number(m.paid) || 0);
+                    return isKantan(m) ? sum : sum + (Number(m.paid) || 0) - getMemberRefund(m);
                 }, 0);
 
-                // Kantan đã nộp = tiền cầu Kantan trả - tiền mặt thành viên đưa cho Kantan
+                // Kantan đã nộp = tiền cầu Kantan trả - tiền mặt thành viên đưa cho Kantan - tiền quỹ hoàn lại cho Kantan
                 // (âm nghĩa là Kantan đang giữ tiền mặt dư của quỹ)
-                kantanMember.paid = boughtByTreasurer - collectedFromMembers;
+                kantanMember.paid = boughtByTreasurer - collectedFromMembers - getMemberRefund(kantanMember);
             }
         }
 
@@ -2197,7 +2253,7 @@
                 bodyHTML += `
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="p-1.5 sm:p-2 text-center text-slate-500 font-mono text-xs sm:text-sm bg-slate-50 sticky-col-left-1 border-r border-slate-200">${idx + 1}</td>
-                        <td class="p-1.5 sm:p-2 font-bold text-slate-900 bg-white sticky-col-left-2 border-r border-slate-200 text-xs sm:text-sm px-1.5 sm:px-2.5">${nameHtml}${advanceNoteHtml(m, 'pl-4 sm:pl-[18px]')}</td>
+                        <td class="p-1.5 sm:p-2 font-bold text-slate-900 bg-white sticky-col-left-2 border-r border-slate-200 text-xs sm:text-sm px-1.5 sm:px-2.5">${nameHtml}${advanceNoteHtml(m, 'pl-4 sm:pl-[18px]')}${refundNoteHtml(m, 'pl-4 sm:pl-[18px]')}</td>
                         ${financialCells}
                         ${sessionCells}
                     </tr>
@@ -2369,7 +2425,7 @@
                     }
                 });
 
-                const displayPaid = isKantan(m) ? m.paid : ((mTotalPaid > 0 ? mTotalPaid : m.paid) + (memberAdvance[m.id] || 0));
+                const displayPaid = isKantan(m) ? m.paid : ((mTotalPaid > 0 ? mTotalPaid : m.paid) + (memberAdvance[m.id] || 0) - getMemberRefund(m));
 
                 fHtml += `
                     <td class="p-3 border-r border-slate-200 text-right font-extrabold font-mono bg-[#e5b243]/15 text-[#293879] whitespace-nowrap text-sm px-3" title="Tổng tiền cầu của ${m.name}: ${formatVND(mTotalCost)}">${formatVND(mTotalCost)}</td>
@@ -2395,7 +2451,7 @@
                     }
                 });
 
-                const displayPaid = isKantan(m) ? m.paid : ((mTotalPaid > 0 ? mTotalPaid : m.paid) + (memberAdvance[m.id] || 0));
+                const displayPaid = isKantan(m) ? m.paid : ((mTotalPaid > 0 ? mTotalPaid : m.paid) + (memberAdvance[m.id] || 0) - getMemberRefund(m));
                 const rem = displayPaid - mTotalCost;
 
                 let cellContent = '';
@@ -2444,7 +2500,7 @@
             const treasurer = rows.find(r => r.treasurer) || null;
 
             // Tiền mặt thành viên đã đưa cho thủ quỹ (không gồm tiền họ tự ứng mua cầu)
-            const deposits = others.reduce((sum, r) => sum + (Number(r.m.paid) || 0), 0);
+            const deposits = others.reduce((sum, r) => sum + (Number(r.m.paid) || 0) - getMemberRefund(r.m), 0);
             const advancedByOthers = others.reduce((sum, r) => sum + r.advance, 0);
             const boughtByTreasurer = bought - advancedByOthers;
 
@@ -2510,6 +2566,7 @@
             if (!cards) return;
             const f = computeFundSummary();
             renderSheetFundSummary(f);
+            renderRefundLedger();
 
             const card = (icon, label, value, sub, tone) => `
                 <div class="bg-white rounded-2xl border ${tone} shadow-sm p-3.5 sm:p-4">
@@ -2557,7 +2614,7 @@
                 const advNote = advanceNoteHtml(r.m).replace('<span class="block', '<span class="block font-sans');
                 return `<tr class="${r.treasurer ? 'bg-[#e5b243]/10' : ''}">
                     <td class="p-2.5 font-semibold text-slate-800">${label}</td>
-                    <td class="p-2.5 text-right font-mono" ${paidTitle}>${formatVND(r.paid)}${advNote}</td>
+                    <td class="p-2.5 text-right font-mono" ${paidTitle}>${formatVND(r.paid)}${advNote}${refundNoteHtml(r.m).replace('<span class="block', '<span class="block font-sans')}</td>
                     <td class="p-2.5 text-right font-mono text-slate-600">${formatVND(r.bill)}</td>
                     <td class="p-2.5 text-right font-mono font-bold ${balColor}">${r.balance > 0 ? '+' : ''}${formatVND(r.balance)}</td>
                     <td class="p-2.5 text-center text-xs">${st}</td>
@@ -2593,6 +2650,112 @@
                     <input id="fund-stock-input" type="number" min="0" inputmode="numeric" placeholder="Số trái đang còn" onkeydown="if(event.key==='Enter') saveStockCount()" class="flex-1 min-w-0 p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#293879] outline-none text-sm font-bold text-center">
                     <button onclick="saveStockCount()" class="px-4 py-2 bg-[#293879] hover:bg-[#1f2b5c] text-white rounded-xl text-sm font-semibold shadow transition shrink-0">Lưu</button>
                 </div>` : ''}`;
+        }
+
+        // ==========================================
+        // SỔ HOÀN TIỀN: quỹ hoàn lại tiền cho một thành viên (vd người nghỉ hẳn còn dư số dư)
+        // ==========================================
+        function formatIsoDate(iso) {
+            const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
+            return m ? `${m[3]}/${m[2]}/${m[1]}` : (iso || '-');
+        }
+
+        function getMemberBalance(m) {
+            let bill = 0;
+            sessions.forEach(s => { bill += getMemberSessionCost(m, s.id); });
+            return getMemberPaid(m) - bill;
+        }
+
+        function renderRefundLedger() {
+            const box = document.getElementById('fund-refund-card');
+            if (!box) return;
+            const total = refunds.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+            const sorted = [...refunds].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+            const rows = sorted.map(r => {
+                const m = members.find(x => String(x.id) === String(r.memberId));
+                return `<tr>
+                    <td class="p-2.5 whitespace-nowrap text-slate-600">${formatIsoDate(r.date)}</td>
+                    <td class="p-2.5 font-semibold text-slate-800">${m ? m.name : '(thành viên đã xóa)'}</td>
+                    <td class="p-2.5 text-right font-mono font-bold text-[#293879] whitespace-nowrap">${formatVND(r.amount)}</td>
+                    <td class="p-2.5 text-slate-500 text-xs">${(r.note || '').replace(/</g, '&lt;')}</td>
+                    ${isAdmin ? `<td class="p-2.5 text-right"><button onclick="deleteRefund('${r.id}')" class="text-[#ef403e] hover:text-[#b32422] text-xs p-1" title="Xóa khoản hoàn này"><i class="fa-solid fa-trash"></i></button></td>` : ''}
+                </tr>`;
+            }).join('');
+            box.innerHTML = `
+                <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
+                    <div>
+                        <h3 class="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2"><i class="fa-solid fa-hand-holding-dollar text-[#23b1dc]"></i> SỔ HOÀN TIỀN</h3>
+                        <p class="text-xs text-slate-500 mt-0.5 max-w-xl">Khi quỹ hoàn tiền cho một người (vd người nghỉ hẳn còn dư), ghi ở đây. Số đã nộp của người đó giảm đúng số tiền hoàn. Nếu quỹ không còn tiền mặt thì Kantan là người trả, khoản đó chuyển sang số Kantan ứng.</p>
+                    </div>
+                    ${isAdmin ? `<button onclick="openRefundModal()" class="px-3.5 py-2 bg-[#293879] hover:bg-[#1f2b5c] text-white rounded-xl text-xs sm:text-sm font-semibold shadow transition shrink-0"><i class="fa-solid fa-plus"></i> Ghi hoàn tiền</button>` : ''}
+                </div>
+                ${refunds.length === 0
+                    ? '<p class="text-xs text-slate-400 py-2">Chưa có khoản hoàn tiền nào.</p>'
+                    : `<div class="overflow-x-auto custom-scrollbar"><table class="w-full text-sm text-left border-collapse min-w-[420px]">
+                        <thead class="bg-[#293879] text-white text-xs sm:text-sm"><tr>
+                            <th class="p-2.5 font-semibold">Ngày</th><th class="p-2.5 font-semibold">Người nhận</th>
+                            <th class="p-2.5 font-semibold text-right">Số tiền</th><th class="p-2.5 font-semibold">Ghi chú</th>${isAdmin ? '<th class="p-2.5 w-10"></th>' : ''}
+                        </tr></thead>
+                        <tbody class="divide-y divide-slate-100">${rows}</tbody>
+                        <tfoot class="bg-slate-50 font-bold border-t-2 border-slate-200"><tr>
+                            <td class="p-2.5" colspan="2">Tổng đã hoàn</td><td class="p-2.5 text-right font-mono">${formatVND(total)}</td><td class="p-2.5" colspan="${isAdmin ? 2 : 1}"></td>
+                        </tr></tfoot></table></div>`}`;
+        }
+
+        function updateRefundHint() {
+            const sel = document.getElementById('rf-member');
+            const m = members.find(x => String(x.id) === sel.value);
+            const hint = document.getElementById('rf-hint');
+            if (!m) { hint.textContent = ''; return; }
+            const bal = getMemberBalance(m);
+            hint.innerHTML = `Số còn lại hiện tại của ${m.name}: <b class="${bal < 0 ? 'text-[#ef403e]' : 'text-[#293879]'}">${formatVND(bal)}đ</b>${bal <= 0 ? ' (không còn dư để hoàn)' : ''}`;
+        }
+
+        function openRefundModal() {
+            if (!isAdmin) return showAdminLoginModal();
+            const sel = document.getElementById('rf-member');
+            // Người còn dư tiền lên đầu danh sách (người có thể được hoàn)
+            const sorted = [...members].sort((a, b) => getMemberBalance(b) - getMemberBalance(a));
+            sel.innerHTML = sorted.map(m => `<option value="${m.id}">${m.name} (còn lại ${formatVND(getMemberBalance(m))})</option>`).join('');
+            document.getElementById('rf-amount').value = '';
+            document.getElementById('rf-note').value = '';
+            const now = new Date();
+            document.getElementById('rf-date').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            updateRefundHint();
+            openModal('modal-refund');
+        }
+
+        function saveRefund() {
+            if (!isAdmin) return;
+            const memberRaw = document.getElementById('rf-member').value;
+            const m = members.find(x => String(x.id) === memberRaw);
+            const amount = Number(document.getElementById('rf-amount').value.replace(/\D/g, '')) || 0;
+            const date = document.getElementById('rf-date').value;
+            const note = document.getElementById('rf-note').value.trim();
+            if (!m) return showToast('Hãy chọn người được hoàn tiền!', 'error');
+            if (amount <= 0) return showToast('Nhập số tiền hoàn lớn hơn 0!', 'error');
+            if (!date) return showToast('Chọn ngày hoàn tiền!', 'error');
+
+            const bal = getMemberBalance(m);
+            if (amount > bal && !confirm(`Số hoàn (${formatVND(amount)}đ) lớn hơn số còn lại của ${m.name} (${formatVND(bal)}đ).\nSau khi hoàn, ${m.name} sẽ ở mức ${formatVND(bal - amount)}đ (âm là đang nợ quỹ). Vẫn ghi?`)) return;
+
+            refunds.push({ id: 'r' + new Date().getTime(), memberId: Number(m.id) || m.id, amount, date, note });
+            closeModal('modal-refund');
+            renderAll();
+            markUnsaved(true);
+            showToast(`Đã ghi hoàn ${formatVND(amount)}đ cho ${m.name} và đang lưu Google Sheets...`, 'info');
+        }
+
+        function deleteRefund(id) {
+            if (!isAdmin) return;
+            const r = refunds.find(x => String(x.id) === String(id));
+            if (!r) return;
+            const m = members.find(x => String(x.id) === String(r.memberId));
+            if (!confirm(`Xóa khoản hoàn ${formatVND(r.amount)}đ cho ${m ? m.name : 'thành viên'} ngày ${formatIsoDate(r.date)}?\nSố đã nộp của người đó sẽ tăng lại đúng số tiền này.`)) return;
+            refunds = refunds.filter(x => String(x.id) !== String(id));
+            renderAll();
+            markUnsaved(true);
+            showToast('Đã xóa khoản hoàn tiền và đang lưu Google Sheets...', 'info');
         }
 
         function saveStockCount() {
@@ -2809,8 +2972,8 @@
                 if (isKantan(m)) return; // Tiền của Kantan được hệ thống tự động tính toán
                 const clean = typeof val === 'string' ? val.replace(/[^\d-]/g, '') : val;
                 const newPaid = Number(clean) || 0;
-                // Ô hiển thị tổng (đóng tiền + ứng mua cầu): phần đóng tiền = tổng nhập vào - phần ứng mua cầu
-                const basePaid = newPaid - (memberAdvance[m.id] || 0);
+                // Ô hiển thị tổng (đóng tiền + ứng mua cầu - đã hoàn): phần đóng tiền = tổng nhập vào - phần ứng + phần đã hoàn
+                const basePaid = newPaid - (memberAdvance[m.id] || 0) + getMemberRefund(m);
                 if (m.paid !== basePaid) {
                     m.paid = basePaid;
                     renderAll();
@@ -3416,6 +3579,13 @@
                     }
                 }, 100);
             }
+        }
+
+        // Mở hộp thoại nhập PIN admin (dùng khi người chưa đăng nhập bấm một thao tác của admin)
+        function showAdminLoginModal() {
+            document.getElementById('google-email').value = '';
+            openModal('modal-google-login');
+            setTimeout(() => document.getElementById('google-email')?.focus(), 100);
         }
 
         function togglePinVisibility() {

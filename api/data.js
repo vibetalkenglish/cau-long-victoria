@@ -55,7 +55,7 @@ function getGoogleAuth() {
 // 2. TỰ ĐỘNG TẠO CÁC SHEET NẾU BẢNG TÍNH CHƯA CÓ
 async function ensureSheetsExist(sheets, spreadsheetId) {
   const gridSizes = {};
-  const requiredSheets = ['Sessions', 'Members', 'Config', 'Prices', 'Payments'];
+  const requiredSheets = ['Sessions', 'Members', 'Config', 'Prices', 'Payments', 'Refunds'];
   try {
     const meta = await sheets.spreadsheets.get({ spreadsheetId });
     const existingTitles = (meta.data.sheets || []).map(s => s.properties?.title);
@@ -112,7 +112,8 @@ async function getFromSheets(sheets, spreadsheetId) {
     'Members',
     'Config!A:B',
     'Prices!A:I',
-    'Payments'
+    'Payments',
+    'Refunds!A:E'
   ];
 
   let valueRanges = [];
@@ -132,6 +133,7 @@ async function getFromSheets(sheets, spreadsheetId) {
   const cValues = (valueRanges[2] && valueRanges[2].values) || [];
   const pValues = (valueRanges[3] && valueRanges[3].values) || [];
   const payValues = (valueRanges[4] && valueRanges[4].values) || [];
+  const refundValues = (valueRanges[5] && valueRanges[5].values) || [];
 
   function parseSafeNumber(val, defaultVal = 0) {
     if (val === undefined || val === null || val === '') return defaultVal;
@@ -271,6 +273,22 @@ async function getFromSheets(sheets, spreadsheetId) {
     }
   }
 
+  // F. Refunds (sổ hoàn tiền: ID | ID thành viên | Số tiền | Ngày (YYYY-MM-DD) | Ghi chú)
+  const refunds = [];
+  for (let i = 1; i < refundValues.length; i++) {
+    const row = refundValues[i];
+    if (!row || !row[0]) continue;
+    const amount = parseSafeNumber(row[2], 0);
+    if (amount <= 0) continue;
+    refunds.push({
+      id: row[0].toString(),
+      memberId: Number(row[1]) || row[1],
+      amount: amount,
+      date: row[3] ? row[3].toString() : '',
+      note: row[4] ? row[4].toString() : ''
+    });
+  }
+
   // Tự động tính toán tiền đã nộp của Kantan (Chủ Quỹ):
   // Kantan đã nộp = tiền các lô cầu Kantan trả - tiền mặt các thành viên khác đã đóng (kể cả đóng dư).
   // Lô cầu do người khác trả được ghi có cho người đó ở giao diện, không tính cho Kantan.
@@ -288,14 +306,17 @@ async function getFromSheets(sheets, spreadsheetId) {
       return (payer && !isKantan(payer)) ? sum : sum + total;
     }, 0);
 
+    // Tiền quỹ đã hoàn cho từng người (sổ Refunds). Hoàn cho thành viên khác làm giảm số tiền họ đã đóng,
+    // hoàn cho Kantan làm giảm tiền Kantan đã ứng. Giữ khớp với calculateSheetMath() trong index.html.
+    const refundOf = (m) => refunds.reduce((sum, r) => String(r.memberId) === String(m.id) ? sum + r.amount : sum, 0);
     const collectedFromMembers = members.reduce((sum, m) => {
-      return isKantan(m) ? sum : sum + (Number(m.paid) || 0);
+      return isKantan(m) ? sum : sum + (Number(m.paid) || 0) - refundOf(m);
     }, 0);
 
-    kantanMember.paid = boughtByTreasurer - collectedFromMembers;
+    kantanMember.paid = boughtByTreasurer - collectedFromMembers - refundOf(kantanMember);
   }
 
-  return { sessions, members, qrInfo, shuttleBatches };
+  return { sessions, members, qrInfo, shuttleBatches, refunds };
 }
 
 // 4. HÀM GHI DỮ LIỆU VÀO GOOGLE SHEETS
@@ -304,7 +325,7 @@ async function getFromSheets(sheets, spreadsheetId) {
 async function saveToSheets(sheets, spreadsheetId, payload) {
   const gridSizes = await ensureSheetsExist(sheets, spreadsheetId);
 
-  const { sessions, members, qrInfo, shuttleBatches } = payload;
+  const { sessions, members, qrInfo, shuttleBatches, refunds } = payload;
 
   // A. Chuẩn bị dữ liệu Sessions
   const sData = [['ID', 'Ngày/Thứ', 'Số Cầu', 'Đơn Giá', 'Tổng Tiền (tự nhập)']];
@@ -405,6 +426,18 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
     { name: 'Prices', values: pData },
     { name: 'Payments', values: payData }
   ];
+
+  // Sổ hoàn tiền: chỉ ghi khi bản gửi lên có mục refunds (phiên bản web cũ không gửi thì giữ nguyên sổ trên Sheet).
+  // Ngày và ghi chú ghi dạng văn bản (dấu ' phía trước) để Google Sheets không tự đổi thành ngày/công thức.
+  if (Array.isArray(refunds)) {
+    const asText = (v) => { const t = String(v === undefined || v === null ? '' : v); return t === '' ? '' : "'" + t; };
+    const rData = [['ID', 'ID thành viên', 'Số tiền', 'Ngày (YYYY-MM-DD)', 'Ghi chú']];
+    refunds.forEach(r => {
+      const amount = Number(r.amount) || 0;
+      if (amount > 0) rData.push([r.id, r.memberId, amount, asText(r.date), asText(r.note)]);
+    });
+    blocks.push({ name: 'Refunds', values: rData });
+  }
 
   // 1. Ghi toàn bộ dữ liệu mới (1 request)
   const updateRes = await sheets.spreadsheets.values.batchUpdate({

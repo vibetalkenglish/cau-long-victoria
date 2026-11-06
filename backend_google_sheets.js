@@ -26,7 +26,7 @@ function getSpreadsheet() {
  * Đảm bảo các tab sheet cần thiết luôn tồn tại
  */
 function ensureSheetsExist(ss) {
-  const required = ['Sessions', 'Members', 'Config', 'Prices', 'Payments'];
+  const required = ['Sessions', 'Members', 'Config', 'Prices', 'Payments', 'Refunds'];
   required.forEach(name => {
     if (!ss.getSheetByName(name)) {
       ss.insertSheet(name);
@@ -277,7 +277,26 @@ function getFromSheets() {
   // Không tự ghi dữ liệu mẫu khi bảng trống: lúc đọc trúng khoảnh khắc đang lưu, bảng có thể trống tạm thời
   // và việc ghi đè dữ liệu mẫu sẽ làm mất dữ liệu thật. Muốn khởi tạo thì chạy tay setupInitialData().
 
-  return { sessions: sessions, members: members, qrInfo: qrInfo, shuttleBatches: shuttleBatches };
+  // 5. Đọc sổ hoàn tiền (ID | ID thành viên | Số tiền | Ngày YYYY-MM-DD | Ghi chú)
+  let refunds = [];
+  const rSheet = ss.getSheetByName('Refunds');
+  if (rSheet) {
+    const rValues = rSheet.getDataRange().getValues();
+    for (let i = 1; i < rValues.length; i++) {
+      if (!rValues[i][0]) continue;
+      const amount = Number(rValues[i][2]) || 0;
+      if (amount <= 0) continue;
+      refunds.push({
+        id: rValues[i][0].toString(),
+        memberId: Number(rValues[i][1]) || rValues[i][1],
+        amount: amount,
+        date: rValues[i][3] instanceof Date ? Utilities.formatDate(rValues[i][3], Session.getScriptTimeZone(), 'yyyy-MM-dd') : String(rValues[i][3] || ''),
+        note: rValues[i][4] ? rValues[i][4].toString() : ''
+      });
+    }
+  }
+
+  return { sessions: sessions, members: members, qrInfo: qrInfo, shuttleBatches: shuttleBatches, refunds: refunds };
 }
 
 function saveToSheets(payloadData, pin) {
@@ -294,7 +313,7 @@ function saveToSheets(payloadData, pin) {
     return false;
   }
 
-  const { sessions, members, qrInfo, shuttleBatches } = payload;
+  const { sessions, members, qrInfo, shuttleBatches, refunds } = payload;
   const ss = getSpreadsheet();
   ensureSheetsExist(ss);
   
@@ -399,6 +418,19 @@ function saveToSheets(payloadData, pin) {
     paySheet.getRange(1, 1, payData.length, payData[0].length).setValues(payData);
   }
   
+  // 6. Lưu sổ hoàn tiền (chỉ khi bản gửi lên có mục refunds; web cũ không gửi thì giữ nguyên)
+  if (Array.isArray(refunds)) {
+    const rSheet = ss.getSheetByName('Refunds');
+    rSheet.clearContents();
+    const asText = v => (v === undefined || v === null || v === '') ? '' : "'" + v;
+    const rData = [['ID', 'ID thành viên', 'Số tiền', 'Ngày (YYYY-MM-DD)', 'Ghi chú']];
+    refunds.forEach(r => {
+      const amount = Number(r.amount) || 0;
+      if (amount > 0) rData.push([r.id, r.memberId, amount, asText(r.date), asText(r.note)]);
+    });
+    rSheet.getRange(1, 1, rData.length, rData[0].length).setValues(rData);
+  }
+
   return true;
 }
 
