@@ -269,7 +269,8 @@ function getFromSheets() {
          unitPrice: unitPrice,
          note: note,
          isDepleted: (valDepleted === true || valDepleted === 'true' || valDepleted === 'TRUE' || valDepleted === 'Hết'),
-         paidBy: (pValues[i][8] === undefined || pValues[i][8] === '') ? '' : (Number(pValues[i][8]) || pValues[i][8])
+         paidBy: (pValues[i][8] === undefined || pValues[i][8] === '') ? '' : (Number(pValues[i][8]) || pValues[i][8]),
+         noPurchase: (pValues[i][9] === true || pValues[i][9] === 'true' || pValues[i][9] === 'TRUE' || pValues[i][9] === 'Có')
        });
     }
   }
@@ -382,14 +383,14 @@ function saveToSheets(payloadData, pin) {
   // 4. Lưu dữ liệu Bảng Giá Ống Cầu
   let pSheet = ss.getSheetByName('Prices');
   pSheet.clearContents();
-  let pData = [['ID', 'Lần Mua', 'Số Hộp', 'Giá 1 Hộp (12 Trái)', 'Tổng Tiền Mua Cầu', 'Đơn Giá 1 Trái', 'Ghi chú', 'Tình trạng', 'Người trả (ID thành viên)']];
+  let pData = [['ID', 'Lần Mua', 'Số Hộp', 'Giá 1 Hộp (12 Trái)', 'Tổng Tiền Mua Cầu', 'Đơn Giá 1 Trái', 'Ghi chú', 'Tình trạng', 'Người trả (ID thành viên)', 'Không tính vào tiền mua cầu']];
   if (shuttleBatches && shuttleBatches.length > 0) {
     shuttleBatches.forEach(b => {
       let qty = Number(b.quantity) || 1;
       let pack = Number(b.packPrice) || 0;
       let total = Number(b.totalPrice) || (qty * pack);
       let unit = Number(b.unitPrice) || Math.round(pack / 12);
-      pData.push([b.id, b.label, qty, pack, total, unit, b.note || '', b.isDepleted ? 'Hết' : 'Còn', b.paidBy === undefined || b.paidBy === null ? '' : b.paidBy]);
+      pData.push([b.id, b.label, qty, pack, total, unit, b.note || '', b.isDepleted ? 'Hết' : 'Còn', b.paidBy === undefined || b.paidBy === null ? '' : b.paidBy, b.noPurchase ? 'Có' : '']);
     });
   }
   if (pData.length > 0) {

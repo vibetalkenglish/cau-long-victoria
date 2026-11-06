@@ -111,7 +111,7 @@ async function getFromSheets(sheets, spreadsheetId) {
     'Sessions!A:E',
     'Members',
     'Config!A:B',
-    'Prices!A:I',
+    'Prices!A:J',
     'Payments',
     'Refunds!A:E'
   ];
@@ -268,7 +268,9 @@ async function getFromSheets(sheets, spreadsheetId) {
         note: note,
         isDepleted: (valDepleted === true || valDepleted === 'true' || valDepleted === 'Hết' || valDepleted === 'Đã hết'),
         // ID thành viên đã trả tiền lô này (cột I, trống = chưa ghi)
-        paidBy: (pValues[i][8] === undefined || pValues[i][8] === '') ? '' : (Number(pValues[i][8]) || pValues[i][8])
+        paidBy: (pValues[i][8] === undefined || pValues[i][8] === '') ? '' : (Number(pValues[i][8]) || pValues[i][8]),
+        // Cột J: "Có" = dòng chỉ dùng để tính tiền buổi, không phải mua cầu mới (không cộng vào tiền cầu đã mua)
+        noPurchase: (pValues[i][9] === true || pValues[i][9] === 'true' || pValues[i][9] === 'TRUE' || pValues[i][9] === 'Có')
       });
     }
   }
@@ -297,6 +299,7 @@ async function getFromSheets(sheets, spreadsheetId) {
   const kantanMember = members.find(m => isKantan(m));
   if (kantanMember) {
     const boughtByTreasurer = shuttleBatches.reduce((sum, b) => {
+      if (b.noPurchase) return sum;   // dòng chỉ dùng để tính tiền buổi, không phải mua cầu mới
       const qty = Number(b.quantity) || 1;
       const pack = Number(b.packPrice) || 0;
       const total = Number(b.totalPrice) || (qty * pack);
@@ -389,14 +392,14 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
   }
 
   // D. Chuẩn bị dữ liệu Prices
-  const pData = [['ID', 'Lần Mua', 'Số Hộp', 'Giá 1 Hộp (12 Trái)', 'Tổng Tiền Mua Cầu', 'Đơn Giá 1 Trái', 'Ghi chú', 'Tình trạng', 'Người trả (ID thành viên)']];
+  const pData = [['ID', 'Lần Mua', 'Số Hộp', 'Giá 1 Hộp (12 Trái)', 'Tổng Tiền Mua Cầu', 'Đơn Giá 1 Trái', 'Ghi chú', 'Tình trạng', 'Người trả (ID thành viên)', 'Không tính vào tiền mua cầu']];
   if (shuttleBatches && Array.isArray(shuttleBatches)) {
     shuttleBatches.forEach(b => {
       const qty = Number(b.quantity) || 1;
       const pack = Number(b.packPrice) || 0;
       const total = Number(b.totalPrice) || (qty * pack);
       const unit = Number(b.unitPrice) || Math.round(pack / 12);
-      pData.push([b.id, b.label, qty, pack, total, unit, b.note || '', b.isDepleted ? 'Hết' : 'Còn', b.paidBy === undefined || b.paidBy === null ? '' : b.paidBy]);
+      pData.push([b.id, b.label, qty, pack, total, unit, b.note || '', b.isDepleted ? 'Hết' : 'Còn', b.paidBy === undefined || b.paidBy === null ? '' : b.paidBy, b.noPurchase ? 'Có' : '']);
     });
   }
 

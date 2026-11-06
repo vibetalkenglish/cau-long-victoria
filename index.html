@@ -1035,7 +1035,11 @@
                     <label class="block font-semibold mb-1 text-[#293879]">Đơn giá 1 trái (Tự động chia 12):</label>
                     <input type="number" id="pb-unitprice" readonly class="w-full p-2.5 rounded-xl border border-[#bcd331]/40 bg-[#bcd331]/15 text-[#293879] font-bold outline-none text-right font-mono text-sm">
                 </div>
-                <div>
+                <div class="flex items-start gap-2 bg-[#e5b243]/10 p-2.5 rounded-xl border border-[#e5b243]/40">
+                    <input type="checkbox" id="pb-nopurchase" onchange="togglePurchaseFields()" class="w-4 h-4 mt-0.5 text-[#293879] rounded shrink-0">
+                    <label for="pb-nopurchase" class="text-xs sm:text-sm text-slate-700 cursor-pointer"><b>Chỉ dùng để tính tiền buổi chơi</b>, không phải mua cầu mới. Dòng này vẫn cho đơn giá 1 trái để tính phí, nhưng <b>không cộng vào tiền cầu đã mua</b>, số trái cầu mua và số Kantan đã nộp.</label>
+                </div>
+                <div id="pb-paidby-wrap">
                     <label class="block font-semibold mb-1 text-slate-700">Ai trả tiền lô này:</label>
                     <select id="pb-paidby" class="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-[#293879] outline-none text-sm"></select>
                 </div>
@@ -1808,6 +1812,7 @@
             memberAdvance = {};
             let boughtByTreasurer = 0;
             shuttleBatches.forEach(b => {
+                if (b.noPurchase) return;   // dòng chỉ để tính tiền buổi, không phải mua cầu mới
                 const total = getBatchTotal(b);
                 const payer = hasBatchPayer(b) ? members.find(m => String(m.id) === String(b.paidBy)) : null;
                 if (payer && !isKantan(payer)) {
@@ -2478,8 +2483,9 @@
         // QUỸ: tổng hợp quỹ chung và số dư cá nhân (tính từ dữ liệu sẵn có, không ghi thêm gì)
         // ==========================================
         function computeFundSummary() {
-            const bought = shuttleBatches.reduce((sum, b) => sum + getBatchTotal(b), 0);
-            const boughtPieces = shuttleBatches.reduce((sum, b) => sum + (Number(b.quantity) || 1) * 12, 0);
+            const purchaseBatches = shuttleBatches.filter(b => !b.noPurchase);
+            const bought = purchaseBatches.reduce((sum, b) => sum + getBatchTotal(b), 0);
+            const boughtPieces = purchaseBatches.reduce((sum, b) => sum + (Number(b.quantity) || 1) * 12, 0);
             const usedPieces = sessions.reduce((sum, s) => sum + (Number(s.shuttles) || 0), 0);
 
             // Chi phí đã chia cho người chơi (buổi không ai có mặt thì chưa chia được)
@@ -2788,8 +2794,10 @@
                 const total = Number(b.totalPrice) || (qty * packPrice);
                 const unit = Number(b.unitPrice) || Math.round(packPrice / 12);
 
-                grandTotalPacks += qty;
-                grandTotalMoney += total;
+                if (!b.noPurchase) {
+                    grandTotalPacks += qty;
+                    grandTotalMoney += total;
+                }
 
                 const statusBadge = b.isDepleted 
                     ? `<span class="px-2 py-0.5 bg-slate-100 text-slate-500 border border-slate-200 rounded-md text-xs font-bold uppercase tracking-wider whitespace-nowrap">Đã Hết</span>`
@@ -2802,12 +2810,12 @@
                 html += `
                     <tr class="hover:bg-slate-50/80 transition-colors text-sm lg:text-[15px]">
                         <td class="p-3 lg:p-3.5 text-center border-r border-slate-100">${statusBadge}</td>
-                        <td class="p-3 lg:p-3.5 font-bold text-slate-900 border-r border-slate-100">${b.label} ${editBtn}</td>
+                        <td class="p-3 lg:p-3.5 font-bold text-slate-900 border-r border-slate-100">${b.label} ${editBtn}${b.noPurchase ? '<span class="block mt-0.5 text-[10px] font-semibold text-[#8b499c]">Chỉ để tính tiền, không phải mua cầu mới</span>' : ''}</td>
                         <td class="p-3 lg:p-3.5 text-center text-slate-700 font-semibold border-r border-slate-100">${qty}</td>
                         <td class="p-3 lg:p-3.5 text-right font-mono text-slate-600 border-r border-slate-100 whitespace-nowrap">${formatVND(packPrice)}</td>
                         <td class="p-3 lg:p-3.5 text-right font-mono text-[#ef403e] font-bold border-r border-slate-100 whitespace-nowrap bg-[#ef403e]/10">${formatVND(total)}</td>
                         <td class="p-3 lg:p-3.5 text-right font-mono text-[#293879] font-bold border-r border-slate-100 whitespace-nowrap">${formatVND(unit)}</td>
-                        <td class="p-3 lg:p-3.5 border-r border-slate-100 whitespace-nowrap text-slate-800 font-semibold">${getBatchPayerHtml(b)}</td>
+                        <td class="p-3 lg:p-3.5 border-r border-slate-100 whitespace-nowrap text-slate-800 font-semibold">${b.noPurchase ? '<span class="text-slate-300">-</span>' : getBatchPayerHtml(b)}</td>
                         <td class="p-3 lg:p-3.5 text-slate-500 italic text-xs lg:text-sm">${b.note || '-'}</td>
                     </tr>
                 `;
@@ -3142,6 +3150,7 @@
                 document.getElementById('pb-unitprice').value = pack > 0 ? Math.round(pack / 12) : 0;
                 document.getElementById('pb-note').value = b.note || '';
                 document.getElementById('pb-depleted').checked = b.isDepleted || false;
+                document.getElementById('pb-nopurchase').checked = !!b.noPurchase;
                 fillBatchPayerOptions(b.paidBy);
             } else {
                 title.textContent = "Thêm Lô Cầu Mới";
@@ -3153,9 +3162,17 @@
                 document.getElementById('pb-unitprice').value = '';
                 document.getElementById('pb-note').value = '';
                 document.getElementById('pb-depleted').checked = false;
+                document.getElementById('pb-nopurchase').checked = false;
                 fillBatchPayerOptions('');
             }
+            togglePurchaseFields();
             openModal('modal-price-batch');
+        }
+
+        // Dòng "chỉ để tính tiền" không có người trả (không phải khoản mua thật): ẩn ô chọn người trả
+        function togglePurchaseFields() {
+            const noPurchase = document.getElementById('pb-nopurchase').checked;
+            document.getElementById('pb-paidby-wrap').classList.toggle('hidden', noPurchase);
         }
 
         function savePriceBatch() {
@@ -3166,6 +3183,7 @@
             const totalPrice = quantity * packPrice;
             const note = document.getElementById('pb-note').value.trim();
             const isDepleted = document.getElementById('pb-depleted').checked;
+            const noPurchase = document.getElementById('pb-nopurchase').checked;
             const paidByRaw = document.getElementById('pb-paidby').value;
             const paidBy = paidByRaw === '' ? '' : (Number(paidByRaw) || paidByRaw);
             const unitPrice = packPrice > 0 ? Math.round(packPrice / 12) : 0;
@@ -3183,6 +3201,7 @@
                     b.note = note;
                     b.isDepleted = isDepleted;
                     b.paidBy = paidBy;
+                    b.noPurchase = noPurchase;
                 }
             } else {
                 shuttleBatches.push({
@@ -3194,7 +3213,8 @@
                     unitPrice,
                     note,
                     isDepleted,
-                    paidBy
+                    paidBy,
+                    noPurchase
                 });
             }
 
