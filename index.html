@@ -2295,7 +2295,7 @@
                 
                 let paidCellHTML = '';
                 if (isTreasurer(m)) {
-                    paidCellHTML = `<span class="text-[#293879] font-extrabold font-mono block text-right px-1 sm:px-2 w-full text-xs sm:text-sm" title="Số của thủ quỹ được tự tính từ tiền mua cầu, tiền hoàn và tiền thu hộ quỹ">${formatVND(m.paid)}</span>`;
+                    paidCellHTML = `<span class="text-[#293879] font-extrabold font-mono block text-right px-1 sm:px-2 w-full text-xs sm:text-sm" title="Số của thủ quỹ được tự tính từ tiền mua cầu, tiền hoàn và tiền thu hộ quỹ">${formatVND(mPaidTotal)}</span>`;
                 } else if (isAdmin) {
                     paidCellHTML = `<input type="text" value="${formatVND(mPaidTotal)}" onfocus="this.value=${mPaidTotal}; this.select();" onblur="updatePaid(${m.id}, this.value)" onkeydown="if(event.key==='Enter') this.blur();" class="currency-input text-[#293879] font-bold font-mono text-right w-full text-xs sm:text-sm">`;
                 } else {
