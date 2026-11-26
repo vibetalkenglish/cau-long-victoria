@@ -383,6 +383,7 @@
                         <p class="text-xs text-white/80 mt-0.5">
                             Cột dọc: <strong>Tên thành viên</strong> (Ưu tiên người nợ) • Hàng ngang: <strong>Buổi chơi</strong> (Cũ ➡️ Mới)
                         </p>
+                        <p class="text-xs text-white/80 mt-1 flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded-sm bg-[#bfe9f7] border border-[#23b1dc]"></span> Ô màu xanh: khoản đóng nhập từ ngày 26/11/2026</p>
                     </div>
                 </div>
 
@@ -2436,16 +2437,18 @@
                     const cost = getMemberSessionCost(m, s.id);
                     const payVal = (m.payments && m.payments[s.id]) ? Number(m.payments[s.id]) : 0;
 
+                    const newMark = payVal ? getPayMarks()[`${m.id}|${s.id}`] : '';
+                    const markTitle = newMark ? `title="Nhập ngày ${formatIsoDate(newMark)}"` : '';
                     let payInputHTML = '';
                     if (isAdmin) {
-                        payInputHTML = `<input type="text" value="${formatVND(payVal)}" onfocus="this.value=${payVal}; this.select();" onblur="updateSessionPayment(${m.id}, '${s.id}', this.value)" onkeydown="if(event.key==='Enter') this.blur();" class="currency-input text-[#293879] font-bold font-mono text-right w-full text-sm">`;
+                        payInputHTML = `<input type="text" value="${formatVND(payVal)}" onfocus="this.value=${payVal}; this.select();" onblur="updateSessionPayment(${m.id}, '${s.id}', this.value)" onkeydown="if(event.key==='Enter') this.blur();" ${markTitle} class="currency-input ${newMark ? 'text-[#0a5f7d]' : 'text-[#293879]'} font-bold font-mono text-right w-full text-sm" ${newMark ? 'style="background:#bfe9f7;border-color:#23b1dc"' : ''}>`;
                     } else {
-                        payInputHTML = `<span class="text-[#293879] font-bold font-mono block text-right px-2 w-full text-sm ${payVal > 0 ? '' : 'text-slate-300'}">${formatVND(payVal)}</span>`;
+                        payInputHTML = `<span ${markTitle} class="${newMark ? 'text-[#0a5f7d]' : (payVal > 0 ? 'text-[#293879]' : 'text-slate-300')} font-bold font-mono block text-right px-2 w-full text-sm">${formatVND(payVal)}</span>`;
                     }
 
                     rowCells += `
                         <td class="p-2.5 sm:p-3 text-right font-mono font-medium border-r border-slate-200 text-sm px-3 ${isAtt ? 'text-[#293879] bg-[#e5b243]/10 font-semibold' : 'text-slate-400'}">${isAtt ? formatVND(cost) : '0'}</td>
-                        <td class="p-2 sm:p-2.5 text-right bg-[#bcd331]/10 border-r border-slate-200 text-sm px-2">${payInputHTML}</td>
+                        <td class="p-2 sm:p-2.5 text-right ${newMark ? 'bg-[#23b1dc]/30' : 'bg-[#bcd331]/10'} border-r border-slate-200 text-sm px-2">${payInputHTML}</td>
                     `;
                 });
 
@@ -3124,6 +3127,40 @@
             }
         }
 
+        // ===== ĐÁNH DẤU XANH CÁC KHOẢN ĐÓNG NHẬP TỪ 26/11/2026 =====
+        // qrInfo.payMarks (lưu ở tab Config) = { "idThànhViên|idBuổi": "YYYY-MM-DD" (ngày nhập) }
+        // Hai khoản nhập ngày 26/11 trước khi có tính năng này (Hoàng Anh, buổi 18/08; Minh, buổi 28/7):
+        const SEED_PAY_MARKS = { '10|s1787069288069': '2026-11-26', '1794989718720|s2': '2026-11-26' };
+        let payMarksCache = { raw: null, value: null };
+        function getPayMarks() {
+            const raw = (qrInfo && qrInfo.payMarks) || '';
+            if (raw !== payMarksCache.raw) {
+                let stored = {};
+                try { stored = raw ? JSON.parse(raw) : {}; } catch (e) {}
+                payMarksCache = { raw, value: Object.assign({}, SEED_PAY_MARKS, stored) };
+            }
+            return payMarksCache.value;
+        }
+
+        function setPayMark(mId, sId, amount) {
+            const marks = Object.assign({}, getPayMarks());
+            const key = `${mId}|${sId}`;
+            if (amount) {
+                const now = new Date();
+                marks[key] = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            } else {
+                delete marks[key];
+            }
+            // Một ô Google Sheets chứa tối đa 50.000 ký tự: nếu gần đầy thì bỏ các dấu cũ nhất
+            let raw = JSON.stringify(marks);
+            while (raw.length > 45000) {
+                const oldest = Object.keys(marks).sort((a, b) => marks[a].localeCompare(marks[b]))[0];
+                delete marks[oldest];
+                raw = JSON.stringify(marks);
+            }
+            qrInfo.payMarks = raw;
+        }
+
         function updateSessionPayment(mId, sId, val) {
             if (!isAdmin) return;
             const m = members.find(x => x.id === mId);
@@ -3136,6 +3173,7 @@
                     // nên mốc chốt khi chuyển thủ quỹ luôn đúng
                     m.paid = (Number(m.paid) || 0) + newP - (Number(m.payments[sId]) || 0);
                     m.payments[sId] = newP;
+                    setPayMark(m.id, sId, newP);
                     renderAll();
                     markUnsaved(true);
                 }

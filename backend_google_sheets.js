@@ -378,7 +378,8 @@ function saveToSheets(payloadData, pin) {
     ['stockCount', (qrInfo && qrInfo.stockCount !== undefined) ? qrInfo.stockCount : ''],
     ['stockCountExpected', (qrInfo && qrInfo.stockCountExpected !== undefined) ? qrInfo.stockCountExpected : ''],
     ['stockCountDate', (qrInfo && qrInfo.stockCountDate) ? qrInfo.stockCountDate : ''],
-    ['handover', (qrInfo && qrInfo.handover) ? qrInfo.handover : '']
+    ['handover', (qrInfo && qrInfo.handover) ? qrInfo.handover : ''],
+    ['payMarks', (qrInfo && qrInfo.payMarks) ? qrInfo.payMarks : '']
   ];
   cSheet.getRange(1, 1, cData.length, cData[0].length).setValues(cData);
 

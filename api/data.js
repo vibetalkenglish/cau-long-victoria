@@ -390,7 +390,8 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
     ['stockCount', qrInfo && qrInfo.stockCount !== undefined ? qrInfo.stockCount : ''],
     ['stockCountExpected', qrInfo && qrInfo.stockCountExpected !== undefined ? qrInfo.stockCountExpected : ''],
     ['stockCountDate', qrInfo && qrInfo.stockCountDate ? qrInfo.stockCountDate : ''],
-    ['handover', qrInfo && qrInfo.handover ? qrInfo.handover : '']
+    ['handover', qrInfo && qrInfo.handover ? qrInfo.handover : ''],
+    ['payMarks', qrInfo && qrInfo.payMarks ? qrInfo.payMarks : '']
   ];
   if (qrTooLarge) {
     // Giữ nguyên dòng 5 (ảnh QR cũ), chỉ ghi phần trước và sau nó
