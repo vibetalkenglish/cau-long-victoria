@@ -292,7 +292,8 @@ function getFromSheets() {
         memberId: Number(rValues[i][1]) || rValues[i][1],
         amount: amount,
         date: rValues[i][3] instanceof Date ? Utilities.formatDate(rValues[i][3], Session.getScriptTimeZone(), 'yyyy-MM-dd') : String(rValues[i][3] || ''),
-        note: rValues[i][4] ? rValues[i][4].toString() : ''
+        note: rValues[i][4] ? rValues[i][4].toString() : '',
+        paidBy: (rValues[i][5] === undefined || rValues[i][5] === '') ? '' : (Number(rValues[i][5]) || rValues[i][5])
       });
     }
   }
@@ -376,7 +377,8 @@ function saveToSheets(payloadData, pin) {
     ['qrUrl', rawQrUrl],
     ['stockCount', (qrInfo && qrInfo.stockCount !== undefined) ? qrInfo.stockCount : ''],
     ['stockCountExpected', (qrInfo && qrInfo.stockCountExpected !== undefined) ? qrInfo.stockCountExpected : ''],
-    ['stockCountDate', (qrInfo && qrInfo.stockCountDate) ? qrInfo.stockCountDate : '']
+    ['stockCountDate', (qrInfo && qrInfo.stockCountDate) ? qrInfo.stockCountDate : ''],
+    ['handover', (qrInfo && qrInfo.handover) ? qrInfo.handover : '']
   ];
   cSheet.getRange(1, 1, cData.length, cData[0].length).setValues(cData);
 
@@ -424,10 +426,10 @@ function saveToSheets(payloadData, pin) {
     const rSheet = ss.getSheetByName('Refunds');
     rSheet.clearContents();
     const asText = v => (v === undefined || v === null || v === '') ? '' : "'" + v;
-    const rData = [['ID', 'ID thành viên', 'Số tiền', 'Ngày (YYYY-MM-DD)', 'Ghi chú']];
+    const rData = [['ID', 'ID thành viên', 'Số tiền', 'Ngày (YYYY-MM-DD)', 'Ghi chú', 'ID người chi']];
     refunds.forEach(r => {
       const amount = Number(r.amount) || 0;
-      if (amount > 0) rData.push([r.id, r.memberId, amount, asText(r.date), asText(r.note)]);
+      if (amount > 0) rData.push([r.id, r.memberId, amount, asText(r.date), asText(r.note), r.paidBy === undefined || r.paidBy === null ? '' : r.paidBy]);
     });
     rSheet.getRange(1, 1, rData.length, rData[0].length).setValues(rData);
   }

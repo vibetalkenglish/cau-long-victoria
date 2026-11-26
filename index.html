@@ -429,10 +429,11 @@
                         <p class="text-slate-600">Số dư = tiền đã đóng + tiền tự trả mua cầu (nếu có) − phí các buổi đã chơi. Dương là trả trước, âm là đang nợ.</p>
                     </div>
                     <div class="rounded-2xl bg-slate-50 border border-slate-200 p-3.5">
-                        <div class="font-extrabold text-[#293879] mb-1">👑 Thủ quỹ (Kantan)</div>
-                        <p class="text-slate-600">Giữ tiền mặt hộ CLB; Kantan cũng có số dư cá nhân như mọi người. Ai bỏ tiền túi mua cầu (Kantan, A Đức...) thì quỹ nợ lại họ theo số còn lại (đã nộp − phí các buổi họ đã chơi).</p>
+                        <div class="font-extrabold text-[#293879] mb-1" id="fund-treasurer-title">👑 Thủ quỹ</div>
+                        <p class="text-slate-600" id="fund-treasurer-text">Giữ tiền mặt hộ CLB; thủ quỹ cũng có số dư cá nhân như mọi người.</p>
                     </div>
                 </div>
+                <div id="fund-handover"></div>
             </div>
 
             <div id="fund-summary-cards" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
@@ -1495,7 +1496,7 @@
             let apiUrl = GOOGLE_SCRIPT_API_URL || '/api/data';
             if (apiUrl.includes('PLACEHOLDER')) apiUrl = '/api/data';
             const isGoogleScriptUrl = apiUrl.includes('script.google.com');
-            const body = JSON.stringify({ action: 'saveData', pin: getAdminPin(), payload: payload });
+            const body = JSON.stringify({ action: 'saveData', pin: getAdminPin(), clientVersion: 2, payload: payload });
 
             const fetchOptions = {
                 method: 'POST',
@@ -1744,25 +1745,84 @@
             return refunds.reduce((sum, r) => String(r.memberId) === String(m.id) ? sum + (Number(r.amount) || 0) : sum, 0);
         }
 
-        // Tổng tiền thành viên đã bỏ vào CLB = tiền đóng + tiền ứng mua cầu - tiền quỹ đã hoàn lại.
-        // Với Kantan, m.paid là số tự tính (đã trừ tiền hoàn) nên không trừ lần nữa.
-        function getMemberPaid(m) {
-            return (Number(m && m.paid) || 0) + (memberAdvance[m && m.id] || 0) - (isKantan(m) ? 0 : getMemberRefund(m));
+        // ===== THỦ QUỸ & CHUYỂN THỦ QUỸ =====
+        // qrInfo.handover (lưu ở tab Config) = { date, from, to, base: { idThànhViên: số đã đóng tại lúc chuyển } }
+        // Phần tiền đóng đã có tại lúc chuyển là thủ quỹ cũ (Kantan) nhận; phần tăng thêm sau đó là thủ quỹ mới nhận.
+        let handoverCache = { raw: null, value: null };
+        function getHandover() {
+            const raw = (qrInfo && qrInfo.handover) || '';
+            if (raw !== handoverCache.raw) {
+                let value = null;
+                try {
+                    const parsed = raw ? JSON.parse(raw) : null;
+                    if (parsed && parsed.to && parsed.base) value = parsed;
+                } catch (e) {}
+                handoverCache = { raw, value };
+            }
+            return handoverCache.value;
         }
 
-        // Tiền ứng mua cầu để hiển thị dưới tên: thành viên thường = tổng các lô họ trả;
-        // Kantan = phần tiền túi đã ứng (tiền cầu Kantan trả − tiền mặt thành viên đóng), chỉ khi dương
+        function getTreasurer() {
+            const h = getHandover();
+            return (h && members.find(m => String(m.id) === String(h.to))) || members.find(m => isKantan(m)) || null;
+        }
+
+        function isTreasurer(m) {
+            const t = getTreasurer();
+            return !!(m && t && String(t.id) === String(m.id));
+        }
+
+        // Tiền hoàn do một người chi ra (khoản cũ không ghi người chi là do Kantan chi)
+        function getRefundsPaidBy(m) {
+            const kantan = members.find(x => isKantan(x));
+            return refunds.reduce((sum, r) => {
+                const payer = (r.paidBy !== undefined && r.paidBy !== null && r.paidBy !== '') ? r.paidBy : (kantan ? kantan.id : '');
+                return String(payer) === String(m.id) ? sum + (Number(r.amount) || 0) : sum;
+            }, 0);
+        }
+
+        // Tiền mặt một người đã nhận từ thành viên khi làm thủ quỹ (chỉ dùng sau khi đã chuyển thủ quỹ)
+        function getCollected(m) {
+            const h = getHandover();
+            if (!h || !m) return 0;
+            if (String(h.from) === String(m.id)) {
+                return members.reduce((sum, x) => sum + (Number(h.base[x.id]) || 0), 0);
+            }
+            if (String(h.to) === String(m.id)) {
+                return members.reduce((sum, x) => sum + (Number(x.paid) || 0) - (Number(h.base[x.id]) || 0), 0);
+            }
+            return 0;
+        }
+
+        // Tổng tiền thành viên đã bỏ vào CLB (số "Đã đóng"):
+        // - Trước khi chuyển thủ quỹ: đóng + ứng mua cầu - đã được hoàn. Riêng Kantan, m.paid là số tự tính.
+        // - Sau khi chuyển: đóng + ứng mua cầu - đã được hoàn + tiền hoàn đã chi - tiền đã thu hộ quỹ (thủ quỹ cũ và mới).
+        function getMemberPaid(m) {
+            const base = (Number(m && m.paid) || 0);
+            if (!getHandover()) {
+                return isKantan(m) ? base : base + (memberAdvance[m && m.id] || 0) - getMemberRefund(m);
+            }
+            return base + (memberAdvance[m.id] || 0) - getMemberRefund(m) + getRefundsPaidBy(m) - getCollected(m);
+        }
+
+        // Tiền ứng mua cầu để hiển thị dưới tên: tổng các lô họ trả.
+        // Trước khi chuyển thủ quỹ, Kantan hiện phần tiền túi đã ứng; sau khi chuyển, số của Kantan đã là số bù trừ nên không hiện.
         function getMemberAdvanceAmount(m) {
             if (!m) return 0;
-            if (isKantan(m)) return Math.max(0, Number(m.paid) || 0);
+            const h = getHandover();
+            if (isKantan(m)) return h ? 0 : Math.max(0, Number(m.paid) || 0);
             return memberAdvance[m.id] || 0;
         }
 
         function advanceNoteHtml(m, extraClass = '') {
+            const note = (text, color) => `<span class="block text-[9px] sm:text-[10px] leading-tight font-semibold ${color} whitespace-normal ${extraClass}">${text}</span>`;
             const amount = getMemberAdvanceAmount(m);
-            return amount > 0
-                ? `<span class="block text-[9px] sm:text-[10px] leading-tight font-semibold text-[#8b499c] whitespace-normal ${extraClass}">gồm ${formatVND(amount)} tiền ứng mua cầu</span>`
-                : '';
+            let html = amount > 0 ? note(`gồm ${formatVND(amount)} tiền ứng mua cầu`, 'text-[#8b499c]') : '';
+            if (getHandover() && isTreasurer(m)) {
+                const collected = getCollected(m);
+                if (collected !== 0) html += note(`đã trừ ${formatVND(collected)} thu hộ quỹ`, 'text-[#f08622]');
+            }
+            return html;
         }
 
         function refundNoteHtml(m, extraClass = '') {
@@ -1810,19 +1870,16 @@
             // Lô chưa chọn người trả (hoặc người trả không còn trong danh sách) tính cho thủ quỹ Kantan.
             const kantanMember = members.find(m => isKantan(m));
             memberAdvance = {};
-            let boughtByTreasurer = 0;
             shuttleBatches.forEach(b => {
                 if (b.noPurchase) return;   // dòng chỉ để tính tiền buổi, không phải mua cầu mới
-                const total = getBatchTotal(b);
                 const payer = hasBatchPayer(b) ? members.find(m => String(m.id) === String(b.paidBy)) : null;
-                if (payer && !isKantan(payer)) {
-                    memberAdvance[payer.id] = (memberAdvance[payer.id] || 0) + total;
-                } else {
-                    boughtByTreasurer += total;
-                }
+                const owner = payer || kantanMember;   // lô cũ chưa chọn người trả là của Kantan
+                if (owner) memberAdvance[owner.id] = (memberAdvance[owner.id] || 0) + getBatchTotal(b);
             });
 
-            if (kantanMember) {
+            // Chỉ khi CHƯA chuyển thủ quỹ: số đã nộp của Kantan được tự tính.
+            // Sau khi chuyển, Kantan là thành viên bình thường (m.paid là tiền Kantan đóng thêm).
+            if (kantanMember && !getHandover()) {
                 // Tiền thành viên đã đóng (không tính tiền họ ứng mua cầu) = tiền mặt Kantan đang giữ hộ quỹ
                 // (đã trừ phần quỹ hoàn lại cho từng người: tiền đã hoàn thì không còn nằm ở quỹ)
                 const collectedFromMembers = members.reduce((sum, m) => {
@@ -1831,7 +1888,7 @@
 
                 // Kantan đã nộp = tiền cầu Kantan trả - tiền mặt thành viên đưa cho Kantan - tiền quỹ hoàn lại cho Kantan
                 // (âm nghĩa là Kantan đang giữ tiền mặt dư của quỹ)
-                kantanMember.paid = boughtByTreasurer - collectedFromMembers - getMemberRefund(kantanMember);
+                kantanMember.paid = (memberAdvance[kantanMember.id] || 0) - collectedFromMembers - getMemberRefund(kantanMember);
             }
         }
 
@@ -2236,8 +2293,8 @@
                 const remainingColor = remaining < 0 ? 'text-[#ef403e] font-bold bg-[#ef403e]/10' : (remaining > 0 ? 'text-[#293879] font-bold bg-[#293879]/10' : 'text-[#293879] font-bold');
                 
                 let paidCellHTML = '';
-                if (isKantan(m)) {
-                    paidCellHTML = `<span class="text-[#293879] font-extrabold font-mono block text-right px-1 sm:px-2 w-full text-xs sm:text-sm" title="Tự động tính = Tiền cầu Kantan đã trả - Tiền mặt thành viên đóng cho Kantan">${formatVND(m.paid)}</span>`;
+                if (isTreasurer(m)) {
+                    paidCellHTML = `<span class="text-[#293879] font-extrabold font-mono block text-right px-1 sm:px-2 w-full text-xs sm:text-sm" title="Số của thủ quỹ được tự tính từ tiền mua cầu, tiền hoàn và tiền thu hộ quỹ">${formatVND(m.paid)}</span>`;
                 } else if (isAdmin) {
                     paidCellHTML = `<input type="text" value="${formatVND(mPaidTotal)}" onfocus="this.value=${mPaidTotal}; this.select();" onblur="updatePaid(${m.id}, this.value)" onkeydown="if(event.key==='Enter') this.blur();" class="currency-input text-[#293879] font-bold font-mono text-right w-full text-xs sm:text-sm">`;
                 } else {
@@ -2430,7 +2487,7 @@
                     }
                 });
 
-                const displayPaid = isKantan(m) ? m.paid : ((mTotalPaid > 0 ? mTotalPaid : m.paid) + (memberAdvance[m.id] || 0) - getMemberRefund(m));
+                const displayPaid = getMemberPaid(m);
 
                 fHtml += `
                     <td class="p-3 border-r border-slate-200 text-right font-extrabold font-mono bg-[#e5b243]/15 text-[#293879] whitespace-nowrap text-sm px-3" title="Tổng tiền cầu của ${m.name}: ${formatVND(mTotalCost)}">${formatVND(mTotalCost)}</td>
@@ -2456,7 +2513,7 @@
                     }
                 });
 
-                const displayPaid = isKantan(m) ? m.paid : ((mTotalPaid > 0 ? mTotalPaid : m.paid) + (memberAdvance[m.id] || 0) - getMemberRefund(m));
+                const displayPaid = getMemberPaid(m);
                 const rem = displayPaid - mTotalCost;
 
                 let cellContent = '';
@@ -2500,7 +2557,7 @@
                 let bill = 0;
                 sessions.forEach(s => { bill += getMemberSessionCost(m, s.id); });
                 const paid = getMemberPaid(m);
-                return { m, bill, paid, advance: isKantan(m) ? 0 : (memberAdvance[m.id] || 0), balance: paid - bill, treasurer: isKantan(m) };
+                return { m, bill, paid, advance: isKantan(m) ? 0 : (memberAdvance[m.id] || 0), balance: paid - bill, treasurer: isTreasurer(m) };
             });
             const others = rows.filter(r => !r.treasurer);
             const treasurer = rows.find(r => r.treasurer) || null;
@@ -2514,11 +2571,14 @@
             // Mỗi người lấy số CÒN LẠI của họ = đã nộp - phí các buổi họ đã chơi (cùng số "Còn lại" trong bảng điểm danh):
             //  - Kantan: đã nộp = tiền túi đã ứng (tiền cầu Kantan trả - tiền mặt thành viên đóng)
             //  - Thành viên khác (vd A Đức): đã nộp = tiền đã đóng + tiền các lô cầu họ trả; phần đóng trước đã trừ vào phí chơi
+            const handover = getHandover();
             const advancers = [];
             if (treasurer) advancers.push({ name: treasurer.m.name, paid: treasurer.paid, fees: treasurer.bill, net: treasurer.balance, treasurer: true });
-            others.filter(r => r.advance > 0).forEach(r => advancers.push({ name: r.m.name, paid: r.paid, fees: r.bill, net: r.balance }));
-            // < 0: quỹ đang nợ người ứng tiền, > 0: số còn lại của những người ứng là âm (họ đang nợ quỹ)
+            // Sau khi chuyển thủ quỹ, chỉ tính thủ quỹ: người khác (kể cả Kantan) là thành viên bình thường
+            if (!handover) others.filter(r => r.advance > 0).forEach(r => advancers.push({ name: r.m.name, paid: r.paid, fees: r.bill, net: r.balance }));
+            // < 0: quỹ đang nợ người ứng tiền / thủ quỹ, > 0: thủ quỹ đang giữ tiền quỹ
             const cashBalance = -advancers.reduce((sum, x) => sum + x.net, 0);
+            const collected = treasurer ? getCollected(treasurer.m) : 0;
 
             const prepaid = others.filter(r => r.balance > 0).reduce((sum, r) => sum + r.balance, 0);
             const owed = others.filter(r => r.balance < 0).reduce((sum, r) => sum - r.balance, 0);
@@ -2527,7 +2587,7 @@
                 bought, boughtPieces, usedPieces, allocated, unallocated,
                 stockValue: bought - allocated,
                 stockPieces: boughtPieces - usedPieces,
-                rows, treasurer, deposits, advancedByOthers, boughtByTreasurer, cashBalance, advancers,
+                rows, treasurer, deposits, advancedByOthers, boughtByTreasurer, cashBalance, advancers, handover, collected,
                 advancersCount: others.filter(r => r.advance > 0).length,
                 prepaid, owed,
                 prepaidCount: others.filter(r => r.balance > 1000).length,
@@ -2542,9 +2602,19 @@
             const negative = f.cashBalance < 0;
             const cashColor = negative ? 'text-[#f08622]' : 'text-[#293879]';
             const owedList = f.advancers.map(x => `${x.name} ${formatVND(x.net)}đ`).join(' + ');
-            const cashNote = negative
-                ? 'Âm: quỹ đang nợ lại những người đã ứng tiền mua cầu. Mỗi người lấy số còn lại = đã nộp − phí các buổi họ đã chơi.'
-                : 'Quỹ không nợ ai tiền ứng mua cầu: số đã nộp của những người ứng đã dùng hết cho phí chơi của chính họ.';
+            const tName = f.treasurer ? f.treasurer.m.name : 'thủ quỹ';
+            let cashNote, cashLine;
+            if (f.handover) {
+                cashLine = negative ? 'Quỹ nợ ' + owedList : (f.cashBalance > 0 ? `${tName} đang giữ tiền quỹ` : 'Quỹ không nợ thủ quỹ');
+                cashNote = `Từ ${formatIsoDate(f.handover.date)}, tiền đóng chuyển cho ${tName}. `
+                    + (negative ? `Âm: quỹ đang nợ ${tName} (tiền ${tName} đã bỏ ra trừ phí đã chơi và tiền đã thu).`
+                                : `Số dương: tiền quỹ ${tName} đang giữ.`);
+            } else {
+                cashLine = negative ? 'Quỹ nợ: ' + owedList : 'Không nợ ai tiền ứng';
+                cashNote = negative
+                    ? 'Âm: quỹ đang nợ lại những người đã ứng tiền mua cầu. Mỗi người lấy số còn lại = đã nộp − phí các buổi họ đã chơi.'
+                    : 'Quỹ không nợ ai tiền ứng mua cầu: số đã nộp của những người ứng đã dùng hết cho phí chơi của chính họ.';
+            }
             box.innerHTML = `
                 <div class="bg-white rounded-2xl border border-[#e5b243]/40 shadow-sm p-3 sm:p-4">
                     <div class="flex items-center justify-between gap-2 mb-2.5">
@@ -2560,7 +2630,7 @@
                         <div class="rounded-xl ${negative ? 'bg-[#f08622]/10 border-[#f08622]/30' : 'bg-[#bcd331]/15 border-[#bcd331]/40'} border p-2.5 sm:p-3">
                             <div class="text-[11px] sm:text-xs font-bold text-slate-500">💵 Tiền mặt quỹ</div>
                             <div class="text-lg sm:text-2xl font-black font-mono ${cashColor} tracking-tight mt-0.5">${formatVND(f.cashBalance)}đ</div>
-                            <div class="text-[11px] sm:text-sm font-semibold text-slate-600">${negative ? 'Quỹ nợ: ' + owedList : 'Không nợ ai tiền ứng'}</div>
+                            <div class="text-[11px] sm:text-sm font-semibold text-slate-600">${cashLine}</div>
                         </div>
                     </div>
                     <p class="text-[10px] sm:text-xs text-slate-400 mt-2 leading-snug">${cashNote}</p>
@@ -2584,9 +2654,16 @@
             // Tiền mặt quỹ hiện đúng số thực tế, kể cả âm (âm = quỹ đang nợ những người đã ứng tiền mua cầu)
             const owedToAdvancers = Math.max(0, -f.cashBalance);
             const owedList = f.advancers.map(x => `${x.name}: đã nộp ${formatVND(x.paid)} − phí chơi ${formatVND(x.fees)} = còn lại <b>${formatVND(x.net)}đ</b>`).join('; ');
-            const cashSub = owedToAdvancers > 0
-                ? `Âm: quỹ đang nợ lại người ứng tiền mua cầu (số còn lại sau khi trừ phí họ chơi). ${owedList}`
-                : `Quỹ không nợ ai tiền ứng mua cầu. ${owedList}`;
+            const tName = f.treasurer ? f.treasurer.m.name : 'thủ quỹ';
+            let cashSub;
+            if (f.handover) {
+                cashSub = (owedToAdvancers > 0 ? `Âm: quỹ đang nợ ${tName}. ` : `${tName} đang giữ tiền quỹ. `)
+                    + (f.treasurer ? `${tName}: đã đóng và ứng mua cầu, trừ ${formatVND(f.collected)}đ đã thu hộ quỹ = ${formatVND(f.treasurer.paid)}đ; trừ phí chơi ${formatVND(f.treasurer.bill)}đ = <b>${formatVND(f.treasurer.balance)}đ</b>` : '');
+            } else {
+                cashSub = owedToAdvancers > 0
+                    ? `Âm: quỹ đang nợ lại người ứng tiền mua cầu (số còn lại sau khi trừ phí họ chơi). ${owedList}`
+                    : `Quỹ không nợ ai tiền ứng mua cầu. ${owedList}`;
+            }
             const cashTone = owedToAdvancers > 0 ? 'border-[#f08622]/30' : 'border-[#bcd331]/40';
             const cashValue = `<span class="${owedToAdvancers > 0 ? 'text-[#f08622]' : ''}">${formatVND(f.cashBalance)}đ</span>`;
 
@@ -2598,12 +2675,15 @@
                 card('fa-solid fa-sack-dollar text-[#bcd331]', 'Tiền mặt quỹ', cashValue, cashSub, cashTone) +
                 card('fa-solid fa-circle-plus text-[#23b1dc]', 'Thành viên trả trước', formatVND(f.prepaid) + 'đ', `${f.prepaidCount} người đang có số dư dương`, 'border-[#23b1dc]/30') +
                 card('fa-solid fa-circle-minus text-[#ef403e]', 'Thành viên đang nợ', (f.owedCount > 0 ? formatVND(f.owed) : '0') + 'đ', f.owedCount > 0 ? `${f.owedCount} người có số dư âm` : 'Hiện không ai nợ quỹ', 'border-[#ef403e]/30') +
-                card('fa-solid fa-hand-holding-dollar text-[#8b499c]', 'Thành viên tự trả mua cầu', formatVND(f.advancedByOthers) + 'đ',
-                     f.advancersCount > 0 ? `${f.advancersCount} người trả tiền lô cầu, được cộng vào số dư của họ` : 'Chưa có lô nào do thành viên khác trả', 'border-[#8b499c]/30');
+                (f.handover
+                    ? card('fa-solid fa-money-bill-transfer text-[#8b499c]', `${tName} đã thu`, formatVND(f.collected) + 'đ',
+                           `Tiền thành viên đóng từ ngày ${formatIsoDate(f.handover.date)}`, 'border-[#8b499c]/30')
+                    : card('fa-solid fa-hand-holding-dollar text-[#8b499c]', 'Thành viên tự trả mua cầu', formatVND(f.advancedByOthers) + 'đ',
+                           f.advancersCount > 0 ? `${f.advancersCount} người trả tiền lô cầu, được cộng vào số dư của họ` : 'Chưa có lô nào do thành viên khác trả', 'border-[#8b499c]/30'));
 
             const kBalance = f.treasurer ? f.treasurer.balance : 0;
             document.getElementById('fund-equation').innerHTML =
-                `<b>Cách các số khớp nhau:</b> cầu tồn <b>${formatVND(f.stockValue)}đ</b> = ${kBalance >= 0 ? 'Kantan dư' : '− Kantan nợ'} <b>${formatVND(Math.abs(kBalance))}đ</b> + thành viên trả trước <b>${formatVND(f.prepaid)}đ</b>` +
+                `<b>Cách các số khớp nhau:</b> cầu tồn <b>${formatVND(f.stockValue)}đ</b> = ${f.treasurer ? (kBalance >= 0 ? f.treasurer.m.name + ' dư' : '− ' + f.treasurer.m.name + ' đang giữ') : 'thủ quỹ'} <b>${formatVND(Math.abs(kBalance))}đ</b> + thành viên trả trước <b>${formatVND(f.prepaid)}đ</b>` +
                 (f.owedCount > 0 ? ` − thành viên nợ <b>${formatVND(f.owed)}đ</b>` : '') +
                 `. Mua cầu tổng cộng ${formatVND(f.bought)}đ, đã chia cho người chơi ${formatVND(f.allocated)}đ.` +
                 (f.unallocated > 0 ? ` <span class="text-[#e5b243] font-bold">Có buổi chưa ai điểm danh (${formatVND(f.unallocated)}đ) nên chưa chia được.</span>` : '');
@@ -2611,12 +2691,13 @@
             // Bảng số dư: thủ quỹ lên đầu, sau đó người nợ trước, người dư sau
             const sorted = [...f.rows].sort((a, b) => (b.treasurer - a.treasurer) || (a.balance - b.balance));
             document.getElementById('fund-balance-body').innerHTML = sorted.map(r => {
-                const st = r.balance < -1000 ? '<span class="text-[#ef403e] font-bold">Nợ</span>'
+                const st = (r.treasurer && f.handover) ? `<span class="text-[#f08622] font-bold">${r.balance < 0 ? 'Đang giữ quỹ' : 'Quỹ nợ'}</span>`
+                    : r.balance < -1000 ? '<span class="text-[#ef403e] font-bold">Nợ</span>'
                     : r.balance > 1000 ? '<span class="text-[#293879] font-bold">Trả trước</span>'
                     : '<span class="text-slate-500 font-bold">Đã đủ</span>';
                 const balColor = r.balance < -1000 ? 'text-[#ef403e]' : 'text-[#293879]';
                 const label = r.treasurer ? `${r.m.name} <span class="text-[9px] font-extrabold bg-[#e5b243] text-[#293879] px-1.5 rounded ml-1">👑 Thủ quỹ</span>` : r.m.name;
-                const paidTitle = r.treasurer ? 'title="Tiền cầu Kantan đã trả − tiền mặt thành viên đưa cho Kantan"' : '';
+                const paidTitle = r.treasurer ? 'title="Số của thủ quỹ được tự tính từ tiền mua cầu, tiền hoàn và tiền thu hộ quỹ"' : '';
                 const advNote = advanceNoteHtml(r.m).replace('<span class="block', '<span class="block font-sans');
                 return `<tr class="${r.treasurer ? 'bg-[#e5b243]/10' : ''}">
                     <td class="p-2.5 font-semibold text-slate-800">${label}</td>
@@ -2633,6 +2714,8 @@
                 <td class="p-2.5 text-right font-mono">${formatVND(totBill)}</td>
                 <td class="p-2.5 text-right font-mono">${formatVND(totPaid - totBill)}</td>
                 <td></td></tr>`;
+
+            renderTreasurerInfo(f);
 
             // Đếm cầu thực tế
             const counted = (qrInfo.stockCount === undefined || qrInfo.stockCount === '' || qrInfo.stockCount === null) ? null : Number(qrInfo.stockCount);
@@ -2691,7 +2774,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
                     <div>
                         <h3 class="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2"><i class="fa-solid fa-hand-holding-dollar text-[#23b1dc]"></i> SỔ HOÀN TIỀN</h3>
-                        <p class="text-xs text-slate-500 mt-0.5 max-w-xl">Khi quỹ hoàn tiền cho một người (vd người nghỉ hẳn còn dư), ghi ở đây. Số đã nộp của người đó giảm đúng số tiền hoàn. Nếu quỹ không còn tiền mặt thì Kantan là người trả, khoản đó chuyển sang số Kantan ứng.</p>
+                        <p class="text-xs text-slate-500 mt-0.5 max-w-xl">Khi quỹ hoàn tiền cho một người (vd người nghỉ hẳn còn dư), ghi ở đây. Số đã nộp của người đó giảm đúng số tiền hoàn; người chi tiền là thủ quỹ${getTreasurer() ? ' (' + getTreasurer().name + ')' : ''}.</p>
                     </div>
                     ${isAdmin ? `<button onclick="openRefundModal()" class="px-3.5 py-2 bg-[#293879] hover:bg-[#1f2b5c] text-white rounded-xl text-xs sm:text-sm font-semibold shadow transition shrink-0"><i class="fa-solid fa-plus"></i> Ghi hoàn tiền</button>` : ''}
                 </div>
@@ -2720,8 +2803,10 @@
         function openRefundModal() {
             if (!isAdmin) return showAdminLoginModal();
             const sel = document.getElementById('rf-member');
-            // Người còn dư tiền lên đầu danh sách (người có thể được hoàn)
-            const sorted = [...members].sort((a, b) => getMemberBalance(b) - getMemberBalance(a));
+            // Người còn dư tiền lên đầu danh sách (người có thể được hoàn). Sau khi chuyển thủ quỹ,
+            // thủ quỹ là người chi tiền hoàn nên không nằm trong danh sách nhận.
+            const sorted = members.filter(m => !(getHandover() && isTreasurer(m)))
+                .sort((a, b) => getMemberBalance(b) - getMemberBalance(a));
             sel.innerHTML = sorted.map(m => `<option value="${m.id}">${m.name} (còn lại ${formatVND(getMemberBalance(m))})</option>`).join('');
             document.getElementById('rf-amount').value = '';
             document.getElementById('rf-note').value = '';
@@ -2745,7 +2830,9 @@
             const bal = getMemberBalance(m);
             if (amount > bal && !confirm(`Số hoàn (${formatVND(amount)}đ) lớn hơn số còn lại của ${m.name} (${formatVND(bal)}đ).\nSau khi hoàn, ${m.name} sẽ ở mức ${formatVND(bal - amount)}đ (âm là đang nợ quỹ). Vẫn ghi?`)) return;
 
-            refunds.push({ id: 'r' + new Date().getTime(), memberId: Number(m.id) || m.id, amount, date, note });
+            const treasurer = getTreasurer();
+            const paidBy = getHandover() && treasurer ? treasurer.id : '';   // trống = Kantan chi
+            refunds.push({ id: 'r' + new Date().getTime(), memberId: Number(m.id) || m.id, amount, date, note, paidBy });
             closeModal('modal-refund');
             renderAll();
             markUnsaved(true);
@@ -2762,6 +2849,52 @@
             renderAll();
             markUnsaved(true);
             showToast('Đã xóa khoản hoàn tiền và đang lưu Google Sheets...', 'info');
+        }
+
+        // Thẻ "Thủ quỹ" và khu chuyển thủ quỹ (chỉ admin thấy nút chuyển)
+        function renderTreasurerInfo(f) {
+            const t = getTreasurer();
+            const h = getHandover();
+            const title = document.getElementById('fund-treasurer-title');
+            const text = document.getElementById('fund-treasurer-text');
+            if (title) title.textContent = `👑 Thủ quỹ${t ? ' (' + t.name + ')' : ''}`;
+            if (text && t) {
+                text.textContent = h
+                    ? `Từ ${formatIsoDate(h.date)}, mọi người chuyển tiền cho ${t.name}. ${t.name} mua cầu và chi tiền hoàn. Tiền đóng trước đó đã do Kantan nhận.`
+                    : `Giữ tiền mặt hộ CLB; ${t.name} cũng có số dư cá nhân như mọi người. Ai bỏ tiền túi mua cầu thì quỹ nợ lại họ theo số còn lại (đã nộp − phí các buổi đã chơi).`;
+            }
+            const box = document.getElementById('fund-handover');
+            if (!box) return;
+            if (h || !isAdmin) { box.innerHTML = ''; return; }
+            const options = members.filter(m => !isKantan(m)).map(m => `<option value="${m.id}" ${m.name === 'A Đức' ? 'selected' : ''}>${m.name}</option>`).join('');
+            box.innerHTML = `
+                <div class="mt-4 rounded-2xl border border-dashed border-[#f08622]/60 bg-[#f08622]/5 p-3.5 flex flex-col sm:flex-row sm:items-center gap-2.5 text-xs sm:text-sm">
+                    <div class="flex-1 text-slate-700"><b>Chuyển thủ quỹ:</b> chốt số đã đóng hiện tại là Kantan đã nhận; tiền đóng nhập thêm từ lúc này tính cho thủ quỹ mới.</div>
+                    <select id="handover-to" class="p-2 rounded-xl border border-slate-300 bg-white text-sm">${options}</select>
+                    <button onclick="startHandover()" class="px-4 py-2 bg-[#f08622] hover:bg-[#d9761a] text-white rounded-xl font-semibold shadow transition shrink-0">Chuyển thủ quỹ</button>
+                </div>`;
+        }
+
+        function startHandover() {
+            if (!isAdmin) return showAdminLoginModal();
+            if (getHandover()) return;
+            const sel = document.getElementById('handover-to');
+            const to = members.find(m => String(m.id) === (sel ? sel.value : ''));
+            const kantan = members.find(m => isKantan(m));
+            if (!to || !kantan) return showToast('Hãy chọn thủ quỹ mới!', 'error');
+            calculateSheetMath();
+            const kantanLeft = getMemberBalance(kantan);
+            if (!confirm(`Chuyển thủ quỹ sang ${to.name} từ hôm nay?\n\n• Mọi khoản đã đóng đang có trên web được chốt là Kantan đã nhận.\n• Số tiền đóng nhập thêm sau bước này (ở tab Đóng Tiền hoặc bảng điểm danh) tính là ${to.name} nhận.\n• Kantan thành thành viên bình thường, số còn lại ${formatVND(kantanLeft)}đ trừ dần vào phí.\n• Lô cầu mới và tiền hoàn từ nay do ${to.name} chi.\n\nChỉ bấm OK khi chắc chắn chưa nhập khoản nào đã chuyển cho ${to.name}.`)) return;
+
+            const base = {};
+            members.forEach(m => { base[m.id] = isKantan(m) ? 0 : (Number(m.paid) || 0); });
+            const now = new Date();
+            const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            kantan.paid = 0;   // từ nay là tiền Kantan đóng thêm như mọi thành viên
+            qrInfo.handover = JSON.stringify({ date, from: kantan.id, to: to.id, base });
+            renderAll();
+            markUnsaved(true);
+            showToast(`Đã chuyển thủ quỹ sang ${to.name}. Nhớ đổi mã VietQR sang tài khoản của ${to.name}!`, 'warning');
         }
 
         function saveStockCount() {
@@ -2846,12 +2979,13 @@
                 : '<span class="text-slate-300">-</span>';
         }
 
-        function fillBatchPayerOptions(selectedId) {
+        function fillBatchPayerOptions(selectedId, isNew = false) {
             const sel = document.getElementById('pb-paidby');
-            const treasurer = members.find(m => isKantan(m));
+            // Lô mới mặc định do thủ quỹ hiện tại trả; lô cũ chưa ghi người trả là của Kantan
+            const fallback = isNew ? getTreasurer() : members.find(m => isKantan(m));
             const current = (selectedId !== undefined && selectedId !== null && selectedId !== '') ? String(selectedId)
-                : (treasurer ? String(treasurer.id) : '');
-            sel.innerHTML = members.map(m => `<option value="${m.id}" ${String(m.id) === current ? 'selected' : ''}>${m.name}${isKantan(m) ? ' (thủ quỹ)' : ''}</option>`).join('');
+                : (fallback ? String(fallback.id) : '');
+            sel.innerHTML = members.map(m => `<option value="${m.id}" ${String(m.id) === current ? 'selected' : ''}>${m.name}${isTreasurer(m) ? ' (thủ quỹ)' : ''}</option>`).join('');
         }
 
         // ==========================================
@@ -2977,11 +3111,11 @@
             if (!isAdmin) return;
             const m = members.find(x => x.id === mId);
             if (m) {
-                if (isKantan(m)) return; // Tiền của Kantan được hệ thống tự động tính toán
+                if (isTreasurer(m)) return; // Số của thủ quỹ được hệ thống tự tính
                 const clean = typeof val === 'string' ? val.replace(/[^\d-]/g, '') : val;
                 const newPaid = Number(clean) || 0;
-                // Ô hiển thị tổng (đóng tiền + ứng mua cầu - đã hoàn): phần đóng tiền = tổng nhập vào - phần ứng + phần đã hoàn
-                const basePaid = newPaid - (memberAdvance[m.id] || 0) + getMemberRefund(m);
+                // Ô hiển thị số tổng; phần tiền đóng = số nhập vào - các phần cộng/trừ tự tính (ứng mua cầu, hoàn tiền...)
+                const basePaid = newPaid - (getMemberPaid(m) - (Number(m.paid) || 0));
                 if (m.paid !== basePaid) {
                     m.paid = basePaid;
                     renderAll();
@@ -2998,15 +3132,10 @@
                 const clean = typeof val === 'string' ? val.replace(/[^\d-]/g, '') : val;
                 const newP = Number(clean) || 0;
                 if (m.payments[sId] !== newP) {
+                    // Cộng đúng phần chênh lệch vào tổng đã đóng (không cộng lại cả cột),
+                    // nên mốc chốt khi chuyển thủ quỹ luôn đúng
+                    m.paid = (Number(m.paid) || 0) + newP - (Number(m.payments[sId]) || 0);
                     m.payments[sId] = newP;
-                    // Tự động tính tổng tiền m.paid cho thành viên thông thường
-                    if (!isKantan(m)) {
-                        let total = 0;
-                        sessions.forEach(s => {
-                            total += Number(m.payments[s.id]) || 0;
-                        });
-                        m.paid = total;
-                    }
                     renderAll();
                     markUnsaved(true);
                 }
@@ -3163,7 +3292,7 @@
                 document.getElementById('pb-note').value = '';
                 document.getElementById('pb-depleted').checked = false;
                 document.getElementById('pb-nopurchase').checked = false;
-                fillBatchPayerOptions('');
+                fillBatchPayerOptions('', true);
             }
             togglePurchaseFields();
             openModal('modal-price-batch');
@@ -3313,7 +3442,7 @@
 
             const actionContainer = document.getElementById('md-action-container');
             if (actionContainer) {
-                if (isDebt && !isKantan(m)) {
+                if (isDebt && !isTreasurer(m)) {
                     actionContainer.innerHTML = `
                         <button onclick="closeModal('modal-member-details'); openPersonalQR(${m.id});" class="w-full py-3 px-4 bg-[#ef403e] hover:bg-[#d93432] text-white rounded-2xl font-black text-sm shadow-md transition active:scale-95 flex items-center justify-center gap-2">
                             <i class="fa-solid fa-qrcode text-base"></i> Quét Mã VietQR Nợ (${formatVND(Math.abs(remaining))}đ)

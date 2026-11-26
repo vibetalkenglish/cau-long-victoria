@@ -113,7 +113,7 @@ async function getFromSheets(sheets, spreadsheetId) {
     'Config!A:B',
     'Prices!A:J',
     'Payments',
-    'Refunds!A:E'
+    'Refunds!A:F'
   ];
 
   let valueRanges = [];
@@ -287,7 +287,9 @@ async function getFromSheets(sheets, spreadsheetId) {
       memberId: Number(row[1]) || row[1],
       amount: amount,
       date: row[3] ? row[3].toString() : '',
-      note: row[4] ? row[4].toString() : ''
+      note: row[4] ? row[4].toString() : '',
+      // Cột F: ID người chi tiền hoàn (trống = Kantan chi)
+      paidBy: (row[5] === undefined || row[5] === '') ? '' : (Number(row[5]) || row[5])
     });
   }
 
@@ -297,7 +299,13 @@ async function getFromSheets(sheets, spreadsheetId) {
   // Giữ khớp với calculateSheetMath() trong index.html.
   const isKantan = (m) => m && m.name && m.name.trim().toLowerCase() === 'kantan';
   const kantanMember = members.find(m => isKantan(m));
-  if (kantanMember) {
+  // Đã chuyển thủ quỹ (Config: handover) thì Kantan là thành viên bình thường, không tự tính số đã nộp nữa
+  let handedOver = false;
+  try {
+    const h = qrInfo.handover ? JSON.parse(qrInfo.handover) : null;
+    handedOver = !!(h && h.to && h.base);
+  } catch (e) {}
+  if (kantanMember && !handedOver) {
     const boughtByTreasurer = shuttleBatches.reduce((sum, b) => {
       if (b.noPurchase) return sum;   // dòng chỉ dùng để tính tiền buổi, không phải mua cầu mới
       const qty = Number(b.quantity) || 1;
@@ -381,7 +389,8 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
   const stockRows = [
     ['stockCount', qrInfo && qrInfo.stockCount !== undefined ? qrInfo.stockCount : ''],
     ['stockCountExpected', qrInfo && qrInfo.stockCountExpected !== undefined ? qrInfo.stockCountExpected : ''],
-    ['stockCountDate', qrInfo && qrInfo.stockCountDate ? qrInfo.stockCountDate : '']
+    ['stockCountDate', qrInfo && qrInfo.stockCountDate ? qrInfo.stockCountDate : ''],
+    ['handover', qrInfo && qrInfo.handover ? qrInfo.handover : '']
   ];
   if (qrTooLarge) {
     // Giữ nguyên dòng 5 (ảnh QR cũ), chỉ ghi phần trước và sau nó
@@ -434,10 +443,10 @@ async function saveToSheets(sheets, spreadsheetId, payload) {
   // Ngày và ghi chú ghi dạng văn bản (dấu ' phía trước) để Google Sheets không tự đổi thành ngày/công thức.
   if (Array.isArray(refunds)) {
     const asText = (v) => { const t = String(v === undefined || v === null ? '' : v); return t === '' ? '' : "'" + t; };
-    const rData = [['ID', 'ID thành viên', 'Số tiền', 'Ngày (YYYY-MM-DD)', 'Ghi chú']];
+    const rData = [['ID', 'ID thành viên', 'Số tiền', 'Ngày (YYYY-MM-DD)', 'Ghi chú', 'ID người chi']];
     refunds.forEach(r => {
       const amount = Number(r.amount) || 0;
-      if (amount > 0) rData.push([r.id, r.memberId, amount, asText(r.date), asText(r.note)]);
+      if (amount > 0) rData.push([r.id, r.memberId, amount, asText(r.date), asText(r.note), r.paidBy === undefined || r.paidBy === null ? '' : r.paidBy]);
     });
     blocks.push({ name: 'Refunds', values: rData });
   }
@@ -620,6 +629,10 @@ module.exports = async (req, res) => {
         if (!check.ok) {
           await new Promise(r => setTimeout(r, 1000));
           return res.status(401).json({ success: false, authError: true, error: check.reason });
+        }
+        // Tab trình duyệt còn chạy bản cũ có thể tính sai và ghi đè dữ liệu (vd sau khi chuyển thủ quỹ)
+        if (!(Number(body.clientVersion) >= 2)) {
+          return res.status(409).json({ success: false, error: 'Trang web đã có bản mới. Hãy tải lại trang (Cmd+Shift+R) rồi thao tác lại.' });
         }
         const payload = body.payload;
         if (!payload || !Array.isArray(payload.sessions) || !Array.isArray(payload.members)) {
